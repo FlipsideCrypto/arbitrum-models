@@ -47,8 +47,5 @@ models:
       - name: GAS
         tests:
           - not_null
-      - name: GAS_USED
-        tests:
-          - not_null
 
 

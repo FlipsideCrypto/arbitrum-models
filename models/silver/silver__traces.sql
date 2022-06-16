@@ -1,8 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = '_call_id',
-    cluster_by = ['ingested_at::DATE'],
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
+    cluster_by = ['block_timestamp::DATE']
 ) }}
 
 WITH new_blocks AS (
@@ -23,7 +22,7 @@ AND block_id NOT IN (
 )
 {% endif %}
 ORDER BY
-    ingested_at DESC
+    _inserted_timestamp DESC
 LIMIT
     500000
 ), traces_txs AS (
@@ -39,7 +38,7 @@ LIMIT
                 new_blocks
         ) qualify(ROW_NUMBER() over(PARTITION BY tx_id
     ORDER BY
-        ingested_at DESC)) = 1
+        _inserted_timestamp DESC)) = 1
 ),
 base_table AS (
     SELECT
@@ -69,7 +68,8 @@ base_table AS (
             WHEN txs.tx :receipt :status :: STRING = '0x1' THEN 'SUCCESS'
             ELSE 'FAIL'
         END AS tx_status,
-        txs.ingested_at AS ingested_at
+        txs.ingested_at AS ingested_at,
+        txs._inserted_timestamp AS _inserted_timestamp
     FROM
         traces_txs txs,
         TABLE(
@@ -88,6 +88,7 @@ base_table AS (
         id,
         block_number,
         block_timestamp,
+        _inserted_timestamp,
         ingested_at,
         tx_status
 ),
@@ -185,7 +186,8 @@ flattened_traces AS (
                 flattened_traces.ingested_at AS ingested_at,
                 flattened_traces.data AS DATA,
                 flattened_traces.tx_status AS tx_status,
-                group_sub_traces.sub_traces AS sub_traces
+                group_sub_traces.sub_traces AS sub_traces,
+                flattened_traces._inserted_timestamp AS _inserted_timestamp
             FROM
                 flattened_traces
                 LEFT OUTER JOIN group_sub_traces
@@ -209,10 +211,11 @@ flattened_traces AS (
         ingested_at,
         DATA,
         tx_status,
-        sub_traces
+        sub_traces,
+        _inserted_timestamp
     FROM
         FINAL
     WHERE
         identifier IS NOT NULL qualify(ROW_NUMBER() over(PARTITION BY _call_id
     ORDER BY
-        ingested_at DESC)) = 1
+        _inserted_timestamp DESC)) = 1
