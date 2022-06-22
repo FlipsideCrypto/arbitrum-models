@@ -69,8 +69,14 @@ traces_flat AS (
         VALUE :time :: STRING AS TIME,
         VALUE :to :: STRING AS to_address,
         VALUE :type :: STRING AS TYPE,
+        VALUE :traceAddress AS traceAddress,
+        VALUE: subtraces :: INTEGER AS sub_traces,
         CASE
-            WHEN VALUE :type :: STRING = 'call' THEN udf_hex_to_int(
+            WHEN VALUE :type :: STRING IN (
+                'call',
+                'delegatecall',
+                'staticcall'
+            ) THEN udf_hex_to_int(
                 VALUE :value :: STRING
             ) / pow(
                 10,
@@ -95,24 +101,24 @@ SELECT
     gas_used,
     input,
     output,
-    TYPE,
-    CONCAT(
-        TYPE,
-        '_',
-        INDEX
-    ) AS identifier,
-    concat_ws(
-        '-',
-        tx_hash,
-        identifier
-    ) AS _call_id,
-    ingested_at,
-    VALUE AS DATA,
-    tx_status,
-    _inserted_timestamp
-FROM
-    traces_flat
-WHERE
-    identifier IS NOT NULL qualify (ROW_NUMBER() over (PARTITION BY _call_id
-ORDER BY
-    _inserted_timestamp DESC)) = 1
+    UPPER(TYPE) AS TYPE,
+    sub_traces,
+    REPLACE(REPLACE(REPLACE(traceAddress :: STRING, ']'), '['), ',', '_') AS id,
+    CASE
+        WHEN INDEX = 0 THEN 'CALL_ORIGIN'
+        ELSE concat_ws('_', UPPER(TYPE), id)END AS identifier,
+        concat_ws(
+            '-',
+            tx_hash,
+            identifier
+        ) AS _call_id,
+        ingested_at,
+        VALUE AS DATA,
+        tx_status,
+        _inserted_timestamp
+        FROM
+            traces_flat
+        WHERE
+            identifier IS NOT NULL qualify (ROW_NUMBER() over (PARTITION BY _call_id
+        ORDER BY
+            _inserted_timestamp DESC)) = 1

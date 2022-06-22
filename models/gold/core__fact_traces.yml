@@ -32,6 +32,8 @@ models:
         description: '{{ doc("arb_traces_call_data") }}'
       - name: TX_STATUS
         description: '{{ doc("arb_tx_status") }}' 
+      - name: SUB_TRACES
+        description: '{{ doc("arb_traces_sub") }}' 
 
 
 
