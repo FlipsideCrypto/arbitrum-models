@@ -1,4 +1,4 @@
-{% docs eth_transfer_contract_address %}
+{% docs arb_transfer_contract_address %}
 
 Contract address of the token being transferred.
 

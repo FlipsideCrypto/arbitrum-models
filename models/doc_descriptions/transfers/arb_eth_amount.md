@@ -1,4 +1,4 @@
-{% docs eth_eth_amount %}
+{% docs arb_eth_amount %}
 
 ETH value transferred.
 
