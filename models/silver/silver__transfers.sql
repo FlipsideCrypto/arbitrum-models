@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = '_log_id',
-    cluster_by = ['inserted_at::DATE']
+    cluster_by = ['_inserted_timestamp::DATE']
 ) }}
 
 WITH logs AS (
@@ -20,17 +20,17 @@ WITH logs AS (
         event_inputs,
         topics,
         DATA,
-        inserted_at :: TIMESTAMP AS inserted_at
+        _inserted_timestamp :: TIMESTAMP AS _inserted_timestamp
     FROM
         {{ ref('silver__logs') }}
     WHERE
         tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
-AND inserted_at >= (
+AND _inserted_timestamp >= (
     SELECT
         MAX(
-            inserted_at
+            _inserted_timestamp
         )
     FROM
         {{ this }}
@@ -51,7 +51,7 @@ transfers AS (
         event_inputs :to :: STRING AS to_address,
         event_inputs :value :: FLOAT AS raw_amount,
         event_index,
-        inserted_at
+        _inserted_timestamp
     FROM
         logs
     WHERE
@@ -72,7 +72,7 @@ find_missing_events AS (
         CONCAT('0x', SUBSTR(topics [2], 27, 40)) :: STRING AS to_address,
         COALESCE(udf_hex_to_int(topics [3] :: STRING), udf_hex_to_int(SUBSTR(DATA, 3, 64))) :: FLOAT AS raw_amount,
         event_index,
-        inserted_at
+        _inserted_timestamp
     FROM
         logs
     WHERE
@@ -81,7 +81,7 @@ find_missing_events AS (
             SELECT
                 DISTINCT contract_address
             FROM
-                {{ this }}
+                transfers
         )
         AND topics [0] :: STRING = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
 ),
@@ -99,7 +99,7 @@ all_transfers AS (
         to_address,
         raw_amount,
         event_index,
-        inserted_at
+        _inserted_timestamp
     FROM
         transfers
     UNION ALL
@@ -116,7 +116,7 @@ all_transfers AS (
         to_address,
         raw_amount,
         event_index,
-        inserted_at
+        _inserted_timestamp
     FROM
         find_missing_events
 )
@@ -132,9 +132,9 @@ SELECT
     from_address,
     to_address,
     raw_amount,
-    inserted_at,
+    _inserted_timestamp,
     event_index
 FROM
     all_transfers qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
-    inserted_at DESC)) = 1
+    _inserted_timestamp DESC)) = 1
