@@ -27,7 +27,7 @@ clean-targets: # directories to be removed by `dbt clean`
 on-run-start:
   - "{{ create_sps() }}"
   - "{{ create_udfs() }}"
-  # - "{{ db_comment() }}"
+  - "{{ db_comment() }}"
   
 
 # Configuring models
