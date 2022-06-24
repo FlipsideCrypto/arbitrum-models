@@ -1,0 +1,140 @@
+{{ config(
+    materialized = 'incremental',
+    unique_key = '_log_id',
+    cluster_by = ['inserted_at::DATE']
+) }}
+
+WITH logs AS (
+
+    SELECT
+        _log_id,
+        block_number,
+        block_timestamp,
+        tx_hash,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
+        contract_address,
+        event_name,
+        event_index,
+        event_inputs,
+        topics,
+        DATA,
+        inserted_at :: TIMESTAMP AS inserted_at
+    FROM
+        {{ ref('silver__logs') }}
+    WHERE
+        tx_status = 'SUCCESS'
+
+{% if is_incremental() %}
+AND inserted_at >= (
+    SELECT
+        MAX(
+            inserted_at
+        )
+    FROM
+        {{ this }}
+)
+{% endif %}
+),
+transfers AS (
+    SELECT
+        _log_id,
+        block_number,
+        tx_hash,
+        block_timestamp,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
+        contract_address :: STRING AS contract_address,
+        event_inputs :from :: STRING AS from_address,
+        event_inputs :to :: STRING AS to_address,
+        event_inputs :value :: FLOAT AS raw_amount,
+        event_index,
+        inserted_at
+    FROM
+        logs
+    WHERE
+        event_name = 'Transfer'
+        AND raw_amount IS NOT NULL
+),
+find_missing_events AS (
+    SELECT
+        _log_id,
+        block_number,
+        tx_hash,
+        block_timestamp,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
+        contract_address :: STRING AS contract_address,
+        CONCAT('0x', SUBSTR(topics [1], 27, 40)) :: STRING AS from_address,
+        CONCAT('0x', SUBSTR(topics [2], 27, 40)) :: STRING AS to_address,
+        COALESCE(udf_hex_to_int(topics [3] :: STRING), udf_hex_to_int(SUBSTR(DATA, 3, 64))) :: FLOAT AS raw_amount,
+        event_index,
+        inserted_at
+    FROM
+        logs
+    WHERE
+        event_name IS NULL
+        AND contract_address IN (
+            SELECT
+                DISTINCT contract_address
+            FROM
+                {{ this }}
+        )
+        AND topics [0] :: STRING = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
+),
+all_transfers AS (
+    SELECT
+        _log_id,
+        tx_hash,
+        block_number,
+        block_timestamp,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
+        contract_address,
+        from_address,
+        to_address,
+        raw_amount,
+        event_index,
+        inserted_at
+    FROM
+        transfers
+    UNION ALL
+    SELECT
+        _log_id,
+        tx_hash,
+        block_number,
+        block_timestamp,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
+        contract_address,
+        from_address,
+        to_address,
+        raw_amount,
+        event_index,
+        inserted_at
+    FROM
+        find_missing_events
+)
+SELECT
+    _log_id,
+    block_number,
+    tx_hash,
+    origin_function_signature,
+    origin_from_address,
+    origin_to_address,
+    block_timestamp,
+    contract_address,
+    from_address,
+    to_address,
+    raw_amount,
+    inserted_at,
+    event_index
+FROM
+    all_transfers qualify(ROW_NUMBER() over(PARTITION BY _log_id
+ORDER BY
+    inserted_at DESC)) = 1
