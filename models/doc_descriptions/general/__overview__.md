@@ -30,7 +30,9 @@ The documentation included here details the design of the Arbitrum tables and vi
 - [fact_traces](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.core__fact_traces)
 - [fact_transactions](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.core__fact_transactions)
 - [dim_labels](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.core__dim_labels)
-- []
+- [fact_token_transfers](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.core__fact_token_transfers)
+- [ez_eth_transfers](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.core__ez_eth_transfers)
+
 ## **Data Model Overview**
 
 The Arbitrum models are built a few different ways, but the core fact table are built using three layers of sql models: **bronze, silver, and gold (or core).**
