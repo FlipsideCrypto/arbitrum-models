@@ -3,12 +3,12 @@
 ) }}
 
     SELECT
-        pair_address, 
+        lower(pair_address) as pair_address, 
         pair_symbol as pair_name,
         asset_symbol,
-        asset_address,
+        lower(asset_address) as asset_address,
         collateral_symbol,
-        collateral_address,
+        lower(collateral_address) as collateral_address,
         asset_decimal as asset_decimals,
         collateral_decimal as collateral_decimals  
     FROM
