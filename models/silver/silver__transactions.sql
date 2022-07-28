@@ -32,7 +32,7 @@ WITH base_table AS (
                 10,
                 9
             )
-        ) :: FLOAT AS gas_price,
+        ) :: FLOAT AS gas_price_bid,
         udf_hex_to_int(
             tx :gas :: STRING
         ) :: INTEGER AS gas_limit,
@@ -47,11 +47,16 @@ WITH base_table AS (
         udf_hex_to_int(
             tx :receipt :cumulativeGasUsed :: STRING
         ) :: INTEGER AS cumulative_Gas_Used,
-        udf_hex_to_int(
-            tx :receipt :effectiveGasPrice :: STRING
-        ) :: INTEGER AS effective_Gas_Price,
         (
-            gas_price * gas_used
+            udf_hex_to_int(
+                tx :receipt :effectiveGasPrice :: STRING
+            ) / pow(
+                10,
+                9
+            )
+        ) :: FLOAT AS gas_price_paid,
+        (
+            gas_price_paid * gas_used
         ) / pow(
             10,
             9
@@ -92,13 +97,13 @@ SELECT
     to_address,
     eth_value,
     block_hash,
-    gas_price,
+    gas_price_bid,
     gas_limit,
     DATA AS input_data,
     status,
     gas_used,
     cumulative_Gas_Used,
-    effective_Gas_Price,
+    gas_price_paid,
     tx_fee,
     ingested_at,
     tx_json,
