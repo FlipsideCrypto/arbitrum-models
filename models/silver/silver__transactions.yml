@@ -63,7 +63,14 @@ models:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: GAS_PRICE
+      - name: GAS_PRICE_PAID
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER    
+                - FLOAT
+      - name: GAS_PRICE_BID
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
@@ -102,9 +109,6 @@ models:
               column_type_list:
                 - NUMBER    
                 - FLOAT
-      - name: EFFECTIVE_GAS_PRICE
-        tests:
-          - not_null
       - name: TX_JSON 
         tests:
           - not_null

@@ -24,8 +24,10 @@ models:
         description: '{{ doc("arb_value") }}' 
       - name: TX_FEE
         description: '{{ doc("arb_tx_fee") }}' 
-      - name: GAS_PRICE
-        description: '{{ doc("arb_tx_gas_price") }}' 
+      - name: GAS_PRICE_PAID
+        description: '{{ doc("arb_tx_gas_paid") }}' 
+      - name: GAS_PRICE_BID
+        description: '{{ doc("arb_tx_gas_bid") }}' 
       - name: GAS_LIMIT
         description: '{{ doc("arb_tx_gas_limit") }}' 
       - name: GAS_USED
