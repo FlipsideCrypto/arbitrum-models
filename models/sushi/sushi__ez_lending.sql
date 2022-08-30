@@ -103,7 +103,7 @@ AND _inserted_timestamp::DATE >= (
 {% endif %}
 ),
 
-Final as (
+Total as (
 select * from Lending
 union all
 select * from Withdraw
@@ -163,7 +163,7 @@ b.pair_name as lending_pool,
 b.asset_symbol as symbol,
 a._log_id,
 _inserted_timestamp
-from FINAL a
+from Total a
 left join labels b 
 on a.Lending_pool_address = b.pair_address
 )
