@@ -1,4 +1,3 @@
-
 {{ config(
   materialized = 'incremental',
   incremental_strategy = 'delete+insert',
@@ -418,104 +417,118 @@ total AS (
   FROM
     remove_coll_in_separate_txn
 ),
-
- prices AS (
-    select 
-        symbol,
-        date_trunc('hour',recorded_at) as hour, 
-        avg(price) as price 
-    from 
-        {{ source('prices','prices_v2') }} a 
-    join {{ ref('sushi__dim_kashi_pairs') }} b
-    on a.symbol = b.asset_symbol
-    WHERE
-        1 = 1
+prices AS (
+  SELECT
+    symbol,
+    DATE_TRUNC(
+      'hour',
+      recorded_at
+    ) AS HOUR,
+    AVG(price) AS price
+  FROM
+    {{ source(
+      'prices',
+      'prices_v2'
+    ) }} A
+    JOIN {{ ref('sushi__dim_kashi_pairs') }}
+    b
+    ON A.symbol = b.asset_symbol
+  WHERE
+    1 = 1
 
 {% if is_incremental() %}
-AND hour :: DATE IN (
-    SELECT
-        DISTINCT block_timestamp :: DATE
-    FROM
-        borrow
+AND HOUR :: DATE IN (
+  SELECT
+    DISTINCT block_timestamp :: DATE
+  FROM
+    borrow
 )
 {% else %}
-    AND hour :: DATE >= '2021-09-01'
+  AND HOUR :: DATE >= '2021-09-01'
 {% endif %}
-    group by 1,2
+GROUP BY
+  1,
+  2
 ),
-
-
-labels as (
-select *
-from {{ ref('sushi__dim_kashi_pairs') }}
+labels AS (
+  SELECT
+    *
+  FROM
+    {{ ref('sushi__dim_kashi_pairs') }}
 ),
-
-
-Labled_WO_prices as (
-select 
-a.block_timestamp,
-a.block_number,
-a.tx_hash,
-a.action,
-a.origin_from_address,
-a.origin_to_address,
-a.origin_function_signature,
-a.Borrower2 as Borrower,
-a.Borrower_is_a_contract,
-a.lending_pool_address,
-b.pair_name as lending_pool,
-a.asset,
-CASE
-  when action in ('add collateral','Remove collateral') then b.collateral_symbol
-  else b.asset_symbol 
-  end AS symbol,
-CASE
-when b.collateral_decimals is null THEN a.amount
-when b.asset_decimals is null then a.amount
-WHEN b.collateral_decimals is not null and action = 'add collateral' THEN (A.amount/ pow(10, b.collateral_decimals))
-WHEN b.collateral_decimals is not null and action = 'Remove collateral' THEN (A.amount/ pow(10, b.collateral_decimals))
-WHEN b.asset_decimals is not null and action = 'Borrow' then (A.amount/ pow(10, b.asset_decimals))
-WHEN b.asset_decimals is not null and action = 'Repay' then (A.amount/ pow(10, b.asset_decimals))
-END AS amount,
-a._log_id,
-_inserted_timestamp
-from total a
-left join labels b 
-on a.Lending_pool_address = b.pair_address
+labled_wo_prices AS (
+  SELECT
+    A.block_timestamp,
+    A.block_number,
+    A.tx_hash,
+    A.action,
+    A.origin_from_address,
+    A.origin_to_address,
+    A.origin_function_signature,
+    A.borrower2 AS borrower,
+    A.borrower_is_a_contract,
+    A.lending_pool_address,
+    b.pair_name AS lending_pool,
+    A.asset,
+    CASE
+      WHEN action IN (
+        'add collateral',
+        'Remove collateral'
+      ) THEN b.collateral_symbol
+      ELSE b.asset_symbol
+    END AS symbol,
+    CASE
+      WHEN b.collateral_decimals IS NULL THEN A.amount
+      WHEN b.asset_decimals IS NULL THEN A.amount
+      WHEN b.collateral_decimals IS NOT NULL
+      AND action = 'add collateral' THEN (A.amount / pow(10, b.collateral_decimals))
+      WHEN b.collateral_decimals IS NOT NULL
+      AND action = 'Remove collateral' THEN (A.amount / pow(10, b.collateral_decimals))
+      WHEN b.asset_decimals IS NOT NULL
+      AND action = 'Borrow' THEN (A.amount / pow(10, b.asset_decimals))
+      WHEN b.asset_decimals IS NOT NULL
+      AND action = 'Repay' THEN (A.amount / pow(10, b.asset_decimals))
+    END AS amount,
+    A._log_id,
+    _inserted_timestamp
+  FROM
+    total A
+    LEFT JOIN labels b
+    ON A.lending_pool_address = b.pair_address
 )
-
-
-
-select 
-a.block_timestamp,
-a.block_number,
-a.tx_hash,
-a.action,
-a.origin_from_address,
-a.origin_to_address,
-a.origin_function_signature,
-a.Borrower,
-a.Borrower_is_a_contract,
-a.lending_pool_address,
-a.lending_pool,
-a.asset,
-a.symbol,
-a.amount,
+SELECT
+  A.block_timestamp,
+  A.block_number,
+  A.tx_hash,
+  A.action,
+  A.origin_from_address,
+  A.origin_to_address,
+  A.origin_function_signature,
+  A.borrower,
+  A.borrower_is_a_contract,
+  A.lending_pool_address,
+  A.lending_pool,
+  A.asset,
+  A.symbol,
+  A.amount,
   CASE
     WHEN action = 'add collateral' THEN (
-      A.amount * C.price 
+      A.amount * C.price
     )
     WHEN action = 'Remove collateral' THEN (
-      A.amount * C.price 
-      )
-    ELSE (A.amount * C.price)
+      A.amount * C.price
+    )
+    ELSE (
+      A.amount * C.price
+    )
   END AS amount_USD,
-a._log_id,
-_inserted_timestamp
-from Labled_WO_prices a
-LEFT JOIN prices c
-ON a.symbol = c.symbol
-AND DATE_TRUNC(
+  A._log_id,
+  _inserted_timestamp
+FROM
+  labled_wo_prices A
+  LEFT JOIN prices C
+  ON A.symbol = C.symbol
+  AND DATE_TRUNC(
     'hour',
-    a.block_timestamp
-) = c.hour
+    A.block_timestamp
+  ) = C.hour
