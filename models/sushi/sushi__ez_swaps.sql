@@ -19,16 +19,24 @@ WITH swap_events AS (
         event_name,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         TRY_TO_NUMBER(
-            public.udf_hex_to_int(segmented_data[0]::string)::integer
+            PUBLIC.udf_hex_to_int(
+                segmented_data [0] :: STRING
+            ) :: INTEGER
         ) AS amount0In,
         TRY_TO_NUMBER(
-            public.udf_hex_to_int(segmented_data[1]::string)::integer
+            PUBLIC.udf_hex_to_int(
+                segmented_data [1] :: STRING
+            ) :: INTEGER
         ) AS amount1In,
         TRY_TO_NUMBER(
-            public.udf_hex_to_int(segmented_data[2]::string)::integer
+            PUBLIC.udf_hex_to_int(
+                segmented_data [2] :: STRING
+            ) :: INTEGER
         ) AS amount0Out,
         TRY_TO_NUMBER(
-            public.udf_hex_to_int(segmented_data[3]::string)::integer 
+            PUBLIC.udf_hex_to_int(
+                segmented_data [3] :: STRING
+            ) :: INTEGER
         ) AS amount1Out,
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS sender,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS tx_to,
@@ -38,7 +46,7 @@ WITH swap_events AS (
     FROM
         {{ ref('silver__logs') }}
     WHERE
-        topics[0]::string = '0xd78ad95fa46c994b6551d0da85fc275fe613ce37657fb8d5e3d130840159d822'
+        topics [0] :: STRING = '0xd78ad95fa46c994b6551d0da85fc275fe613ce37657fb8d5e3d130840159d822'
         AND tx_status = 'SUCCESS'
         AND contract_address IN (
             SELECT
@@ -238,7 +246,8 @@ SELECT
         WHEN decimals_in IS NOT NULL
         AND amount_in * pIn.price <= 5 * amount_out * pOut.price
         AND amount_out * pOut.price <= 5 * amount_in * pIn.price THEN amount_in * pIn.price
-        WHEN decimals_in IS NOT NULL and decimals_out is null then amount_in * pIn.price
+        WHEN decimals_in IS NOT NULL
+        AND decimals_out IS NULL THEN amount_in * pIn.price
         ELSE NULL
     END AS amount_in_usd,
     amount_out,
@@ -246,7 +255,8 @@ SELECT
         WHEN decimals_out IS NOT NULL
         AND amount_in * pIn.price <= 5 * amount_out * pOut.price
         AND amount_out * pOut.price <= 5 * amount_in * pIn.price THEN amount_out * pOut.price
-        WHEN decimals_out IS NOT NULL and decimals_in is null then amount_out * pOut.price
+        WHEN decimals_out IS NOT NULL
+        AND decimals_in IS NULL THEN amount_out * pOut.price
         ELSE NULL
     END AS amount_out_usd,
     sender,
