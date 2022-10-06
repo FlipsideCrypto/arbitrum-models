@@ -8,10 +8,10 @@ sources:
       - name: arbitrum_blocks
       - name: arbitrum_txs
   - name: crosschain
-    database: crosschain
-    schema: core
+    database: flipside_prod_db
+    schema: crosschain
     tables:
-      - name: address_labels  
+      - name: address_labels   
   - name: ethereum 
     database: ethereum
     schema: core 
