@@ -8,7 +8,7 @@ sources:
       - name: arbitrum_blocks
       - name: arbitrum_txs
   - name: crosschain
-    database: flipside_prod_db
+    database: crosschain
     schema: crosschain
     tables:
       - name: address_labels   
