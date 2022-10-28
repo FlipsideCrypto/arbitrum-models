@@ -6,6 +6,11 @@ models:
           combination_of_columns:
             - _CALL_ID
     columns:
+      - name: TX_HASH
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
       - name: BLOCK_NUMBER
         tests:
           - not_null  
@@ -23,11 +28,6 @@ models:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - TIMESTAMP_NTZ
-      - name: TX_HASH
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
       - name: FROM_ADDRESS
         tests:
           - not_null:
@@ -36,17 +36,31 @@ models:
               regex: 0[xX][0-9a-fA-F]+
       - name: TO_ADDRESS
         tests:
+          - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
               where: TO_ADDRESS IS NOT NULL
-      - name: IDENTIFIER
-        tests:
-          - not_null
       - name: ETH_VALUE
         tests:
           - not_null
       - name: GAS
         tests:
           - not_null
+      - name: TYPE
+        tests:
+          - not_null
+      - name: IDENTIFIER
+        tests:
+          - not_null
+      - name: DATA
+        tests:
+          - not_null
+      - name: TX_STATUS
+        tests:
+          - not_null
+      - name: SUB_TRACES
+        tests:
+          - not_null
+      
 
 
