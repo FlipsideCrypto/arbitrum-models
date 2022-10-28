@@ -148,6 +148,8 @@ AND block_id NOT IN (
 {% endif %}
 ORDER BY
     _inserted_timestamp DESC
+LIMIT
+    500000
 ),
 
 nitro_block_txs AS (
