@@ -167,7 +167,7 @@ nitro_block_txs AS (
             SELECT
                 block_id
             FROM
-                new_blocks
+                nitro_blocks
         ) 
     {% if is_incremental() %}
     AND block_id NOT IN (
@@ -225,13 +225,14 @@ nitro_block_txs AS (
     
     value:from::string as from_address, 
     value:to::string as to_address, 
-    udf_hex_to_int(value:gas) as gas,
-    udf_hex_to_int(value:gasUsed) as gas_used,
+    udf_hex_to_int(value:gas::string) as gas,
+    udf_hex_to_int(value:gasUsed::string) as gas_used,
     value:input::string as input, 
     value:output::string as output,
     value:type::string as type,
     case 
-        when value:type :: string = 'CALL' then udf_hex_to_int(value:value ::string) / 1e18
+        when value:type :: string = 'CALL' 
+            then silver.js_hex_to_int(value:value ::string) / 1e18
         else 0 
         end as eth_value,
     tx_status,
@@ -270,7 +271,8 @@ nitro_block_txs AS (
     this:output::string as output,
     this:type::string as type,
     case 
-        when this:type :: string = 'CALL' then udf_hex_to_int(this:value ::string) / 1e18
+        when this:type :: string = 'CALL' 
+            then silver.js_hex_to_int(this:value ::string) / 1e18
         else 0 
         end as eth_value,
     tx_status,
@@ -296,46 +298,6 @@ nitro_block_txs AS (
         
         order by block_number, block_timestamp, tx_hash, identifier_raw asc
         ),
-    
-    
-    agg_value_data as (
-       select 
-       tx_id,
-       case
-        when path not like 'calls[%' then 'call_origin' 
-        when not path like any 
-        ('%from', '%gas%', '%input', '%output', '%to', '%calls', '%type', '%value') then path
-        else 
-        substr( path, 0,
-       (array_size(split(path, '.')) - 1) * 8 + (array_size(split(path, '.')) - 2)
-      ) 
-        end as groupings,
-        
-        OBJECT_AGG(
-            DISTINCT key,
-            VALUE
-        ) AS aggregated_value
-        
-        FROM 
-        nitro_block_txs txs,
-        TABLE(
-            FLATTEN(
-                input => PARSE_JSON(
-                    txs.tx :traces
-                ),
-                recursive => TRUE
-            )
-        ) f
-
-        where block_timestamp >= '2022-08-30'
-        and block_id > '22207814'
-        and block_id in (select block_id from nitro_blocks) 
-        and f.index IS NULL
-        AND f.key != 'calls'
-        
-        GROUP BY
-        tx_id, groupings
-       ),
        
     arb_nitro_traces as (
     select 
@@ -355,17 +317,15 @@ nitro_block_txs AS (
     concat(tx_hash,'-', identifier) as _call_id,
     ingested_at, 
     _inserted_timestamp, 
-    aggregated_value as data,
+    object_delete(value, 'calls') as data,
     tx_status, 
     sub_traces 
-    from base_grouping_row_final b 
-    left join agg_value_data a on b.tx_hash = a.tx_id and b.groupings = a.groupings
+    from base_grouping_row_final 
     
     qualify (ROW_NUMBER() over (PARTITION BY _call_id
         ORDER BY
             _inserted_timestamp DESC)) = 1
     
-    order by block_number, block_timestamp, tx_hash, identifier_raw asc
 
     )
 
@@ -390,7 +350,7 @@ nitro_block_txs AS (
     _inserted_timestamp 
     from non_nitro_final
 
-    union 
+    union all
 
     select 
     tx_hash, 
