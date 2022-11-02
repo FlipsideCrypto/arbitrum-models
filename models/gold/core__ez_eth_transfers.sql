@@ -12,8 +12,6 @@ WITH eth_base AS (
         to_address,
         eth_value,
         identifier,
-        _call_id,
-        ingested_at,
         input
     FROM
         {{ ref('core__fact_traces') }}
