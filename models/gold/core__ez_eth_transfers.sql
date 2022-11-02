@@ -16,7 +16,7 @@ WITH eth_base AS (
         ingested_at,
         input
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
     WHERE
         TYPE = 'CALL'
         AND eth_value > 0
