@@ -12,11 +12,9 @@ WITH eth_base AS (
         to_address,
         eth_value,
         identifier,
-        _call_id,
-        ingested_at,
         input
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
     WHERE
         TYPE = 'CALL'
         AND eth_value > 0
