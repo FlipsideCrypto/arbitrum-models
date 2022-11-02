@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver__traces
+  - name: silver__traces_nitro
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -49,6 +49,4 @@ models:
       - name: TX_STATUS
         tests:
           - not_null
-      
-
-
+    
