@@ -9,7 +9,7 @@ sources:
       - name: arbitrum_txs
   - name: crosschain
     database: crosschain
-    schema: crosschain
+    schema: silver
     tables:
       - name: address_labels   
   - name: ethereum 
