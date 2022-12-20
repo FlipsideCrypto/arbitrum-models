@@ -1,0 +1,19 @@
+arbitrum:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      account: "{{ env_var('ACCOUNT') }}"
+      # User/password auth
+      user: "{{ env_var('USERNAME') }}"
+      password: "{{ env_var('PASSWORD') }}"
+      role: "{{ env_var('ROLE') }}"
+      schema: "{{ env_var('SCHEMA') }}"
+      region: "{{ env_var('REGION') }}"
+      database: "{{ env_var('DATABASE') }}"
+      warehouse: "{{ env_var('WAREHOUSE') }}"
+      threads: 4
+      client_session_keep_alive: False
+      query_tag: arbitrum_curator
+  config:
+    send_anonymous_usage_stats: False
