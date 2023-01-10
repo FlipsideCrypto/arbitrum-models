@@ -14,5 +14,5 @@ logs/
 .history/
 **/.DS_Store
 .vscode/
-dbt-env/
 .env
+dbt-env/
