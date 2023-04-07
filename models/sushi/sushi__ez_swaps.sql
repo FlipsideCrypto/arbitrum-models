@@ -4,6 +4,7 @@
     "columns": true },
     unique_key = '_log_id',
     cluster_by = ['block_timestamp::DATE'],
+    enabled = false,
     meta={
         'database_tags':{
             'table': {
@@ -171,29 +172,20 @@ eth_prices AS (
         token_address,
         HOUR,
         symbol,
-        AVG(price) AS price
+        price
     FROM
-        {{ source(
-            'ethereum',
-            'fact_hourly_token_prices'
-        ) }}
-    WHERE
-        1 = 1
+        {{ ref('core__fact_hourly_token_prices') }}
 
 {% if is_incremental() %}
-AND HOUR :: DATE IN (
+WHERE HOUR :: DATE IN (
     SELECT
         DISTINCT block_timestamp :: DATE
     FROM
         swap_events
 )
 {% else %}
-    AND HOUR :: DATE >= '2021-09-01'
+    WHERE HOUR :: DATE >= '2021-09-01'
 {% endif %}
-GROUP BY
-    token_address,
-    HOUR,
-    symbol
 ),
 arbitrum_eth_crosstab AS (
     SELECT

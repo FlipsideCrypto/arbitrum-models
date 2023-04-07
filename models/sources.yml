@@ -9,9 +9,10 @@ sources:
       - name: arbitrum_txs
   - name: crosschain
     database: crosschain
-    schema: silver
+    schema: core
     tables:
-      - name: address_labels   
+      - name: address_labels
+      - name: ez_hourly_prices
   - name: ethereum 
     database: ethereum
     schema: core 
@@ -43,3 +44,4 @@ sources:
     schema: silver
     tables:
       - name: apis_keys
+      - name: address_labels
