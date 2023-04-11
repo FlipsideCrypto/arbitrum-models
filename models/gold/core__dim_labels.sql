@@ -14,7 +14,7 @@ SELECT
     project_name
 FROM
     {{ source(
-        'crosschain',
+        'crosschain_silver',
         'address_labels'
     ) }}
 WHERE
