@@ -18,12 +18,12 @@ FROM
     {{ ref('silver__traces' )}}
 WHERE 
     -- curve contract deployers
-    {# from_address IN (
+    from_address IN (
         '0x7eeac6cddbd1d0b8af061742d41877d7f707289a',
         '0x745748bcfd8f9c2de519a71d789be8a63dd7d66c',
         '0xbabe61887f1de2713c6f97e567623453d3c79f67',
         '0xb17b674d9c5cb2e441f8e196a2f048a81355d031'
-        ) #}
+        )
     AND TYPE ilike 'create%'
     AND TX_STATUS ilike 'success'
 {% if is_incremental() %}
