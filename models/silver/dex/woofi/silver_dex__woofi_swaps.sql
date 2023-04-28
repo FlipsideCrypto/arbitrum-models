@@ -56,7 +56,13 @@ WITH router_swaps_base AS (
         {{ ref('silver__logs') }}
         l
     WHERE
-        contract_address = LOWER('0x9aEd3A8896A85FE9a8CAc52C9B402D092B629a30') --v2
+        contract_address = IN (
+            '0xcdfd61a8303beb5c8dd2a6d02df8d228ce15b9f3',
+            '0x9aed3a8896a85fe9a8cac52c9b402d092b629a30',
+            '0xd2635bc7e4e4f63b2892ed80d0b0f9dff7eda899',
+            --v2
+            '0xb130a49065178465931d4f887056328cea5d723f'
+        ) --v3
         AND topics [0] :: STRING = '0x27c98e911efdd224f4002f6cd831c3ad0d2759ee176f9ee8466d95826af22a1c' --WooRouterSwap
 
 {% if is_incremental() %}
@@ -68,7 +74,7 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 ),
-{# swaps_base AS (
+swaps_base AS (
     SELECT
         l.block_number,
         l.block_timestamp,
@@ -115,9 +121,13 @@ AND _inserted_timestamp >= (
         l
     WHERE
         contract_address IN (
-            '0xf8ce0d043891b62c55380fb1efbfb4f186153d96',
-            '0x1df3009c57a8b143c6246149f00b090bce3b8f88',
-            '0x3b3e4b4741e91af52d0e9ad8660573e951c88524'
+            '0x39d361e66798155813b907a70d6c2e3fdafb0877',
+            '0xc04362cf21e6285e295240e30c056511df224cf4',
+            '0x86b1742a1d7c963d3e8985829d722725316abf0a',
+            '0xeff23b4be1091b53205e35f3afcd9c7182bf3062',
+            '0xb89a33227876aef02a7ebd594af9973aece2f521',
+            '0x8693f9701d6db361fe9cc15bc455ef4366e39ae0',
+            '0x1f79f8a65e02f8a137ce7f79c038cc44332df448'
         )
         AND topics [0] :: STRING IN (
             '0x74ef34e2ea7c5d9f7b7ed44e97ad44b4303416c3a660c3fb5b3bdb95a1d6abd3',
@@ -128,7 +138,7 @@ AND _inserted_timestamp >= (
                 tx_hash
             FROM
                 router_swaps_base
-        ) #}
+        )
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -149,11 +159,11 @@ SELECT
     event_index,
     contract_address,
     CASE
-        WHEN from_token = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7'
+        WHEN from_token = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'
         ELSE from_token
     END AS token_in,
     CASE
-        WHEN to_token = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7'
+        WHEN to_token = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'
         ELSE to_token
     END AS token_out,
     to_address AS tx_to,
@@ -179,11 +189,11 @@ SELECT
     event_index,
     contract_address,
     CASE
-        WHEN from_token = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7'
+        WHEN from_token = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'
         ELSE from_token
     END AS token_in,
     CASE
-        WHEN to_token = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7'
+        WHEN to_token = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'
         ELSE to_token
     END AS token_out,
     to_address AS tx_to,

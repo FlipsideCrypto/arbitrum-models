@@ -57,13 +57,9 @@ WITH swaps_base AS (
         l
     WHERE
         contract_address IN (
-            '0xabbc5f99639c9b6bcb58544ddf04efa6802f4064',
-            {# '0x9ab2de34a33fb459b538c43f251eb825645e8595' #}
+            '0xabbc5f99639c9b6bcb58544ddf04efa6802f4064'
         )
-        AND topics [0] :: STRING IN (
-            '0xcd3829a3813dc3cdd188fd3d01dcf3268c16be2fdd2dd21d0665418816e46062',
-            '0x0874b2d545cb271cdbda4e093020c452328b24af12382ed62c4d00f5c26709db'
-        ) --Swap
+        AND topics [0] :: STRING = '0xcd3829a3813dc3cdd188fd3d01dcf3268c16be2fdd2dd21d0665418816e46062' --Swap
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

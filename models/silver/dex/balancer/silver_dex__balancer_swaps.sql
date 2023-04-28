@@ -4,13 +4,10 @@
     cluster_by = ['block_timestamp::DATE']
 ) }}
 
-WITH pool_name AS (
+WITH pools AS (
 
     SELECT
-        CASE
-            WHEN pool_name IS NULL THEN pool_symbol
-            ELSE pool_name
-        END AS pool_name,
+        CONCAT(pool_name,' (',pool_symbol,')') AS pool_name,
         pool_address
     FROM
         {{ ref('silver_dex__balancer_pools') }}
@@ -72,7 +69,6 @@ SELECT
     origin_function_signature,
     origin_from_address,
     origin_to_address,
-    contract_address,
     event_index,
     amount_in_unadj,
     amount_out_unadj,
@@ -81,7 +77,7 @@ SELECT
     sender,
     tx_to,
     pool_id,
-    s.pool_address,
+    s.pool_address AS contract_address,
     pool_name,
     event_name,
     platform,
@@ -89,7 +85,7 @@ SELECT
     _inserted_timestamp
 FROM
     swaps_base s
-    LEFT JOIN pool_name pn
-    ON pn.pool_address = s.pool_address
+    LEFT JOIN pools p
+    ON p.pool_address = s.pool_address
 WHERE
     pool_name IS NOT NULL
