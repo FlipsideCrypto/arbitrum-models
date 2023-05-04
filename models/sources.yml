@@ -45,3 +45,5 @@ sources:
     tables:
       - name: apis_keys
       - name: address_labels
+      - name: token_prices_priority_hourly
+      - name: asset_metadata_priority
