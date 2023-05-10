@@ -157,10 +157,7 @@ balancer_swaps AS (
     origin_to_address,
     contract_address,
     pool_name,
-    CASE
-      WHEN event_name IS NULL THEN 'Swap'
-      ELSE event_name
-    END AS event_name,
+    event_name,
     c1.decimals AS decimals_in,
     c1.symbol AS symbol_in,
     amount_in_unadj,
@@ -1194,8 +1191,8 @@ all_dex_standard AS (
     platform,
     token_in,
     token_out,
-    symbol_in,
-    symbol_out,
+    token_symbol_in AS symbol_in,
+    token_symbol_out AS symbol_out,
     decimals_in,
     decimals_out,
     _log_id,

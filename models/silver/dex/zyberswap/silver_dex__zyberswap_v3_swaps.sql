@@ -11,7 +11,7 @@ WITH pools AS (
         token0,
         token1
     FROM
-        {{ ref('silver_dex__sushi_pools') }}
+        {{ ref('silver_dex__zyberswap_pools') }}
 ),
 swaps_base AS (
     SELECT
@@ -69,7 +69,7 @@ swaps_base AS (
         _log_id,
         _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('silver__logs') }} l
         INNER JOIN pools p
         ON p.pool_address = contract_address
     WHERE
@@ -98,9 +98,9 @@ SELECT
     reipient_address AS tx_to,
     amount0,
     amount1,
-    price,
+    sqrtP,
     liquidity,
-    tick,
+    currentTick,
     amountIn AS amount_in_unadj,
     amountOut AS amount_out_unadj,
     token_in,

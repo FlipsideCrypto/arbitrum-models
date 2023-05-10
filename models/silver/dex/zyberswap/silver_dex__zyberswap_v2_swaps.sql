@@ -11,7 +11,7 @@ WITH pools AS (
         token0,
         token1
     FROM
-        {{ ref('silver_dex__sushi_pools') }}
+        {{ ref('silver_dex__zyberswap_pools') }}
 ),
 swaps_base AS (
     SELECT

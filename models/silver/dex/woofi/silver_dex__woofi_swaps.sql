@@ -56,7 +56,7 @@ WITH router_swaps_base AS (
         {{ ref('silver__logs') }}
         l
     WHERE
-        contract_address = IN (
+        contract_address IN (
             '0xcdfd61a8303beb5c8dd2a6d02df8d228ce15b9f3',
             '0x9aed3a8896a85fe9a8cac52c9b402d092b629a30',
             '0xd2635bc7e4e4f63b2892ed80d0b0f9dff7eda899',

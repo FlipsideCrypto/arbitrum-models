@@ -7,7 +7,7 @@
 WITH pools AS (
 
     SELECT
-        CONCAT(pool_name,' (',pool_symbol,')') AS pool_name,
+        pool_name,
         pool_address
     FROM
         {{ ref('silver_dex__balancer_pools') }}
