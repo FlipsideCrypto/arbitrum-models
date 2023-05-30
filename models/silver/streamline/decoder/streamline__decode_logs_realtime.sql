@@ -44,5 +44,17 @@ WHERE
         )
     )
     AND l.block_number IS NOT NULL
-LIMIT
-    10000000
+    AND l.block_timestamp >= DATEADD('day', -2, CURRENT_DATE())
+    AND _log_id NOT IN (
+        SELECT
+            _log_id
+        FROM
+            {{ ref("streamline__complete_decode_logs") }}
+        WHERE
+            block_number >= (
+                SELECT
+                    block_number
+                FROM
+                    look_back
+            )
+            AND _inserted_timestamp >= DATEADD('day', -2, CURRENT_DATE()))
