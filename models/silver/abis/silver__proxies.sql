@@ -7,10 +7,9 @@ WITH base AS (
     SELECT
         from_address,
         to_address,
-        MIN(block_number) AS start_block,
-        MAX(_inserted_timestamp) AS _inserted_timestamp
+        MIN(block_number) AS start_block
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
     WHERE
         TYPE = 'DELEGATECALL' -- AND trace_status = 'SUCCESS'
         AND tx_status = 'SUCCESS'
@@ -27,7 +26,6 @@ SELECT
         from_address,
         '-',
         to_address
-    ) AS _id,
-    _inserted_timestamp
+    ) AS _id
 FROM
     base
