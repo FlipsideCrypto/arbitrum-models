@@ -1,7 +1,7 @@
 {{ config (
     materialized = "view",
     post_hook = if_data_call_function(
-        func = "{{this.schema}}.udf_bulk_get_traces(object_construct('sql_source', '{{this.identifier}}', 'external_table', 'debug_traceBlockByNumber', 'sql_limit', {{var('sql_limit','500')}}, 'producer_batch_size', {{var('producer_batch_size','500')}}, 'worker_batch_size', {{var('worker_batch_size','500')}}, 'batch_call_limit', {{var('batch_call_limit','1')}}))",
+        func = "{{this.schema}}.udf_bulk_get_traces(object_construct('sql_source', '{{this.identifier}}', 'external_table', 'debug_traceBlockByNumber', 'sql_limit', {{var('sql_limit','150000')}}, 'producer_batch_size', {{var('producer_batch_size','150000')}}, 'worker_batch_size', {{var('worker_batch_size','150000')}}, 'batch_call_limit', {{var('batch_call_limit','1')}}))",
         target = "{{this.schema}}.{{this.identifier}}"
     )
 ) }}
@@ -15,7 +15,8 @@
             FROM
                 {{ ref("streamline__blocks") }}
             WHERE
-                block_number BETWEEN {{ item * 1000000 + 1 }}
+                block_number > 89000000 --22207817
+                AND block_number BETWEEN {{ item * 1000000 + 1 }}
                 AND {{(
                     item + 1
                 ) * 1000000 }}
@@ -25,7 +26,8 @@
             FROM
                 {{ ref("streamline__complete_debug_traceBlockByNumber") }}
             WHERE
-                block_number BETWEEN {{ item * 1000000 + 1 }}
+                block_number > 89000000 --22207817
+                AND block_number BETWEEN {{ item * 1000000 + 1 }}
                 AND {{(
                     item + 1
                 ) * 1000000 }}
