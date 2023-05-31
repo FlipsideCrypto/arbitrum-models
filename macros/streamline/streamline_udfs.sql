@@ -1,7 +1,7 @@
 {% macro create_udf_get_chainhead() %}
     CREATE
     OR REPLACE EXTERNAL FUNCTION streamline.udf_get_chainhead() returns variant api_integration = aws_arbitrum_api AS {% if target.name == "prod" %}
-        'https://XXX.execute-api.us-east-1.amazonaws.com/prod/get_chainhead'
+        'https://sby17ramp4.execute-api.us-east-1.amazonaws.com/prod/get_chainhead'
     {% else %}
         'https://lz7pjsdoa4.execute-api.us-east-1.amazonaws.com/dev/get_chainhead'
     {%- endif %};
@@ -12,7 +12,7 @@
     OR REPLACE EXTERNAL FUNCTION streamline.udf_bulk_json_rpc(
         json variant
     ) returns text api_integration = aws_arbitrum_api AS {% if target.name == "prod" %}
-        'https://XXX.execute-api.us-east-1.amazonaws.com/prod/udf_bulk_json_rpc'
+        'https://sby17ramp4.execute-api.us-east-1.amazonaws.com/prod/udf_bulk_json_rpc'
     {% else %}
         'https://lz7pjsdoa4.execute-api.us-east-1.amazonaws.com/dev/udf_bulk_json_rpc'
     {%- endif %};
@@ -23,7 +23,7 @@
     OR REPLACE EXTERNAL FUNCTION streamline.udf_bulk_get_traces(
         json variant
     ) returns text api_integration = aws_arbitrum_api AS {% if target.name == "prod" %}
-        'https://XXX.execute-api.us-east-1.amazonaws.com/prod/udf_bulk_get_traces'
+        'https://sby17ramp4.execute-api.us-east-1.amazonaws.com/prod/udf_bulk_get_traces'
     {% else %}
         'https://lz7pjsdoa4.execute-api.us-east-1.amazonaws.com/dev/udf_bulk_get_traces'
     {%- endif %};
@@ -35,7 +35,7 @@
         abi ARRAY,
         DATA STRING
     ) returns ARRAY api_integration = aws_arbitrum_api AS {% if target.name == "prod" %}
-        'https://XXX.execute-api.us-east-1.amazonaws.com/prod/decode_function'
+        'https://sby17ramp4.execute-api.us-east-1.amazonaws.com/prod/decode_function'
     {% else %}
         'https://lz7pjsdoa4.execute-api.us-east-1.amazonaws.com/dev/decode_function'
     {%- endif %};
@@ -47,7 +47,7 @@
         abi ARRAY,
         DATA OBJECT
     ) returns ARRAY api_integration = aws_arbitrum_api AS {% if target.name == "prod" %}
-        'https://XXX.execute-api.us-east-1.amazonaws.com/prod/decode_log'
+        'https://sby17ramp4.execute-api.us-east-1.amazonaws.com/prod/decode_log'
     {% else %}
         'https://lz7pjsdoa4.execute-api.us-east-1.amazonaws.com/dev/decode_log'
     {%- endif %};
@@ -58,7 +58,7 @@
     OR REPLACE EXTERNAL FUNCTION streamline.udf_bulk_decode_logs(
         json OBJECT
     ) returns ARRAY api_integration = aws_arbitrum_api AS {% if target.name == "prod" %}
-        'https://XXX.execute-api.us-east-1.amazonaws.com/prod/bulk_decode_logs'
+        'https://sby17ramp4.execute-api.us-east-1.amazonaws.com/prod/bulk_decode_logs'
     {% else %}
         'https://lz7pjsdoa4.execute-api.us-east-1.amazonaws.com/dev/bulk_decode_logs'
     {%- endif %};

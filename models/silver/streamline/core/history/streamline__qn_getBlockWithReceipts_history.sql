@@ -12,11 +12,15 @@ WITH blocks AS (
         block_number
     FROM
         {{ ref("streamline__blocks") }}
+    WHERE
+        block_number > 89000000 --22207817
     EXCEPT
     SELECT
         block_number
     FROM
         {{ ref("streamline__complete_qn_getBlockWithReceipts") }}
+    WHERE
+        block_number > 89000000 --22207817
 )
 SELECT
     PARSE_JSON(
