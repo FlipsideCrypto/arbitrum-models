@@ -6,60 +6,46 @@
     )
 ) }}
 
-{% for item in range(91) %}
-    (
-        WITH blocks AS (
+WITH blocks AS (
 
-            SELECT
-                block_number
-            FROM
-                {{ ref("streamline__blocks") }}
-            WHERE
-                block_number > 89000000 --22207817
-                AND block_number BETWEEN {{ item * 1000000 + 1 }}
-                AND {{(
-                    item + 1
-                ) * 1000000 }}
-            EXCEPT
-            SELECT
-                block_number
-            FROM
-                {{ ref("streamline__complete_debug_traceBlockByNumber") }}
-            WHERE
-                block_number > 89000000 --22207817
-                AND block_number BETWEEN {{ item * 1000000 + 1 }}
-                AND {{(
-                    item + 1
-                ) * 1000000 }}
+    SELECT
+        block_number
+    FROM
+        {{ ref("streamline__blocks") }}
+    WHERE
+        block_number > 22207817
+    EXCEPT
+    SELECT
+        block_number
+    FROM
+        {{ ref("streamline__complete_debug_traceBlockByNumber") }}
+    WHERE
+        block_number > 22207817
+)
+SELECT
+    PARSE_JSON(
+        CONCAT(
+            '{"jsonrpc": "2.0",',
+            '"method": "debug_traceBlockByNumber", "params":["',
+            REPLACE(
+                concat_ws(
+                    '',
+                    '0x',
+                    to_char(
+                        block_number :: INTEGER,
+                        'XXXXXXXX'
+                    )
+                ),
+                ' ',
+                ''
+            ),
+            '",{"tracer": "callTracer"}',
+            '],"id":"',
+            block_number :: STRING,
+            '"}'
         )
-        SELECT
-            PARSE_JSON(
-                CONCAT(
-                    '{"jsonrpc": "2.0",',
-                    '"method": "debug_traceBlockByNumber", "params":["',
-                    REPLACE(
-                        concat_ws(
-                            '',
-                            '0x',
-                            to_char(
-                                block_number :: INTEGER,
-                                'XXXXXXXX'
-                            )
-                        ),
-                        ' ',
-                        ''
-                    ),
-                    '",{"tracer": "callTracer"}',
-                    '],"id":"',
-                    block_number :: STRING,
-                    '"}'
-                )
-            ) AS request
-        FROM
-            blocks
-        ORDER BY
-            block_number ASC
-    ) {% if not loop.last %}
-    UNION ALL
-    {% endif %}
-{% endfor %}
+    ) AS request
+FROM
+    blocks
+ORDER BY
+    block_number ASC
