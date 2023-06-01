@@ -13,14 +13,14 @@ WITH blocks AS (
     FROM
         {{ ref("streamline__blocks") }}
     WHERE
-        block_number > 89000000 --22207817
+        block_number > 22207817
     EXCEPT
     SELECT
         block_number
     FROM
         {{ ref("streamline__complete_debug_traceBlockByNumber") }}
     WHERE
-        block_number > 89000000 --22207817
+        block_number > 22207817
 )
 SELECT
     PARSE_JSON(
