@@ -25,12 +25,16 @@ There is more information on how to use dbt docs in the last section of this doc
 **Fact Tables:**
 - [fact_blocks](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.core__fact_blocks)
 - [fact_event_logs](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.core__fact_event_logs)
+- [fact_decoded_event_logs](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.core__fact_decoded_event_logs)
+- [fact_hourly_token_prices](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.core__fact_hourly_token_prices)
 - [fact_token_transfers](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.core__fact_token_transfers)
 - [fact_traces](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.core__fact_traces)
 - [fact_transactions](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.core__fact_transactions)
 
 **Convenience Tables:**
 - [ez_eth_transfers](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.core__ez_eth_transfers)
+- [ez_token_transfers](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.core__ez_token_transfers)
+- [ez_decoded_event_logs](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.core__ez_decoded_event_logs)
 
 ## **Helpful User-Defined Functions (UDFs)**
 
