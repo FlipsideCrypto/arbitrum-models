@@ -10,7 +10,7 @@ $$
                     seq4()
             ) as id
         from
-            table(generator(rowcount => 1000000000))
+            table(generator(rowcount => 500000000))
     )
 select
     id as height
