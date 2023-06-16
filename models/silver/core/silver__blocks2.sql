@@ -8,43 +8,47 @@
 
 SELECT
     block_number,
-    PUBLIC.udf_hex_to_int(
-        DATA :result :difficulty :: STRING
+    utils.udf_hex_to_int(
+        DATA :baseFeePerGas :: STRING
+    ) :: INT AS base_fee_per_gas,
+    utils.udf_hex_to_int(
+        DATA :difficulty :: STRING
     ) :: INT AS difficulty,
-    DATA :result :extraData :: STRING AS extra_data,
-    PUBLIC.udf_hex_to_int(
-        DATA :result :gasLimit :: STRING
+    DATA :extraData :: STRING AS extra_data,
+    utils.udf_hex_to_int(
+        DATA :gasLimit :: STRING
     ) :: INT AS gas_limit,
-    PUBLIC.udf_hex_to_int(
-        DATA :result :gasUsed :: STRING
+    utils.udf_hex_to_int(
+        DATA :gasUsed :: STRING
     ) :: INT AS gas_used,
-    DATA :result :hash :: STRING AS HASH,
-    DATA :result :logsBloom :: STRING AS logs_bloom,
-    DATA :result :miner :: STRING AS miner,
-    PUBLIC.udf_hex_to_int(
-        DATA :result :nonce :: STRING
+    DATA :hash :: STRING AS HASH,
+    utils.udf_hex_to_int(
+        DATA :l1BlockNumber :: STRING
+    ) :: INT AS l1BlockNumber,
+    DATA :logsBloom :: STRING AS logs_bloom,
+    DATA :miner :: STRING AS miner,
+    DATA :mixHash :: STRING AS mixHash,
+    utils.udf_hex_to_int(
+        DATA :nonce :: STRING
     ) :: INT AS nonce,
-    PUBLIC.udf_hex_to_int(
-        DATA :result :number :: STRING
+    utils.udf_hex_to_int(
+        DATA :number :: STRING
     ) :: INT AS NUMBER,
-    DATA :result :parentHash :: STRING AS parent_hash,
-    DATA :result :receiptsRoot :: STRING AS receipts_root,
-    DATA :result :sha3Uncles :: STRING AS sha3_uncles,
-    PUBLIC.udf_hex_to_int(
-        DATA :result :size :: STRING
+    DATA :parentHash :: STRING AS parent_hash,
+    DATA :receiptsRoot :: STRING AS receipts_root,
+    DATA :sha3Uncles :: STRING AS sha3_uncles,
+    utils.udf_hex_to_int(
+        DATA :size :: STRING
     ) :: INT AS SIZE,
-    DATA :result :stateRoot :: STRING AS state_root,
-    PUBLIC.udf_hex_to_int(
-        DATA :result :timestamp :: STRING
+    DATA :stateRoot :: STRING AS state_root,
+    utils.udf_hex_to_int(
+        DATA :timestamp :: STRING
     ) :: TIMESTAMP AS block_timestamp,
-    PUBLIC.udf_hex_to_int(
-        DATA :result :totalDifficulty :: STRING
+    utils.udf_hex_to_int(
+        DATA :totalDifficulty :: STRING
     ) :: INT AS total_difficulty,
-    ARRAY_SIZE(
-        DATA :result :transactions
-    ) AS tx_count,
-    DATA :result :transactionsRoot :: STRING AS transactions_root,
-    DATA :result :uncles AS uncles,
+    DATA :transactionsRoot :: STRING AS transactions_root,
+    DATA :uncles AS uncles,
     _inserted_timestamp
 FROM
 

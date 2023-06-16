@@ -5,7 +5,6 @@
     unique_key = "block_number",
     cluster_by = "block_timestamp::date, _inserted_timestamp::date",
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
-    tags = ['core'],
     full_refresh = false
 ) }}
 
@@ -40,6 +39,9 @@ base_tx AS (
         PUBLIC.udf_hex_to_int(
             A.data :blockNumber :: STRING
         ) :: INT AS blockNumber,
+        PUBLIC.udf_hex_to_int(
+            A.data :chainId :: STRING
+        ) :: INT AS chain_id,
         A.data :from :: STRING AS from_address,
         PUBLIC.udf_hex_to_int(
             A.data :gas :: STRING
@@ -57,6 +59,18 @@ base_tx AS (
             1,
             10
         ) AS origin_function_signature,
+        PUBLIC.udf_hex_to_int(
+            A.data :maxFeePerGas :: STRING
+        ) :: INT / pow(
+            10,
+            9
+        ) AS max_fee_per_gas,
+        PUBLIC.udf_hex_to_int(
+            A.data :maxPriorityFeePerGas :: STRING
+        ) :: INT / pow(
+            10,
+            9
+        ) AS max_priority_fee_per_gas,
         PUBLIC.udf_hex_to_int(
             A.data :nonce :: STRING
         ) :: INT AS nonce,
@@ -86,12 +100,15 @@ new_records AS (
     SELECT
         t.block_number,
         t.block_hash,
+        t.chain_id,
         t.from_address,
         t.gas,
         t.gas_price,
         t.tx_hash,
         t.input_data,
         t.origin_function_signature,
+        t.max_fee_per_gas,
+        t.max_priority_fee_per_gas,
         t.nonce,
         t.r,
         t.s,
@@ -137,6 +154,7 @@ AND r._INSERTED_TIMESTAMP >= (
         {{ this }}
 )
 {% endif %}
+
 )
 
 {% if is_incremental() %},
@@ -144,12 +162,15 @@ missing_data AS (
     SELECT
         t.block_number,
         t.block_hash,
+        t.chain_id,
         t.from_address,
         t.gas,
         t.gas_price,
         t.tx_hash,
         t.input_data,
         t.origin_function_signature,
+        t.max_fee_per_gas,
+        t.max_priority_fee_per_gas,
         t.nonce,
         t.r,
         t.s,
@@ -195,12 +216,15 @@ FINAL AS (
     SELECT
         block_number,
         block_hash,
+        chain_id,
         from_address,
         gas,
         gas_price,
         tx_hash,
         input_data,
         origin_function_signature,
+        max_fee_per_gas,
+        max_priority_fee_per_gas,
         nonce,
         r,
         s,
@@ -227,12 +251,15 @@ UNION
 SELECT
     block_number,
     block_hash,
+    chain_id,
     from_address,
     gas,
     gas_price,
     tx_hash,
     input_data,
     origin_function_signature,
+    max_fee_per_gas,
+    max_priority_fee_per_gas,
     nonce,
     r,
     s,

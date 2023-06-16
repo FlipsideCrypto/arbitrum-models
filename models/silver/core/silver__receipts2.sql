@@ -5,7 +5,6 @@
     unique_key = "block_number",
     cluster_by = "ROUND(block_number, -3)",
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(tx_hash)",
-    tags = ['core'],
     full_refresh = false
 ) }}
 
@@ -37,25 +36,32 @@ FINAL AS (
     SELECT
         block_number,
         DATA :blockHash :: STRING AS block_hash,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             DATA :blockNumber :: STRING
         ) :: INT AS blockNumber,
-        PUBLIC.udf_hex_to_int(
+        DATA :contractAddress :: STRING AS contractAddress,
+        utils.udf_hex_to_int(
             DATA :cumulativeGasUsed :: STRING
         ) :: INT AS cumulative_gas_used,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             DATA :effectiveGasPrice :: STRING
         ) :: INT / pow(
             10,
             9
         ) AS effective_gas_price,
         DATA :from :: STRING AS from_address,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             DATA :gasUsed :: STRING
         ) :: INT AS gas_used,
+        utils.udf_hex_to_int(
+            DATA :gasUsedForL1 :: STRING
+        ) :: INT AS gas_used_for_l1,
+        utils.udf_hex_to_int(
+            DATA :l1BlockNumber :: STRING
+        ) :: INT AS l1BlockNumber,
         DATA :logs AS logs,
         DATA :logsBloom :: STRING AS logs_bloom,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             DATA :status :: STRING
         ) :: INT AS status,
         CASE
@@ -72,10 +78,10 @@ FINAL AS (
             ELSE to_address1
         END AS to_address,
         DATA :transactionHash :: STRING AS tx_hash,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             DATA :transactionIndex :: STRING
         ) :: INT AS POSITION,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             DATA :type :: STRING
         ) :: INT AS TYPE,
         _inserted_timestamp

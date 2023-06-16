@@ -5,7 +5,6 @@
     unique_key = "block_number",
     cluster_by = "block_timestamp::date, _inserted_timestamp::date",
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
-    tags = ['core'],
     full_refresh = false
 ) }}
 
@@ -102,7 +101,7 @@ flattened_traces AS (
                 18
             )
             ELSE 0
-        END AS bnb_value,
+        END AS avax_value,
         CASE
             WHEN id = '__' THEN CONCAT(
                 DATA :type :: STRING,
@@ -167,7 +166,7 @@ flattened_traces AS (
                 flattened_traces.error_reason AS error_reason,
                 flattened_traces.from_address AS from_address,
                 flattened_traces.to_address AS to_address,
-                flattened_traces.bnb_value :: FLOAT AS bnb_value,
+                flattened_traces.avax_value :: FLOAT AS avax_value,
                 flattened_traces.gas :: FLOAT AS gas,
                 flattened_traces.gas_used :: FLOAT AS gas_used,
                 flattened_traces.input AS input,
@@ -181,9 +180,7 @@ flattened_traces AS (
                     PARTITION BY flattened_traces.block_number,
                     flattened_traces.tx_position
                     ORDER BY
-                        flattened_traces.gas :: FLOAT DESC,
-                        flattened_traces.bnb_value :: FLOAT ASC,
-                        flattened_traces.to_address
+                        flattened_traces.gas :: FLOAT DESC
                 ) AS trace_index,
                 flattened_traces._inserted_timestamp AS _inserted_timestamp
             FROM
@@ -201,7 +198,7 @@ flattened_traces AS (
                 error_reason,
                 from_address,
                 to_address,
-                bnb_value,
+                avax_value,
                 gas,
                 gas_used,
                 input,
@@ -227,7 +224,7 @@ flattened_traces AS (
                 f.trace_index,
                 f.from_address,
                 f.to_address,
-                f.bnb_value,
+                f.avax_value,
                 f.gas,
                 f.gas_used,
                 f.input,
@@ -277,7 +274,7 @@ missing_data AS (
         t.trace_index,
         t.from_address,
         t.to_address,
-        t.bnb_value,
+        t.avax_value,
         t.gas,
         t.gas_used,
         t.input,
@@ -315,7 +312,7 @@ FINAL AS (
         trace_index,
         from_address,
         to_address,
-        bnb_value,
+        avax_value,
         gas,
         gas_used,
         input,
@@ -343,7 +340,7 @@ SELECT
     trace_index,
     from_address,
     to_address,
-    bnb_value,
+    avax_value,
     gas,
     gas_used,
     input,
