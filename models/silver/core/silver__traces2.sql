@@ -82,10 +82,10 @@ base_table AS (
 flattened_traces AS (
     SELECT
         DATA :from :: STRING AS from_address,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             DATA :gas :: STRING
         ) AS gas,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             DATA :gasUsed :: STRING
         ) AS gas_used,
         DATA :input :: STRING AS input,
@@ -94,14 +94,16 @@ flattened_traces AS (
         DATA :to :: STRING AS to_address,
         DATA :type :: STRING AS TYPE,
         CASE
-            WHEN DATA :type :: STRING = 'CALL' THEN PUBLIC.udf_hex_to_int(
+            WHEN DATA :type :: STRING = 'CALL' THEN utils.udf_hex_to_int(
                 DATA :value :: STRING
             ) / pow(
                 10,
                 18
             )
             ELSE 0
-        END AS avax_value,
+        END AS eth_value,
+        DATA :afterEVMTransfers AS after_evm_transfers,
+        DATA :beforeEVMTransfers AS before_evm_transfers,
         CASE
             WHEN id = '__' THEN CONCAT(
                 DATA :type :: STRING,
@@ -166,7 +168,7 @@ flattened_traces AS (
                 flattened_traces.error_reason AS error_reason,
                 flattened_traces.from_address AS from_address,
                 flattened_traces.to_address AS to_address,
-                flattened_traces.avax_value :: FLOAT AS avax_value,
+                flattened_traces.eth_value :: FLOAT AS eth_value,
                 flattened_traces.gas :: FLOAT AS gas,
                 flattened_traces.gas_used :: FLOAT AS gas_used,
                 flattened_traces.input AS input,
@@ -174,6 +176,8 @@ flattened_traces AS (
                 flattened_traces.type AS TYPE,
                 flattened_traces.identifier AS identifier,
                 flattened_traces._call_id AS _call_id,
+                flattened_traces.after_evm_transfers,
+                flattened_traces.before_evm_transfers,
                 flattened_traces.data AS DATA,
                 group_sub_traces.sub_traces AS sub_traces,
                 ROW_NUMBER() over(
@@ -198,7 +202,7 @@ flattened_traces AS (
                 error_reason,
                 from_address,
                 to_address,
-                avax_value,
+                eth_value,
                 gas,
                 gas_used,
                 input,
@@ -208,7 +212,9 @@ flattened_traces AS (
                 _call_id,
                 _inserted_timestamp,
                 DATA,
-                sub_traces
+                sub_traces,
+                after_evm_transfers,
+                before_evm_transfers
             FROM
                 add_sub_traces
             WHERE
@@ -224,7 +230,7 @@ flattened_traces AS (
                 f.trace_index,
                 f.from_address,
                 f.to_address,
-                f.avax_value,
+                f.eth_value,
                 f.gas,
                 f.gas_used,
                 f.input,
@@ -237,6 +243,8 @@ flattened_traces AS (
                     WHEN f.error_reason IS NULL THEN 'SUCCESS'
                     ELSE 'FAIL'
                 END AS trace_status,
+                f.after_evm_transfers,
+                f.before_evm_transfers,
                 f.data,
                 CASE
                     WHEN t.tx_hash IS NULL
@@ -274,7 +282,7 @@ missing_data AS (
         t.trace_index,
         t.from_address,
         t.to_address,
-        t.avax_value,
+        t.eth_value,
         t.gas,
         t.gas_used,
         t.input,
@@ -284,6 +292,8 @@ missing_data AS (
         t.sub_traces,
         t.error_reason,
         t.trace_status,
+        t.after_evm_transfers,
+        t.before_evm_transfers,
         t.data,
         FALSE AS is_pending,
         t._call_id,
@@ -312,7 +322,7 @@ FINAL AS (
         trace_index,
         from_address,
         to_address,
-        avax_value,
+        eth_value,
         gas,
         gas_used,
         input,
@@ -322,6 +332,8 @@ FINAL AS (
         sub_traces,
         error_reason,
         trace_status,
+        after_evm_transfers,
+        before_evm_transfers,
         DATA,
         is_pending,
         _call_id,
@@ -340,7 +352,7 @@ SELECT
     trace_index,
     from_address,
     to_address,
-    avax_value,
+    eth_value,
     gas,
     gas_used,
     input,
@@ -350,6 +362,8 @@ SELECT
     sub_traces,
     error_reason,
     trace_status,
+    after_evm_transfers,
+    before_evm_transfers,
     DATA,
     is_pending,
     _call_id,
