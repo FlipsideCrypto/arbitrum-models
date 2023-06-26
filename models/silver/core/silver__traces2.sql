@@ -13,8 +13,8 @@ WITH traces_txs AS (
     SELECT
         block_number,
         VALUE :array_index :: INT AS tx_position,
+        VALUE :array_index :: INT AS array_index,
         DATA :result AS full_traces,
-        FALSE AS is_action,
         _inserted_timestamp
     FROM
 
@@ -45,7 +45,8 @@ WHERE
                 UNION ALL
                 SELECT
                     block_number,
-                    VALUE :array_index :: INT AS tx_position,
+                    DATA :transactionPosition :: INT AS tx_position,
+                    VALUE :array_index :: INT AS array_index,
                     OBJECT_CONSTRUCT(
                         'from',
                         DATA :action :from :: STRING,
@@ -64,9 +65,16 @@ WHERE
                         'type',
                         DATA :type :: STRING,
                         'value',
-                        DATA :action :value :: STRING
+                        DATA :action :value :: STRING,
+                        'subtraces',
+                        DATA :subtraces :: STRING,
+                        'traceAddress',
+                        DATA :traceAddress :: STRING,
+                        'transactionHash',
+                        DATA :transactionHash :: STRING,
+                        'transactionPosition',
+                        DATA :transactionPosition :: STRING
                     ) AS full_traces,
-                    TRUE AS is_action,
                     _inserted_timestamp
                 FROM
 
@@ -91,7 +99,7 @@ WHERE
                     AND DATA :: STRING ILIKE '%action%'
                 {% endif %}
 
-                qualify(ROW_NUMBER() over (PARTITION BY block_number, tx_position
+                qualify(ROW_NUMBER() over (PARTITION BY block_number, tx_position, array_index
                 ORDER BY
                     _inserted_timestamp DESC)) = 1
             ),
@@ -117,8 +125,8 @@ WHERE
                         VALUE
                     ) AS DATA,
                     txs.tx_position AS tx_position,
+                    txs.array_index AS array_index,
                     txs.block_number AS block_number,
-                    is_action,
                     txs._inserted_timestamp AS _inserted_timestamp
                 FROM
                     traces_txs txs,
@@ -134,10 +142,10 @@ WHERE
                     f.index IS NULL
                     AND f.key != 'calls'
                 GROUP BY
+                    array_index,
                     tx_position,
                     id,
                     block_number,
-                    is_action,
                     _inserted_timestamp
             ),
             flattened_traces AS (
@@ -204,7 +212,8 @@ WHERE
                             PARTITION BY block_number,
                             tx_position,
                             parent_level
-                        ) AS sub_traces,*
+                        ) AS sub_traces,
+                        DATA :subtraces :: INT AS subtraces2,*
                         FROM
                             base_table
                     ),
@@ -224,10 +233,7 @@ WHERE
                     ),
                     add_sub_traces AS (
                         SELECT
-                            CASE
-                                WHEN is_action = TRUE THEN 0
-                                ELSE flattened_traces.tx_position
-                            END AS tx_position,
+                            flattened_traces.tx_position AS tx_position,
                             flattened_traces.block_number :: INTEGER AS block_number,
                             flattened_traces.error_reason AS error_reason,
                             flattened_traces.from_address AS from_address,
@@ -243,16 +249,13 @@ WHERE
                             flattened_traces.after_evm_transfers,
                             flattened_traces.before_evm_transfers,
                             flattened_traces.data AS DATA,
-                            group_sub_traces.sub_traces AS sub_traces,
-                            CASE
-                                WHEN is_action = TRUE THEN flattened_traces.tx_position
-                                ELSE ROW_NUMBER() over(
-                                    PARTITION BY flattened_traces.block_number,
-                                    flattened_traces.tx_position
-                                    ORDER BY
-                                        flattened_traces.gas :: FLOAT DESC
-                                )
-                            END AS trace_index,
+                            COALESCE(group_sub_traces.sub_traces, NULLIF(subtraces1, 0)) AS sub_traces,
+                            ROW_NUMBER() over(
+                                PARTITION BY flattened_traces.block_number,
+                                flattened_traces.tx_position
+                                ORDER BY
+                                    flattened_traces.gas :: FLOAT DESC
+                            ) AS trace_index,
                             flattened_traces._inserted_timestamp AS _inserted_timestamp
                         FROM
                             flattened_traces
