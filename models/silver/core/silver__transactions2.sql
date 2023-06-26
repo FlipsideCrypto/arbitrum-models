@@ -37,19 +37,19 @@ base_tx AS (
     SELECT
         A.block_number AS block_number,
         A.data :blockHash :: STRING AS block_hash,
-        utils.udf_hex_to_int(
+        TRY_TO_NUMBER(utils.udf_hex_to_int(
             A.data :blockNumber :: STRING
-        ) :: INT AS blockNumber,
-        utils.udf_hex_to_int(
+        )) AS blockNumber,
+        TRY_TO_NUMBER(utils.udf_hex_to_int(
             A.data :chainId :: STRING
-        ) :: INT AS chain_id,
+        )) AS chain_id,
         A.data :from :: STRING AS from_address,
-        utils.udf_hex_to_int(
+        TRY_TO_NUMBER(utils.udf_hex_to_int(
             A.data :gas :: STRING
-        ) :: INT AS gas,
-        utils.udf_hex_to_int(
+        )) AS gas,
+        TRY_TO_NUMBER(utils.udf_hex_to_int(
             A.data :gasPrice :: STRING
-        ) :: INT / pow(
+        )) / pow(
             10,
             9
         ) AS gas_price,
@@ -60,21 +60,21 @@ base_tx AS (
             1,
             10
         ) AS origin_function_signature,
-        utils.udf_hex_to_int(
+        TRY_TO_NUMBER(utils.udf_hex_to_int(
             A.data :maxFeePerGas :: STRING
-        ) :: INT / pow(
+        )) / pow(
             10,
             9
         ) AS max_fee_per_gas,
-        utils.udf_hex_to_int(
+        TRY_TO_NUMBER(utils.udf_hex_to_int(
             A.data :maxPriorityFeePerGas :: STRING
-        ) :: INT / pow(
+        )) / pow(
             10,
             9
         ) AS max_priority_fee_per_gas,
-        utils.udf_hex_to_int(
+        TRY_TO_NUMBER(utils.udf_hex_to_int(
             A.data :nonce :: STRING
-        ) :: INT AS nonce,
+        )) AS nonce,
         A.data :r :: STRING AS r,
         A.data :s :: STRING AS s,
         A.data :to :: STRING AS to_address1,
@@ -82,14 +82,14 @@ base_tx AS (
             WHEN to_address1 = '' THEN NULL
             ELSE to_address1
         END AS to_address,
-        utils.udf_hex_to_int(
+        TRY_TO_NUMBER(utils.udf_hex_to_int(
             A.data :transactionIndex :: STRING
-        ) :: INT AS POSITION,
+        )) AS POSITION,
         A.data :type :: STRING AS TYPE,
         A.data :v :: STRING AS v,
-        utils.udf_hex_to_int(
+        TRY_TO_NUMBER(utils.udf_hex_to_int(
             A.data :value :: STRING
-        ) / pow(
+        )) / pow(
             10,
             18
         ) :: FLOAT AS VALUE,
