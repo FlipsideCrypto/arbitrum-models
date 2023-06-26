@@ -28,7 +28,7 @@ WHERE
             {{ this }})
             AND (
                 SELECT
-                    ROUND(MAX(block_number), -4) + 500000
+                    ROUND(MAX(block_number), -4) + 1000000
                 FROM
                     {{ this }})
                     AND DATA :: STRING NOT ILIKE '%action%'
@@ -80,7 +80,7 @@ WHERE
             {{ this }})
             AND (
                 SELECT
-                    ROUND(MAX(block_number), -4) + 500000
+                    ROUND(MAX(block_number), -4) + 1000000
                 FROM
                     {{ this }})
                     AND DATA :: STRING ILIKE '%action%'
