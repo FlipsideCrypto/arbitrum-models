@@ -213,7 +213,7 @@ WHERE
                             tx_position,
                             parent_level
                         ) AS sub_traces,
-                        DATA :subtraces :: INT AS subtraces2,*
+                        DATA :subtraces :: INT AS subtraces_action,*
                         FROM
                             base_table
                     ),
@@ -249,7 +249,7 @@ WHERE
                             flattened_traces.after_evm_transfers,
                             flattened_traces.before_evm_transfers,
                             flattened_traces.data AS DATA,
-                            COALESCE(group_sub_traces.sub_traces, NULLIF(subtraces1, 0)) AS sub_traces,
+                            COALESCE(group_sub_traces.sub_traces, NULLIF(subtraces_action, 0)) AS sub_traces,
                             ROW_NUMBER() over(
                                 PARTITION BY flattened_traces.block_number,
                                 flattened_traces.tx_position
