@@ -59,10 +59,10 @@ traces_raw AS (
 traces_flat AS (
     SELECT
         VALUE :from :: STRING AS from_address,
-        udf_hex_to_int(
+        utils.udf_hex_to_int(
             VALUE :gas :: STRING
         ) AS gas,
-        udf_hex_to_int(
+        utils.udf_hex_to_int(
             VALUE :gasUsed :: STRING
         ) AS gas_used,
         VALUE :input :: STRING AS input,

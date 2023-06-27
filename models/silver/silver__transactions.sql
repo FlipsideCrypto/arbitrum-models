@@ -10,14 +10,14 @@ WITH base_table AS (
         block_timestamp :: TIMESTAMP AS block_timestamp,
         block_id :: INTEGER AS block_number,
         tx_id :: STRING AS tx_hash,
-        udf_hex_to_int(
+        utils.udf_hex_to_int(
             tx :nonce :: STRING
         ) :: INTEGER AS nonce,
         tx_block_index :: INTEGER AS POSITION,
         tx :from :: STRING AS from_address,
         tx :to :: STRING AS to_address,
         (
-            udf_hex_to_int(
+            utils.udf_hex_to_int(
                 tx :value :: STRING
             ) / pow(
                 10,
@@ -26,14 +26,14 @@ WITH base_table AS (
         ) :: FLOAT AS eth_value,
         tx :blockHash :: STRING AS block_hash,
         (
-            udf_hex_to_int(
+            utils.udf_hex_to_int(
                 tx :gasPrice :: STRING
             ) / pow(
                 10,
                 9
             )
         ) :: FLOAT AS gas_price_bid,
-        udf_hex_to_int(
+        utils.udf_hex_to_int(
             tx :gas :: STRING
         ) :: INTEGER AS gas_limit,
         tx :input :: STRING AS DATA,
@@ -41,14 +41,14 @@ WITH base_table AS (
             WHEN tx :receipt :status :: STRING = '0x1' THEN 'SUCCESS'
             ELSE 'FAIL'
         END AS status,
-        udf_hex_to_int(
+        utils.udf_hex_to_int(
             tx :receipt :gasUsed :: STRING
         ) :: INTEGER AS gas_used,
-        udf_hex_to_int(
+        utils.udf_hex_to_int(
             tx :receipt :cumulativeGasUsed :: STRING
         ) :: INTEGER AS cumulative_Gas_Used,
         (
-            udf_hex_to_int(
+            utils.udf_hex_to_int(
                 tx :receipt :effectiveGasPrice :: STRING
             ) / pow(
                 10,
