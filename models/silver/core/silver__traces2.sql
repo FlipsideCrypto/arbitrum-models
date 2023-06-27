@@ -8,13 +8,14 @@
     tags = ['core']
 ) }}
 --    add back after ranged backfill completes - full_refresh = false
-WITH traces_txs AS (
+WITH base_traces AS (
 
     SELECT
         block_number,
-        VALUE :array_index :: INT AS tx_position,
-        VALUE :array_index :: INT AS array_index,
-        DATA :result AS full_traces,
+        DATA,
+        VALUE,
+        _partition_by_block_id,
+        id,
         _inserted_timestamp
     FROM
 
@@ -31,15 +32,23 @@ WHERE
                     ROUND(MAX(block_number), -4) + 1000000
                 FROM
                     {{ this }})
-                    AND DATA :: STRING NOT ILIKE '%action%'
                 {% else %}
                     {{ ref('bronze__streamline_FR_traces') }}
                 WHERE
                     _partition_by_block_id <= 2500000
-                    AND DATA :: STRING NOT ILIKE '%action%'
                 {% endif %}
-
-                qualify(ROW_NUMBER() over (PARTITION BY block_number, tx_position
+            ),
+            traces_txs AS (
+                SELECT
+                    block_number,
+                    VALUE :array_index :: INT AS tx_position,
+                    VALUE :array_index :: INT AS array_index,
+                    DATA :result AS full_traces,
+                    _inserted_timestamp
+                FROM
+                    base_traces
+                WHERE
+                    DATA :: STRING NOT ILIKE '%action%' qualify(ROW_NUMBER() over (PARTITION BY block_number, tx_position
                 ORDER BY
                     _inserted_timestamp DESC)) = 1
                 UNION ALL
@@ -77,29 +86,9 @@ WHERE
                     ) AS full_traces,
                     _inserted_timestamp
                 FROM
-
-{% if is_incremental() %}
-{{ ref('bronze__streamline_FR_traces') }}
-WHERE
-    _partition_by_block_id BETWEEN (
-        SELECT
-            ROUND(MAX(block_number), -4)
-        FROM
-            {{ this }})
-            AND (
-                SELECT
-                    ROUND(MAX(block_number), -4) + 1000000
-                FROM
-                    {{ this }})
-                    AND DATA :: STRING ILIKE '%action%'
-                {% else %}
-                    {{ ref('bronze__streamline_FR_traces') }}
+                    base_traces
                 WHERE
-                    _partition_by_block_id <= 2500000
-                    AND DATA :: STRING ILIKE '%action%'
-                {% endif %}
-
-                qualify(ROW_NUMBER() over (PARTITION BY block_number, tx_position, array_index
+                    DATA :: STRING ILIKE '%action%' qualify(ROW_NUMBER() over (PARTITION BY block_number, tx_position, array_index
                 ORDER BY
                     _inserted_timestamp DESC)) = 1
             ),
@@ -249,7 +238,13 @@ WHERE
                             flattened_traces.after_evm_transfers,
                             flattened_traces.before_evm_transfers,
                             flattened_traces.data AS DATA,
-                            COALESCE(group_sub_traces.sub_traces, NULLIF(subtraces_action, 0)) AS sub_traces,
+                            COALESCE(
+                                group_sub_traces.sub_traces,
+                                NULLIF(
+                                    subtraces_action,
+                                    0
+                                )
+                            ) AS sub_traces,
                             ROW_NUMBER() over(
                                 PARTITION BY flattened_traces.block_number,
                                 flattened_traces.tx_position
