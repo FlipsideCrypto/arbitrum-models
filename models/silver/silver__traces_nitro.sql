@@ -112,10 +112,10 @@ base_grouping_row AS (
         block_timestamp,
         VALUE :from :: STRING AS from_address,
         VALUE :to :: STRING AS to_address,
-        udf_hex_to_int(
+        utils.udf_hex_to_int(
             VALUE :gas :: STRING
         ) AS gas,
-        udf_hex_to_int(
+        utils.udf_hex_to_int(
             VALUE :gasUsed :: STRING
         ) AS gas_used,
         VALUE :input :: STRING AS input,
@@ -156,10 +156,10 @@ base_grouping_row_call_origin AS (
         block_timestamp,
         this :from :: STRING AS from_address,
         this :to :: STRING AS to_address,
-        udf_hex_to_int(
+        utils.udf_hex_to_int(
             this :gas
         ) AS gas,
-        udf_hex_to_int(
+        utils.udf_hex_to_int(
             this :gasUsed
         ) AS gas_used,
         this :input :: STRING AS input,
