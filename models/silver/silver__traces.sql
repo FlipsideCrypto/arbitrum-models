@@ -77,7 +77,7 @@ traces_flat AS (
                 'call',
                 'delegatecall',
                 'staticcall'
-            ) THEN udf_hex_to_int(
+            ) THEN utils.udf_hex_to_int(
                 VALUE :value :: STRING
             ) / pow(
                 10,
