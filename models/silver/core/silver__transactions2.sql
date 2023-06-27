@@ -136,6 +136,8 @@ new_records AS (
             9
         ) AS tx_fee,
         r.type AS tx_type,
+        r.l1BlockNumber AS l1_block_number,
+        r.gas_used_for_l1,
         t._inserted_timestamp
     FROM
         base_tx t
@@ -193,6 +195,8 @@ missing_data AS (
             9
         ) AS tx_fee,
         r.type AS tx_type,
+        r.l1BlockNumber AS l1_block_number,
+        r.gas_used_for_l1,
         GREATEST(
             t._inserted_timestamp,
             b._inserted_timestamp,
@@ -242,6 +246,8 @@ FINAL AS (
         effective_gas_price,
         tx_fee,
         tx_type,
+        l1_block_number,
+        gas_used_for_l1,
         _inserted_timestamp
     FROM
         new_records
@@ -277,6 +283,8 @@ SELECT
     effective_gas_price,
     tx_fee,
     tx_type,
+    l1_block_number,
+    gas_used_for_l1,
     _inserted_timestamp
 FROM
     missing_data
