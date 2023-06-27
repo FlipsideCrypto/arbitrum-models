@@ -36,7 +36,7 @@ token_names AS (
         read_output,
         regexp_substr_all(SUBSTR(read_output, 3, len(read_output)), '.{64}') AS segmented_output,
         TRY_TO_NUMBER(
-            PUBLIC.udf_hex_to_int(
+            utils.udf_hex_to_int(
                 segmented_output [1] :: STRING
             )
         ) AS sub_len,
@@ -72,7 +72,7 @@ token_symbols AS (
         read_output,
         regexp_substr_all(SUBSTR(read_output, 3, len(read_output)), '.{64}') AS segmented_output,
         TRY_TO_NUMBER(
-            PUBLIC.udf_hex_to_int(
+            utils.udf_hex_to_int(
                 segmented_output [1] :: STRING
             )
         ) AS sub_len,
@@ -104,7 +104,7 @@ token_decimals AS (
     SELECT
         contract_address,
         TRY_TO_NUMBER(
-            PUBLIC.udf_hex_to_int(
+            utils.udf_hex_to_int(
                 read_output :: STRING
             )
         ) AS token_decimals,
