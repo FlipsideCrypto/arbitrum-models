@@ -1,5 +1,5 @@
-name: dbt_test
-run-name: dbt_test
+name: dbt_test_daily
+run-name: dbt_test_daily
 
 on:
   workflow_dispatch:
@@ -41,7 +41,7 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt test
+          dbt test --exclude tag:full_test tag:recent_test
   
 
 
