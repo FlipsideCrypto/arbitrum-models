@@ -15,7 +15,7 @@ SELECT
     _inserted_timestamp,
     ROW_NUMBER() OVER (ORDER BY contract_address) AS row_num
 FROM
-    {{ ref('silver__traces' )}}
+    {{ ref('silver__traces2' )}}
 WHERE 
     -- curve contract deployers
     from_address IN (
