@@ -127,8 +127,8 @@ WHERE
                     txs.tx_position AS tx_position,
                     txs.array_index AS array_index,
                     txs.block_number AS block_number,
-                    txs.after_evm_transfers,
-                    txs.before_evm_transfers,
+                    txs.after_evm_transfers AS after_evm_transfers,
+                    txs.before_evm_transfers AS before_evm_transfers,
                     txs._inserted_timestamp AS _inserted_timestamp
                 FROM
                     traces_txs txs,
