@@ -29,7 +29,7 @@ WHERE
             {{ this }})
             AND (
                 SELECT
-                    ROUND(MAX(block_number), -4) + 1000000
+                    ROUND(MAX(block_number), -4) + 5000000
                 FROM
                     {{ this }})
                 {% else %}
@@ -43,7 +43,16 @@ WHERE
                     block_number,
                     VALUE :array_index :: INT AS tx_position,
                     VALUE :array_index :: INT AS array_index,
-                    DATA :result AS full_traces,
+                    CASE
+                        WHEN DATA :result = '[]' THEN NULL
+                        ELSE OBJECT_DELETE(
+                            DATA :result,
+                            'afterEVMTransfers',
+                            'beforeEVMTransfers'
+                        ) :: variant
+                    END AS full_traces,
+                    DATA :result :afterEVMTransfers AS after_evm_transfers,
+                    DATA :result :beforeEVMTransfers AS before_evm_transfers,
                     _inserted_timestamp
                 FROM
                     base_traces
@@ -84,6 +93,8 @@ WHERE
                         'transactionPosition',
                         DATA :transactionPosition :: STRING
                     ) AS full_traces,
+                    DATA :result :afterEVMTransfers AS after_evm_transfers,
+                    DATA :result :beforeEVMTransfers AS before_evm_transfers,
                     _inserted_timestamp
                 FROM
                     base_traces
@@ -116,6 +127,8 @@ WHERE
                     txs.tx_position AS tx_position,
                     txs.array_index AS array_index,
                     txs.block_number AS block_number,
+                    txs.after_evm_transfers AS after_evm_transfers,
+                    txs.before_evm_transfers AS before_evm_transfers,
                     txs._inserted_timestamp AS _inserted_timestamp
                 FROM
                     traces_txs txs,
@@ -135,6 +148,8 @@ WHERE
                     tx_position,
                     id,
                     block_number,
+                    after_evm_transfers,
+                    before_evm_transfers,
                     _inserted_timestamp
             ),
             flattened_traces AS (
@@ -160,8 +175,6 @@ WHERE
                         )
                         ELSE 0
                     END AS eth_value,
-                    DATA :afterEVMTransfers AS after_evm_transfers,
-                    DATA :beforeEVMTransfers AS before_evm_transfers,
                     CASE
                         WHEN id = '__' THEN CONCAT(
                             DATA :type :: STRING,
