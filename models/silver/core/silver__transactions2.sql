@@ -5,9 +5,9 @@
     unique_key = "block_number",
     cluster_by = "block_timestamp::date, _inserted_timestamp::date",
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
+    full_refresh = false,
     tags = ['core']
 ) }}
---add back after backfill completes - full_refresh = false
 
 WITH base AS (
 
@@ -37,19 +37,27 @@ base_tx AS (
     SELECT
         A.block_number AS block_number,
         A.data :blockHash :: STRING AS block_hash,
-        TRY_TO_NUMBER(utils.udf_hex_to_int(
-            A.data :blockNumber :: STRING
-        )) AS blockNumber,
-        TRY_TO_NUMBER(utils.udf_hex_to_int(
-            A.data :chainId :: STRING
-        )) AS chain_id,
+        TRY_TO_NUMBER(
+            utils.udf_hex_to_int(
+                A.data :blockNumber :: STRING
+            )
+        ) AS blockNumber,
+        TRY_TO_NUMBER(
+            utils.udf_hex_to_int(
+                A.data :chainId :: STRING
+            )
+        ) AS chain_id,
         A.data :from :: STRING AS from_address,
-        TRY_TO_NUMBER(utils.udf_hex_to_int(
-            A.data :gas :: STRING
-        )) AS gas,
-        TRY_TO_NUMBER(utils.udf_hex_to_int(
-            A.data :gasPrice :: STRING
-        )) / pow(
+        TRY_TO_NUMBER(
+            utils.udf_hex_to_int(
+                A.data :gas :: STRING
+            )
+        ) AS gas,
+        TRY_TO_NUMBER(
+            utils.udf_hex_to_int(
+                A.data :gasPrice :: STRING
+            )
+        ) / pow(
             10,
             9
         ) AS gas_price,
@@ -60,21 +68,27 @@ base_tx AS (
             1,
             10
         ) AS origin_function_signature,
-        TRY_TO_NUMBER(utils.udf_hex_to_int(
-            A.data :maxFeePerGas :: STRING
-        )) / pow(
+        TRY_TO_NUMBER(
+            utils.udf_hex_to_int(
+                A.data :maxFeePerGas :: STRING
+            )
+        ) / pow(
             10,
             9
         ) AS max_fee_per_gas,
-        TRY_TO_NUMBER(utils.udf_hex_to_int(
-            A.data :maxPriorityFeePerGas :: STRING
-        )) / pow(
+        TRY_TO_NUMBER(
+            utils.udf_hex_to_int(
+                A.data :maxPriorityFeePerGas :: STRING
+            )
+        ) / pow(
             10,
             9
         ) AS max_priority_fee_per_gas,
-        TRY_TO_NUMBER(utils.udf_hex_to_int(
-            A.data :nonce :: STRING
-        )) AS nonce,
+        TRY_TO_NUMBER(
+            utils.udf_hex_to_int(
+                A.data :nonce :: STRING
+            )
+        ) AS nonce,
         A.data :r :: STRING AS r,
         A.data :s :: STRING AS s,
         A.data :to :: STRING AS to_address1,
@@ -82,14 +96,18 @@ base_tx AS (
             WHEN to_address1 = '' THEN NULL
             ELSE to_address1
         END AS to_address,
-        TRY_TO_NUMBER(utils.udf_hex_to_int(
-            A.data :transactionIndex :: STRING
-        )) AS POSITION,
+        TRY_TO_NUMBER(
+            utils.udf_hex_to_int(
+                A.data :transactionIndex :: STRING
+            )
+        ) AS POSITION,
         A.data :type :: STRING AS TYPE,
         A.data :v :: STRING AS v,
-        TRY_TO_NUMBER(utils.udf_hex_to_int(
-            A.data :value :: STRING
-        )) / pow(
+        TRY_TO_NUMBER(
+            utils.udf_hex_to_int(
+                A.data :value :: STRING
+            )
+        ) / pow(
             10,
             18
         ) :: FLOAT AS VALUE,
