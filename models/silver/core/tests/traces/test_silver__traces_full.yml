@@ -46,7 +46,7 @@ models:
       - name: IDENTIFIER
         tests:
           - not_null
-      - name: BNB_VALUE
+      - name: ETH_VALUE
         tests:
           - not_null
       - name: GAS

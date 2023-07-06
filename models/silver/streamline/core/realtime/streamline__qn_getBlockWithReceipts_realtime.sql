@@ -85,7 +85,7 @@ SELECT
                 ''
             ),
             '"],"id":"',
-            block_number :: INTEGER,
+            block_number :: STRING,
             '"}'
         )
     ) AS request
