@@ -18,22 +18,6 @@ sources:
     schema: core
     tables:
       - name: fact_hourly_token_prices
-  - name: symbols_cross_tab
-    database: FLIPSIDE_PROD_DB
-    schema: SILVER
-    tables:
-      - name: MARKET_ASSET_METADATA
-  - name: arbitrum_pools
-    database: arbitrum
-    schema: bronze
-    tables:
-      - name: SUSHI_DIM_DEX_POOLS
-      - name: SUSHI_DIM_KASHI_POOLS
-  - name: prices
-    database: FLIPSIDE_PROD_DB
-    schema: SILVER
-    tables:
-      - name: prices_v2
   - name: bronze_streamline
     database: streamline
     schema: |
@@ -44,6 +28,7 @@ sources:
       - name: transactions
       - name: debug_traceBlockByNumber
       - name: decoded_logs
+      - name: confirm_blocks
   - name: streamline_crosschain
     database: streamline
     schema: crosschain
