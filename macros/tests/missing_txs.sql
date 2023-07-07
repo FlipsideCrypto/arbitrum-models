@@ -26,8 +26,11 @@ FROM
     ON base_block_number = model_block_number
     AND base_tx_hash = model_tx_hash
 WHERE
-    model_tx_hash IS NULL
-    OR model_block_number IS NULL
+    (
+        model_tx_hash IS NULL
+        OR model_block_number IS NULL
+    )
+    AND base_block_number > 22207817
 {% endmacro %}
 
 {% macro recent_missing_txs(
