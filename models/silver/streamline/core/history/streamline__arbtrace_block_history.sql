@@ -41,7 +41,7 @@ SELECT
             ),
             '",{"tracer": "callTracer"}',
             '],"id":"',
-            block_number :: STRING,
+            block_number :: INTEGER,
             '"}'
         )
     ) AS request
