@@ -39,7 +39,7 @@ SELECT
                 ' ',
                 ''
             ),
-            '",{"tracer": "callTracer","timeout": "15s"}',
+            '",{"tracer": "callTracer","timeout": "30s"}',
             '],"id":"',
             block_number :: INTEGER,
             '"}'
