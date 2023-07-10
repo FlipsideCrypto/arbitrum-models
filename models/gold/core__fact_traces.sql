@@ -19,27 +19,11 @@ SELECT
     identifier,
     DATA,
     tx_status,
-    sub_traces
+    sub_traces,
+    trace_status,
+    error_reason,
+    trace_index,
+    before_evm_transfers,
+    after_evm_transfers    
 FROM
     {{ ref('silver__traces') }}
-
-UNION ALL 
-
-SELECT
-    tx_hash,
-    block_number,
-    block_timestamp,
-    from_address,
-    to_address,
-    eth_value,
-    gas,
-    gas_used,
-    input,
-    output,
-    TYPE,
-    identifier,
-    DATA,
-    tx_status,
-    sub_traces
-FROM
-    {{ ref('silver__traces_nitro') }}
