@@ -20,7 +20,7 @@ confirmed_blocks AS (
     FROM
         {{ ref("silver__confirmed_blocks") }}
         cb full
-        OUTER JOIN {{ ref("silver__transactions2") }}
+        OUTER JOIN {{ ref("silver__transactions") }}
         txs
         ON cb.block_number = txs.block_number
         AND cb.block_hash = txs.block_hash

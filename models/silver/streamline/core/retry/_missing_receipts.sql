@@ -7,7 +7,7 @@ WITH lookback AS (
     SELECT
         MAX(block_number) AS block_lookback
     FROM
-        {{ ref("silver__blocks2") }}
+        {{ ref("silver__blocks") }}
     WHERE
         block_timestamp :: DATE = CURRENT_DATE() - 3
 ),
@@ -18,7 +18,7 @@ txs AS (
         tx_hash,
         block_hash
     FROM
-        {{ ref("silver__transactions2") }}
+        {{ ref("silver__transactions") }}
     WHERE
         block_number >= (
             SELECT
