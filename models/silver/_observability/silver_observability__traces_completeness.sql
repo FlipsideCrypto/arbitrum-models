@@ -135,7 +135,6 @@ impacted_blocks AS (
     WHERE
         r.tx_hash IS NULL
         OR t.tx_hash IS NULL
-        AND r.identifier = 'CALL_ORIGIN'
 )
 SELECT
     'traces' AS test_name,
