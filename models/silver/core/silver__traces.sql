@@ -62,6 +62,8 @@ traces_txs AS (
             DATA :result :gasUsed :: STRING,
             'input',
             DATA :action :input :: STRING,
+            'init',
+            DATA :action :init :: STRING,
             'output',
             DATA :result :output :: STRING,
             'error',
@@ -145,7 +147,10 @@ flattened_traces AS (
         utils.udf_hex_to_int(
             DATA :gasUsed :: STRING
         ) AS gas_used,
-        DATA :input :: STRING AS input,
+        COALESCE(
+            DATA :input :: STRING,
+            DATA :init :: STRING
+        ) AS input,
         DATA :output :: STRING AS output,
         DATA :error :: STRING AS error_reason,
         COALESCE(
