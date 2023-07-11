@@ -9,8 +9,7 @@ WITH pools AS (
     SELECT
         lb_pair,
         tokenX,
-        tokenY,
-        version
+        tokenY
     FROM
         {{ ref('silver_dex__trader_joe_v2_pools') }}
 ),
@@ -77,7 +76,6 @@ swaps_base AS (
         ON lb_pair = l.contract_address
     WHERE
         topics [0] :: STRING = '0xc528cda9e500228b16ce84fadae290d9a49aecb17483110004c5af0a07f6fd73' --Swap
-        AND version = 'v2'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

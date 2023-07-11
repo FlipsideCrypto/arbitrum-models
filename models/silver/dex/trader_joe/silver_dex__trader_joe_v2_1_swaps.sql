@@ -9,8 +9,7 @@ WITH pools AS (
     SELECT
         lb_pair,
         tokenX,
-        tokenY,
-        version
+        tokenY
     FROM
         {{ ref('silver_dex__trader_joe_v2_pools') }}
 ),
@@ -78,7 +77,6 @@ swaps_base AS (
         ON lb_pair = l.contract_address
     WHERE
         topics [0] :: STRING = '0xad7d6f97abf51ce18e17a38f4d70e975be9c0708474987bb3e26ad21bd93ca70' --Swap
-        AND version = 'v2.1'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -114,8 +112,8 @@ SELECT
     tokenY,
     CASE
         WHEN amount0In <> 0
-            AND amount1In <> 0
-            AND amount0Out <> 0 THEN amount1In
+        AND amount1In <> 0
+        AND amount0Out <> 0 THEN amount1In
         WHEN amount0In <> 0 THEN amount0In
         WHEN amount1In <> 0 THEN amount1In
     END AS amount_in_unadj,
@@ -125,8 +123,8 @@ SELECT
     END AS amount_out_unadj,
     CASE
         WHEN amount0In <> 0
-            AND amount1In <> 0
-            AND amount0Out <> 0 THEN tokenX
+        AND amount1In <> 0
+        AND amount0Out <> 0 THEN tokenX
         WHEN amount0In <> 0 THEN tokenY
         WHEN amount1In <> 0 THEN tokenX
     END AS token_in,
@@ -140,4 +138,5 @@ SELECT
     _inserted_timestamp
 FROM
     swaps_base
-WHERE token_in <> token_out
+WHERE
+    token_in <> token_out

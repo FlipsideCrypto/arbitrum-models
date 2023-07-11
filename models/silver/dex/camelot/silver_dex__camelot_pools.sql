@@ -23,10 +23,14 @@ WITH pool_creation AS (
         contract_address IN (
             '0x6eccab422d763ac031210895c81787e87b43a652',
             --v2
-            '0xd490f2f6990c0291597fd1247651b4e0dcf684dd'
+            '0xd490f2f6990c0291597fd1247651b4e0dcf684dd',
+            '0x1a3c9b1d2f0529d97f2afc5136cc23e58f1fd35b'
         ) --v3
-        AND topics [0] :: STRING IN ('0x0d3648bd0f6ba80134a33ba9275ac585d9d315f0ad8355cddefde31afa28d0e9', --PairCreated v2
-        '0x91ccaa7a278130b65168c3a0c8d3bcae84cf5e43704342bd3ec0b59e59c036db') --v3
+        AND topics [0] :: STRING IN (
+            '0x0d3648bd0f6ba80134a33ba9275ac585d9d315f0ad8355cddefde31afa28d0e9',
+            --PairCreated v2
+            '0x91ccaa7a278130b65168c3a0c8d3bcae84cf5e43704342bd3ec0b59e59c036db'
+        ) --v3
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
