@@ -4,7 +4,7 @@ run-name: dbt_run_scheduled
 on:
   workflow_dispatch:
   schedule:
-    # Runs "every 2 hours" (see https://crontab.guru)
+    # Runs "every 2 hours" (see https://crontab.guru) move to 20 * * * * after pivot
     - cron: '0 1-23/2 * * *'
     
 env:
