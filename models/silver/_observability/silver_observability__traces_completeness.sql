@@ -1,11 +1,33 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = 'test_timestamp',
-    full_refresh = false
+    unique_key = 'test_timestamp'
 ) }}
 
-WITH look_back AS (
+WITH
 
+{% if is_incremental() %}
+min_failed_block AS (
+
+    SELECT
+        MIN(VALUE) - 1 AS block_number
+    FROM
+        (
+            SELECT
+                blocks_impacted_array
+            FROM
+                {{ this }}
+                qualify ROW_NUMBER() over (
+                    ORDER BY
+                        test_timestamp DESC
+                ) = 1
+        ),
+        LATERAL FLATTEN(
+            input => blocks_impacted_array
+        )
+),
+{% endif %}
+
+look_back AS (
     SELECT
         block_number
     FROM
@@ -16,135 +38,104 @@ WITH look_back AS (
         ) BETWEEN 24
         AND 96
 ),
-block_range AS (
+all_blocks AS (
     SELECT
-        MAX(block_number) AS end_block,
-        MIN(block_number) AS start_block
+        block_number
     FROM
         look_back
+
+{% if is_incremental() %}
+UNION
+SELECT
+    block_number
+FROM
+    min_failed_block
+{% else %}
+UNION
+SELECT
+    0 AS block_number
+{% endif %}
+
+{% if var('OBSERV_FULL_TEST') %}
+UNION
+SELECT
+    0 AS block_number
+{% endif %}
+),
+block_range AS (
+    SELECT
+        _id AS block_number
+    FROM
+        {{ source(
+            'crosschain_silver',
+            'number_sequence'
+        ) }}
+    WHERE
+        _id BETWEEN (
+            SELECT
+                MIN(block_number)
+            FROM
+                all_blocks
+        )
+        AND (
+            SELECT
+                MAX(block_number)
+            FROM
+                all_blocks
+        )
+        AND _id > 22207815
 ),
 txs AS (
     SELECT
-        block_number,
+        t.block_number,
         block_timestamp,
         tx_hash,
         block_hash
     FROM
-        {{ ref("silver__transactions2") }}
-    WHERE
-        block_number <= (
+        {{ ref("silver__transactions") }}
+        t
+        INNER JOIN block_range b
+        ON t.block_number = b.block_number
+        AND t.block_number >= (
             SELECT
-                end_block
+                MIN(block_number)
             FROM
-                block_range
+                all_blocks
         )
-
-{% if is_incremental() %}
-AND (
-    (
-        block_number BETWEEN (
-            SELECT
-                start_block
-            FROM
-                block_range
-        )
-        AND (
-            SELECT
-                end_block
-            FROM
-                block_range
-        )
-    )
-    OR ({% if var('OBSERV_FULL_TEST') %}
-        block_number >= 0
-    {% else %}
-        block_number >= (
-    SELECT
-        MIN(VALUE) - 1
-    FROM
-        (
-    SELECT
-        blocks_impacted_array
-    FROM
-        {{ this }}
-        qualify ROW_NUMBER() over (
-    ORDER BY
-        test_timestamp DESC) = 1), LATERAL FLATTEN(input => blocks_impacted_array))
-    {% endif %})
-)
-{% endif %}
 ),
 traces AS (
     SELECT
-        block_number,
+        t.block_number,
         block_timestamp,
-        tx_hash
+        tx_hash,
+        identifier
     FROM
-        {{ ref("silver__traces2") }}
-    WHERE
-        block_number <= (
+        {{ ref("silver__traces") }}
+        t
+        INNER JOIN block_range b
+        ON t.block_number = b.block_number
+        AND t.block_number >= (
             SELECT
-                end_block
+                MIN(block_number)
             FROM
-                block_range
+                all_blocks
         )
-
-{% if is_incremental() %}
-AND (
-    (
-        block_number BETWEEN (
-            SELECT
-                start_block
-            FROM
-                block_range
-        )
-        AND (
-            SELECT
-                end_block
-            FROM
-                block_range
-        )
-    )
-    OR ({% if var('OBSERV_FULL_TEST') %}
-        block_number >= 0
-    {% else %}
-        block_number >= (
-    SELECT
-        MIN(VALUE) - 1
-    FROM
-        (
-    SELECT
-        blocks_impacted_array
-    FROM
-        {{ this }}
-        qualify ROW_NUMBER() over (
-    ORDER BY
-        test_timestamp DESC) = 1), LATERAL FLATTEN(input => blocks_impacted_array))
-    {% endif %})
-)
-{% endif %}
 ),
 impacted_blocks AS (
     SELECT
-        block_number
+        DISTINCT COALESCE(
+            t.block_number,
+            r.block_number
+        ) AS block_number
     FROM
-        (
-            SELECT
-                DISTINCT COALESCE(
-                    t.block_number,
-                    r.block_number
-                ) AS block_number
-            FROM
-                txs t full
-                OUTER JOIN traces r
-                ON t.block_number = r.block_number
-                AND t.tx_hash = r.tx_hash
-            WHERE
-                r.tx_hash IS NULL
-                OR t.tx_hash IS NULL
-        )
+        txs t full
+        OUTER JOIN traces r
+        ON t.block_number = r.block_number
+        AND t.tx_hash = r.tx_hash
     WHERE
-        block_number > 22207817
+        r.tx_hash IS NULL
+        OR t.tx_hash IS NULL
+        AND r.identifier = 'CALL_ORIGIN'
 )
 SELECT
     'traces' AS test_name,
