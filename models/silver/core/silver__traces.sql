@@ -68,6 +68,8 @@ traces_txs AS (
             DATA :error :: STRING,
             'to',
             DATA :action :to :: STRING,
+            'address',
+            DATA :result :address :: STRING,
             'type',
             DATA :type :: STRING,
             'value',
@@ -146,7 +148,10 @@ flattened_traces AS (
         DATA :input :: STRING AS input,
         DATA :output :: STRING AS output,
         DATA :error :: STRING AS error_reason,
-        DATA :to :: STRING AS to_address,
+        COALESCE(
+            DATA :to :: STRING,
+            DATA :address :: STRING
+        ) AS to_address,
         DATA :type :: STRING AS TYPE,
         CASE
             WHEN DATA :type :: STRING = 'CALL' THEN utils.udf_hex_to_int(
