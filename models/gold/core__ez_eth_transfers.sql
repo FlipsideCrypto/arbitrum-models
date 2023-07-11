@@ -19,7 +19,7 @@ WITH eth_base AS (
         TYPE = 'CALL'
         AND eth_value > 0
         AND tx_status = 'SUCCESS'
-        and gas_used is not null
+        AND trace_status = 'SUCCESS'
 ),
 eth_price AS (
     SELECT

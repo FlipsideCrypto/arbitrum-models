@@ -48,11 +48,20 @@ SELECT
         r.block_number
     ) AS block_number
 FROM
+<<<<<<< HEAD
     txs t full
     OUTER JOIN receipts r
     ON t.block_number = r.block_number
     AND t.block_hash = r.block_hash
     AND t.tx_hash = r.tx_hash
+=======
+    {{ ref("silver__transactions") }}
+    tx
+    LEFT JOIN {{ ref("silver__receipts") }}
+    r
+    ON tx.block_number = r.block_number
+    AND tx.tx_hash = r.tx_hash
+>>>>>>> bc6332984b6fc8bb06e5876b6a1f9cf3ba3ed3b9
 WHERE
     r.tx_hash IS NULL
     OR t.tx_hash IS NULL
