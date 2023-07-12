@@ -102,6 +102,13 @@ impacted_blocks AS (
         ) AS blocks_impacted_array
     FROM
         broken_blocks
+    WHERE
+        block_number NOT IN (
+            SELECT
+                block_number
+            FROM
+                {{ ref('silver_observability__excluded_receipt_blocks') }}
+        )
 )
 SELECT
     'receipts' AS test_name,
