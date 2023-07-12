@@ -42,6 +42,7 @@ sources:
       - name: address_labels
       - name: token_prices_priority_hourly
       - name: asset_metadata_priority
+      - name: number_sequence
   - name: crosschain_public
     database: crosschain
     schema: bronze_public

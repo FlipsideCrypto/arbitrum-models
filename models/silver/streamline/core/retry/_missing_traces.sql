@@ -3,7 +3,7 @@
 ) }}
 
 SELECT
-    DISTINCT tx.block_number AS block_number
+    DISTINCT tx.block_number block_number
 FROM
     {{ ref("silver__transactions") }}
     tx
@@ -23,3 +23,5 @@ WHERE
         CURRENT_DATE
     )
     AND tr.tx_hash IS NULL
+    AND tx.to_address <> '0x000000000000000000000000000000000000006e'
+    AND tr.to_address <> '0x000000000000000000000000000000000000006e'
