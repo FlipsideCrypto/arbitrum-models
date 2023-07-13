@@ -5,9 +5,9 @@
     unique_key = "block_number",
     cluster_by = "block_timestamp::date, _inserted_timestamp::date",
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
+    full_refresh = false,
     tags = ['core']
 ) }}
---    full_refresh = false,
 
 WITH base AS (
 
