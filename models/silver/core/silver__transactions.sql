@@ -5,9 +5,9 @@
     unique_key = "block_number",
     cluster_by = "block_timestamp::date, _inserted_timestamp::date",
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
-    full_refresh = false,
     tags = ['core']
 ) }}
+--    full_refresh = false,
 
 WITH base AS (
 
@@ -148,7 +148,7 @@ new_records AS (
         cumulative_gas_used,
         effective_gas_price,
         (
-            gas_price * r.gas_used
+            effective_gas_price * r.gas_used
         ) / pow(
             10,
             9
