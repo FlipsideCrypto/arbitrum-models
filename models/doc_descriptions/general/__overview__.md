@@ -35,6 +35,7 @@ There is more information on how to use dbt docs in the last section of this doc
 - [ez_eth_transfers](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.core__ez_eth_transfers)
 - [ez_token_transfers](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.core__ez_token_transfers)
 - [ez_decoded_event_logs](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.core__ez_decoded_event_logs)
+- [ez_dex_swaps](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.core__ez_dex_swaps)
 
 ## **Helpful User-Defined Functions (UDFs)**
 
