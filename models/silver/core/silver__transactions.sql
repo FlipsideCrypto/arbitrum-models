@@ -234,6 +234,16 @@ missing_data AS (
         t.is_pending
 )
 {% endif %},
+exclusions AS (
+    SELECT
+        CONCAT(
+            block_number,
+            '-',
+            tx_hash
+        ) AS block_tx_id
+    FROM
+        {{ ref('silver_observability__excluded_receipt_blocks') }}
+),
 FINAL AS (
     SELECT
         block_number,
@@ -336,13 +346,9 @@ SELECT
             tx_hash
         ) IN (
             SELECT
-                CONCAT(
-                    block_number,
-                    '-',
-                    tx_hash
-                )
+                block_tx_id
             FROM
-                {{ ref('silver_observability__excluded_receipt_blocks') }}
+                exclusions
         ) THEN FALSE
         ELSE is_pending
     END AS is_pending,
