@@ -159,7 +159,7 @@ flattened_traces AS (
         ) AS to_address,
         DATA :type :: STRING AS TYPE,
         CASE
-            WHEN DATA :type :: STRING = 'CALL' THEN utils.udf_hex_to_int(
+            WHEN DATA :type :: STRING ILIKE 'CALL' THEN utils.udf_hex_to_int(
                 DATA :value :: STRING
             ) / pow(
                 10,
