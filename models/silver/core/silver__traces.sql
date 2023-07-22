@@ -347,6 +347,8 @@ flattened_traces AS (
                 before_evm_transfers
             FROM
                 arb_traces
+            WHERE
+                identifier IS NOT NULL
         ),
         new_records AS (
             SELECT
