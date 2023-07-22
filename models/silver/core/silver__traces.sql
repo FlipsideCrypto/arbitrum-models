@@ -227,7 +227,7 @@ flattened_traces AS (
             SELECT
                 DATA :transactionPosition :: INT AS tx_position,
                 block_number,
-                NULL AS error_reason,
+                DATA :error :: STRING AS error_reason,
                 DATA :action :from :: STRING AS from_address,
                 COALESCE(
                     DATA :action :to :: STRING,
@@ -248,8 +248,11 @@ flattened_traces AS (
                     ORDER BY
                         VALUE :array_index :: INT ASC
                 ) AS trace_index,
-                utils.udf_hex_to_int(
-                    DATA :result :gasUsed :: STRING
+                IFNULL(
+                    utils.udf_hex_to_int(
+                        DATA :result :gasUsed :: STRING
+                    ),
+                    0
                 ) AS gas_used,
                 COALESCE(
                     DATA :action :input :: STRING,
