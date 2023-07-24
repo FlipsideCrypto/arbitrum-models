@@ -39,57 +39,12 @@ traces_txs AS (
     SELECT
         block_number,
         VALUE :array_index :: INT AS tx_position,
-        VALUE :array_index :: INT AS array_index,
         DATA :result AS full_traces,
         _inserted_timestamp
     FROM
         base_traces
     WHERE
-        DATA :: STRING NOT ILIKE '%action%' qualify(ROW_NUMBER() over (PARTITION BY block_number, tx_position
-    ORDER BY
-        _inserted_timestamp DESC)) = 1
-    UNION ALL
-    SELECT
-        block_number,
-        DATA :transactionPosition :: INT AS tx_position,
-        VALUE :array_index :: INT AS array_index,
-        OBJECT_CONSTRUCT(
-            'from',
-            DATA :action :from :: STRING,
-            'gas',
-            DATA :action :gas :: STRING,
-            'gasUsed',
-            DATA :result :gasUsed :: STRING,
-            'input',
-            DATA :action :input :: STRING,
-            'init',
-            DATA :action :init :: STRING,
-            'output',
-            DATA :result :output :: STRING,
-            'error',
-            DATA :error :: STRING,
-            'to',
-            DATA :action :to :: STRING,
-            'address',
-            DATA :result :address :: STRING,
-            'type',
-            DATA :type :: STRING,
-            'value',
-            DATA :action :value :: STRING,
-            'subtraces',
-            DATA :subtraces :: STRING,
-            'traceAddress',
-            DATA :traceAddress :: STRING,
-            'transactionHash',
-            DATA :transactionHash :: STRING,
-            'transactionPosition',
-            DATA :transactionPosition :: STRING
-        ) AS full_traces,
-        _inserted_timestamp
-    FROM
-        base_traces
-    WHERE
-        DATA :: STRING ILIKE '%action%' qualify(ROW_NUMBER() over (PARTITION BY block_number, tx_position, array_index
+        block_number > 22207817 qualify(ROW_NUMBER() over (PARTITION BY block_number, tx_position
     ORDER BY
         _inserted_timestamp DESC)) = 1
 ),
@@ -115,7 +70,6 @@ base_table AS (
             VALUE
         ) AS DATA,
         txs.tx_position AS tx_position,
-        txs.array_index AS array_index,
         txs.block_number AS block_number,
         txs._inserted_timestamp AS _inserted_timestamp
     FROM
@@ -132,7 +86,6 @@ base_table AS (
         f.index IS NULL
         AND f.key != 'calls'
     GROUP BY
-        array_index,
         tx_position,
         id,
         block_number,
@@ -147,16 +100,10 @@ flattened_traces AS (
         utils.udf_hex_to_int(
             DATA :gasUsed :: STRING
         ) AS gas_used,
-        COALESCE(
-            DATA :input :: STRING,
-            DATA :init :: STRING
-        ) AS input,
+        DATA :input :: STRING AS input,
         DATA :output :: STRING AS output,
         DATA :error :: STRING AS error_reason,
-        COALESCE(
-            DATA :to :: STRING,
-            DATA :address :: STRING
-        ) AS to_address,
+        DATA :to :: STRING AS to_address,
         DATA :type :: STRING AS TYPE,
         CASE
             WHEN DATA :type :: STRING = 'CALL' THEN utils.udf_hex_to_int(
@@ -266,6 +213,92 @@ flattened_traces AS (
                 AND flattened_traces.level = group_sub_traces.parent_level
                 AND flattened_traces.block_number = group_sub_traces.block_number
         ),
+        dedupe_arb_traces AS (
+            SELECT
+                *
+            FROM
+                base_traces
+            WHERE
+                block_number <= 22207817 qualify(ROW_NUMBER() over(PARTITION BY block_number, VALUE :array_index :: INT, DATA :transactionPosition :: INT
+            ORDER BY
+                _inserted_timestamp DESC)) = 1
+        ),
+        arb_traces AS (
+            SELECT
+                DATA :transactionPosition :: INT AS tx_position,
+                block_number,
+                DATA :error :: STRING AS error_reason,
+                DATA :action :from :: STRING AS from_address,
+                COALESCE(
+                    DATA :action :to :: STRING,
+                    DATA :result :address :: STRING
+                ) AS to_address,
+                utils.udf_hex_to_int(
+                    DATA :action :value :: STRING
+                ) / pow(
+                    10,
+                    18
+                ) AS eth_value,
+                utils.udf_hex_to_int(
+                    DATA :action :gas :: STRING
+                ) AS gas,
+                ROW_NUMBER() over (
+                    PARTITION BY block_number,
+                    tx_position
+                    ORDER BY
+                        VALUE :array_index :: INT ASC
+                ) AS trace_index,
+                IFNULL(
+                    utils.udf_hex_to_int(
+                        DATA :result :gasUsed :: STRING
+                    ),
+                    0
+                ) AS gas_used,
+                COALESCE(
+                    DATA :action :input :: STRING,
+                    DATA :action :init :: STRING
+                ) AS input,
+                COALESCE(
+                    DATA :result :output :: STRING,
+                    DATA :result :code :: STRING
+                ) AS output,
+                UPPER(
+                    COALESCE(
+                        DATA :action :callType :: STRING,
+                        DATA :type :: STRING
+                    )
+                ) AS TYPE,
+                CASE
+                    WHEN trace_index = 1 THEN CONCAT(
+                        TYPE,
+                        '_',
+                        'ORIGIN'
+                    )
+                    WHEN DATA :traceAddress :: STRING <> '[]' THEN CONCAT(
+                        TYPE,
+                        '_',
+                        REPLACE(
+                            REPLACE(REPLACE(DATA :traceAddress :: STRING, '['), ']'),
+                            ',',
+                            '_'
+                        )
+                    )
+                    ELSE TYPE
+                END AS identifier,
+                concat_ws(
+                    '-',
+                    block_number,
+                    tx_position,
+                    identifier
+                ) AS _call_id,
+                _inserted_timestamp,
+                DATA,
+                DATA :subtraces :: INT AS sub_traces,
+                NULL AS after_evm_transfers,
+                NULL AS before_evm_transfers
+            FROM
+                dedupe_arb_traces
+        ),
         final_traces AS (
             SELECT
                 tx_position,
@@ -289,6 +322,31 @@ flattened_traces AS (
                 before_evm_transfers
             FROM
                 add_sub_traces
+            WHERE
+                identifier IS NOT NULL
+            UNION ALL
+            SELECT
+                tx_position,
+                trace_index,
+                block_number,
+                error_reason,
+                from_address,
+                to_address,
+                eth_value,
+                gas,
+                gas_used,
+                input,
+                output,
+                TYPE,
+                identifier,
+                _call_id,
+                _inserted_timestamp,
+                DATA,
+                sub_traces,
+                after_evm_transfers,
+                before_evm_transfers
+            FROM
+                arb_traces
             WHERE
                 identifier IS NOT NULL
         ),
