@@ -30,7 +30,7 @@ WHERE
         model_tx_hash IS NULL
         OR model_block_number IS NULL
     )
-    AND base_block_number > 22207817
+    AND base_block_number NOT IN SELECT block_number FROM {{ref('silver_observability__excluded_receipt_blocks')}}) 
 {% endmacro %}
 
 {% macro recent_missing_txs(
