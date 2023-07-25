@@ -29,8 +29,7 @@ SELECT
     base_block_number,
     base_tx_hash,
     model_block_number,
-    model_tx_hash,
-    to_address
+    model_tx_hash
 FROM
     txs_base
     LEFT JOIN model_name
