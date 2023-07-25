@@ -10,8 +10,13 @@
             {{ ref('test_silver__transactions_full') }}
         WHERE
             to_address <> '0x000000000000000000000000000000000000006e'
-            AND block_number > 22207814 
-            AND block_number NOT IN (SELECT block_number FROM {{ref('silver_observability__excluded_receipt_blocks')}})
+            AND block_number > 22207814
+            AND block_number NOT IN (
+                SELECT
+                    block_number
+                FROM
+                    {{ ref('silver_observability__excluded_receipt_blocks') }}
+            )
     ),
     model_name AS (
         SELECT
@@ -49,8 +54,13 @@ WHERE
             {{ ref('test_silver__transactions_recent') }}
         WHERE
             to_address <> '0x000000000000000000000000000000000000006e'
-            AND block_number NOT IN (SELECT block_number FROM {{ref('silver_observability__excluded_receipt_blocks')}})
-
+            AND block_number NOT IN (
+                SELECT
+                    block_number
+                FROM
+                    {{ ref('silver_observability__excluded_receipt_blocks') }}
+            )
+            AND block_number > 22207814
     ),
     model_name AS (
         SELECT
@@ -88,7 +98,8 @@ WHERE
             tx_hash AS base_tx_hash
         FROM
             {{ model1 }}
-        WHERE block_number > 22207814
+        WHERE
+            block_number > 22207814
     ),
     model_name AS (
         SELECT
@@ -97,8 +108,8 @@ WHERE
             tx_hash AS model_tx_hash
         FROM
             {{ model2 }}
-        WHERE block_number > 22207814
-        
+        WHERE
+            block_number > 22207814
     )
 SELECT
     DISTINCT base_block_number AS block_number
