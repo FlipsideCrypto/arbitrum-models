@@ -9,7 +9,9 @@
         FROM
             {{ ref('test_silver__transactions_full') }}
         WHERE
-            to_address <> '0x000000000000000000000000000000000000006e' 
+            to_address <> '0x000000000000000000000000000000000000006e'
+            AND block_number > 22207814 
+            AND block_number NOT IN (SELECT block_number FROM {{ref('silver_observability__excluded_receipt_blocks')}})
     ),
     model_name AS (
         SELECT
@@ -17,7 +19,6 @@
             tx_hash AS model_tx_hash
         FROM
             {{ model }}
-        WHERE model_block_number > 22207814
     )
 SELECT
     base_block_number,
@@ -31,14 +32,10 @@ FROM
     ON base_block_number = model_block_number
     AND base_tx_hash = model_tx_hash
 WHERE
-    base_block_number > 22207814 AND
-    base_block_number NOT IN (SELECT block_number FROM {{ref('silver_observability__excluded_receipt_blocks')}})
-    AND
     (
         model_tx_hash IS NULL
         OR model_block_number IS NULL
     )
-    AND to_address <> '0x000000000000000000000000000000000000006e'
 {% endmacro %}
 
 {% macro recent_missing_txs(
@@ -52,7 +49,8 @@ WHERE
             {{ ref('test_silver__transactions_recent') }}
         WHERE
             to_address <> '0x000000000000000000000000000000000000006e'
-        AND block_number > 22207814
+            AND block_number NOT IN (SELECT block_number FROM {{ref('silver_observability__excluded_receipt_blocks')}})
+
     ),
     model_name AS (
         SELECT
@@ -60,7 +58,6 @@ WHERE
             tx_hash AS model_tx_hash
         FROM
             {{ model }}
-        WHERE block_number > 22207814
     )
 SELECT
     base_block_number,
@@ -74,14 +71,10 @@ FROM
     ON base_block_number = model_block_number
     AND base_tx_hash = model_tx_hash
 WHERE
-    base_block_number > 22207814 AND
-    base_block_number NOT IN (SELECT block_number FROM {{ref('silver_observability__excluded_receipt_blocks')}})
-    AND
     (
         model_tx_hash IS NULL
         OR model_block_number IS NULL
     )
-    to_address <> '0x000000000000000000000000000000000000006e'
 {% endmacro %}
 
 {% macro missing_confirmed_txs(
@@ -101,8 +94,7 @@ WHERE
         SELECT
             block_number AS model_block_number,
             block_hash AS model_block_hash,
-            tx_hash AS model_tx_hash,
-            to_address
+            tx_hash AS model_tx_hash
         FROM
             {{ model2 }}
         WHERE block_number > 22207814
@@ -117,14 +109,11 @@ FROM
     AND base_tx_hash = model_tx_hash
     AND base_block_hash = model_block_hash
 WHERE
-    base_block_number > 22207814 AND
-    base_block_number NOT IN (SELECT block_number FROM {{ref('silver_observability__excluded_receipt_blocks')}})
-    AND model_tx_hash IS NULL
+    model_tx_hash IS NULL
     AND model_block_number <= (
         SELECT
             MAX(base_block_number)
         FROM
             txs_base
     )
-    AND to_address <> '0x000000000000000000000000000000000000006e'
 {% endmacro %}
