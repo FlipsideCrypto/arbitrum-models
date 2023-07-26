@@ -34,8 +34,8 @@ FROM
     ON base_block_number = model_block_number
     AND base_tx_hash = model_tx_hash
 WHERE
-        model_tx_hash IS NULL
-        OR model_block_number IS NULL
+    model_tx_hash IS NULL
+    OR model_block_number IS NULL
 {% endmacro %}
 
 {% macro recent_missing_txs(
@@ -120,9 +120,7 @@ WHERE
             {{ ref('test_silver__transactions_full') }}
         WHERE
             to_address <> '0x000000000000000000000000000000000000006e'
-            AND
-            block_number > 22207814
-
+            AND block_number > 22207814
     ),
     model_name AS (
         SELECT
@@ -155,7 +153,6 @@ WHERE
             tx_hash AS base_tx_hash
         FROM
             to_address <> '0x000000000000000000000000000000000000006e'
-
     ),
     model_name AS (
         SELECT
@@ -178,4 +175,3 @@ WHERE
     model_tx_hash IS NULL
     OR model_block_number IS NULL
 {% endmacro %}
-
