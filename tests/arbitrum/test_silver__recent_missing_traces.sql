@@ -1,2 +1,1 @@
--- depends_on: {{ ref('test_silver__transactions_recent') }}
-{{ recent_missing_traces(ref("test_silver__traces_recent")) }}
+{{ missing_traces(ref("test_silver__transactions_recent"), ref("test_silver__traces_recent")) }}
