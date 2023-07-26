@@ -4,8 +4,7 @@
     WITH txs_base AS (
         SELECT
             block_number AS base_block_number,
-            tx_hash AS base_tx_hash,
-            to_address
+            tx_hash AS base_tx_hash
         FROM
             {{ ref('test_silver__transactions_full') }}
         WHERE
@@ -59,8 +58,7 @@ SELECT
     base_block_number,
     base_tx_hash,
     model_block_number,
-    model_tx_hash,
-    to_address
+    model_tx_hash
 FROM
     txs_base
     LEFT JOIN model_name
@@ -82,6 +80,13 @@ WHERE
             tx_hash AS base_tx_hash
         FROM
             {{ model1 }}
+        WHERE
+            block_number NOT IN (
+                SELECT
+                    block_number
+                FROM
+                    {{ ref('silver_observability__excluded_receipt_blocks') }}
+            )
     ),
     model_name AS (
         SELECT
@@ -90,6 +95,13 @@ WHERE
             tx_hash AS model_tx_hash
         FROM
             {{ model2 }}
+        WHERE
+            block_number NOT IN (
+                SELECT
+                    block_number
+                FROM
+                    {{ ref('silver_observability__excluded_receipt_blocks') }}
+            )
     )
 SELECT
     DISTINCT base_block_number AS block_number
