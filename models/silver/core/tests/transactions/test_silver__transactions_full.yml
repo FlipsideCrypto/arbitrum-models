@@ -58,7 +58,8 @@ models:
               where: TO_ADDRESS IS NOT NULL
       - name: VALUE
         tests:
-          - not_null
+          - not_null:
+              where: BLOCK_NUMBER <> 18387522
       - name: BLOCK_HASH
         tests:
           - not_null

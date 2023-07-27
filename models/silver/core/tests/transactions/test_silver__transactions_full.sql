@@ -14,4 +14,3 @@ WHERE
         FROM
             {{ ref('silver_observability__excluded_receipt_blocks') }}
     )
-    AND block_number > 22207815

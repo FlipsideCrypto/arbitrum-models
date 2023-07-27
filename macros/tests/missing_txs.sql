@@ -7,13 +7,6 @@
             tx_hash AS base_tx_hash
         FROM
             {{ ref('test_silver__transactions_full') }}
-        WHERE
-            block_number NOT IN (
-                SELECT
-                    block_number
-                FROM
-                    {{ ref('silver_observability__excluded_receipt_blocks') }}
-            )
     ),
     model_name AS (
         SELECT
@@ -37,7 +30,13 @@ WHERE
         model_tx_hash IS NULL
         OR model_block_number IS NULL
     )
-    AND base_block_number > 22207817
+    AND
+    base_block_number NOT IN (
+        SELECT
+            block_number
+        FROM
+            {{ ref('silver_observability__excluded_receipt_blocks') }}
+    )
 {% endmacro %}
 
 {% macro recent_missing_txs(
@@ -83,13 +82,6 @@ WHERE
             tx_hash AS base_tx_hash
         FROM
             {{ model1 }}
-        WHERE
-            block_number NOT IN (
-                SELECT
-                    block_number
-                FROM
-                    {{ ref('silver_observability__excluded_receipt_blocks') }}
-            )
     ),
     model_name AS (
         SELECT
@@ -98,13 +90,6 @@ WHERE
             tx_hash AS model_tx_hash
         FROM
             {{ model2 }}
-        WHERE
-            block_number NOT IN (
-                SELECT
-                    block_number
-                FROM
-                    {{ ref('silver_observability__excluded_receipt_blocks') }}
-            )
     )
 SELECT
     DISTINCT base_block_number AS block_number
@@ -121,6 +106,13 @@ WHERE
             MAX(base_block_number)
         FROM
             txs_base
+    )
+    AND
+    base_block_number NOT IN (
+        SELECT
+            block_number
+        FROM
+            {{ ref('silver_observability__excluded_receipt_blocks') }}
     )
 {% endmacro %}
 
