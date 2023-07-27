@@ -135,3 +135,23 @@ WHERE
     AND tx.to_address <> '0x000000000000000000000000000000000000006e'
     AND tr.to_address <> '0x000000000000000000000000000000000000006e'
 {% endmacro %}
+
+{% macro missing_traces(
+        model1,
+        model2
+    ) %}
+SELECT
+    DISTINCT block_number
+FROM
+    {{ model1 }}
+    tx
+    LEFT JOIN {{ model2 }}
+    tr USING (
+        block_number,
+        tx_hash
+    )
+WHERE
+    tr.tx_hash IS NULL
+    AND tx.to_address <> '0x000000000000000000000000000000000000006e'
+    AND tr.to_address <> '0x000000000000000000000000000000000000006e'
+{% endmacro %}
