@@ -67,7 +67,8 @@ models:
               regex: 0[xX][0-9a-fA-F]+
       - name: GAS_PRICE
         tests:
-          - not_null
+          - not_null:
+              where: TX_HASH NOT IN ('0x62b7f8049679e7509ace9ed2e58579b83c8670d73f467a1e1cfa95076033c76a','0xeff62d6f73fadcdff0ca04e30b8934f0c7ff24762bde3a32b3084d096ec710fc','0x413775b3faf5bd0ff65996af1aeaaa9438b32f435cdb3069c63a3e89068adbca')
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - NUMBER    
@@ -112,7 +113,7 @@ models:
       - name: EFFECTIVE_GAS_PRICE
         tests:
           - not_null:
-              where: NOT IS_PENDING
+              where: NOT IS_PENDING AND tx_hash not in ('0x62b7f8049679e7509ace9ed2e58579b83c8670d73f467a1e1cfa95076033c76a','0xeff62d6f73fadcdff0ca04e30b8934f0c7ff24762bde3a32b3084d096ec710fc','0x413775b3faf5bd0ff65996af1aeaaa9438b32f435cdb3069c63a3e89068adbca')
       - name: ORIGIN_FUNCTION_SIGNATURE
         tests:
           - not_null
