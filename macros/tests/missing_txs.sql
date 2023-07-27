@@ -30,6 +30,13 @@ WHERE
         model_tx_hash IS NULL
         OR model_block_number IS NULL
     )
+    AND
+    base_block_number NOT IN (
+        SELECT
+            block_number
+        FROM
+            {{ ref('silver_observability__excluded_receipt_blocks') }}
+    )
 {% endmacro %}
 
 {% macro recent_missing_txs(
@@ -100,6 +107,33 @@ WHERE
         FROM
             txs_base
     )
+    AND
+    base_block_number NOT IN (
+        SELECT
+            block_number
+        FROM
+            {{ ref('silver_observability__excluded_receipt_blocks') }}
+    )
+{% endmacro %}
+
+{% macro missing_traces(
+        model1,
+        model2
+    ) %}
+SELECT
+    DISTINCT block_number
+FROM
+    {{ model1 }}
+    tx
+    LEFT JOIN {{ model2 }}
+    tr USING (
+        block_number,
+        tx_hash
+    )
+WHERE
+    tr.tx_hash IS NULL
+    AND tx.to_address <> '0x000000000000000000000000000000000000006e'
+    AND tr.to_address <> '0x000000000000000000000000000000000000006e'
 {% endmacro %}
 
 {% macro missing_traces(
