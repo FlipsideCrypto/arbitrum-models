@@ -44,5 +44,3 @@ jobs:
         run: |
           dbt test --exclude tag:full_test tag:recent_test
   
-
-

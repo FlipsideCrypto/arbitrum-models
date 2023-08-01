@@ -44,5 +44,3 @@ jobs:
         run: |
           dbt run --threads 2 --vars '{"OBSERV_FULL_TEST":True}' -m tag:observability
   
-
-

@@ -44,5 +44,3 @@ jobs:
         run: |
           dbt run -m tag:abis
   
-
-
