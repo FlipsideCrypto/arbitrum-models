@@ -282,7 +282,8 @@ FINAL AS (
         tx_type,
         l1_block_number,
         gas_used_for_l1,
-        _inserted_timestamp
+        _inserted_timestamp,
+        DATA
     FROM
         new_records
 
@@ -322,7 +323,8 @@ SELECT
     tx_type,
     l1_block_number,
     gas_used_for_l1,
-    _inserted_timestamp
+    _inserted_timestamp,
+    DATA
 FROM
     missing_data
 {% endif %}
@@ -373,8 +375,11 @@ SELECT
     tx_type,
     l1_block_number,
     gas_used_for_l1,
-    _inserted_timestamp
+    _inserted_timestamp,
+    DATA
 FROM
-    FINAL qualify(ROW_NUMBER() over (PARTITION BY block_number, POSITION
+    FINAL
+WHERE
+    block_hash IS NOT NULL qualify(ROW_NUMBER() over (PARTITION BY block_number, POSITION
 ORDER BY
     _inserted_timestamp DESC, is_pending ASC)) = 1
