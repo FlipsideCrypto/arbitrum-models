@@ -60,6 +60,7 @@ SELECT
     block_number,
     block_timestamp,
     tx_hash,
+    contract_address,
     event_index,
     contract_address,
     baseToken AS base_token,
