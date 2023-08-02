@@ -214,6 +214,7 @@ missing_data AS (
             r.effective_gas_price * r.gas_used,
             9
         ) AS tx_fee_precise,
+        tx_fee_precise :: FLOAT AS tx_fee,
         r.type AS tx_type,
         r.l1BlockNumber AS l1_block_number,
         r.gas_used_for_l1,
