@@ -1746,7 +1746,10 @@ SELECT
   origin_from_address,
   origin_to_address,
   contract_address,
-  pool_name,
+  CASE
+    WHEN f.pool_name IS NULL THEN p.pool_name
+    ELSE f.pool_name
+  END AS pool_name,
   event_name,
   amount_in_unadj,
   amount_in,
@@ -1775,4 +1778,6 @@ SELECT
   _log_id,
   _inserted_timestamp
 FROM
-  FINAL
+  FINAL f
+LEFT JOIN {{ ref('silver_dex__complete_dex_liquidity_pools') }} p
+  ON f.contract_address = p.pool_address
