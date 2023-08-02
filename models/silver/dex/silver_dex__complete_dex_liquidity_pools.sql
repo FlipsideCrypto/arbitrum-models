@@ -110,7 +110,7 @@ WHERE
 {% endif %}
 ),
 
-dodo_v1 AS (--custom pools model required
+dodo_v1 AS (
 
 SELECT
     block_number,
@@ -118,6 +118,7 @@ SELECT
     tx_hash,
     contract_address,
     pool_address,
+    NULL AS pool_name,
     base_token AS token0,
     quote_token AS token1,
     'dodo-v1' AS platform,
@@ -148,7 +149,7 @@ SELECT
     base_token AS token0,
     quote_token AS token1,
     'dodo-v2' AS platform,
-    _id,
+    _log_id AS _id,
     _inserted_timestamp
 FROM 
     {{ ref('silver_dex__dodo_v2_pools') }}
@@ -334,7 +335,7 @@ SELECT
     block_timestamp,
     tx_hash,
     contract_address,
-    pool_address,
+    lb_pair AS pool_address,
     NULL AS pool_name,
     tokenX AS token0,
     tokenY AS token1,

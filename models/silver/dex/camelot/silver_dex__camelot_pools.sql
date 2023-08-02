@@ -56,6 +56,7 @@ SELECT
     token0,
     token1,
     pool_address,
+    _log_id,
     _inserted_timestamp
 FROM
     pool_creation
