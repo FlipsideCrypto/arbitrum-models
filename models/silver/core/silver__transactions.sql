@@ -5,7 +5,6 @@
     unique_key = "block_number",
     cluster_by = "block_timestamp::date, _inserted_timestamp::date",
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
-    full_refresh = false,
     tags = ['core']
 ) }}
 
@@ -103,15 +102,16 @@ base_tx AS (
         ) AS POSITION,
         A.data :type :: STRING AS TYPE,
         A.data :v :: STRING AS v,
-        TRY_TO_NUMBER(
-            utils.udf_hex_to_int(
-                A.data :value :: STRING
-            )
-        ) / pow(
-            10,
+        utils.udf_hex_to_int(
+            A.data :value :: STRING
+        ) AS eth_value_precise_raw,
+        utils.udf_decimal_adjust(
+            eth_value_precise_raw,
             18
-        ) :: FLOAT AS VALUE,
-        A._INSERTED_TIMESTAMP
+        ) AS eth_value_precise,
+        eth_value_precise :: FLOAT AS VALUE,
+        A._INSERTED_TIMESTAMP,
+        A.data
     FROM
         base A
 ),
@@ -135,6 +135,8 @@ new_records AS (
         t.position,
         t.type,
         t.v,
+        t.eth_value_precise_raw,
+        t.eth_value_precise,
         t.value,
         block_timestamp,
         CASE
@@ -147,16 +149,16 @@ new_records AS (
         tx_status,
         cumulative_gas_used,
         effective_gas_price,
-        (
-            effective_gas_price * r.gas_used
-        ) / pow(
-            10,
+        utils.udf_decimal_adjust(
+            effective_gas_price * r.gas_used,
             9
-        ) AS tx_fee,
+        ) AS tx_fee_precise,
+        tx_fee_precise :: FLOAT AS tx_fee,
         r.type AS tx_type,
         r.l1BlockNumber AS l1_block_number,
         r.gas_used_for_l1,
-        t._inserted_timestamp
+        t._inserted_timestamp,
+        t.data
     FROM
         base_tx t
         LEFT OUTER JOIN {{ ref('silver__blocks') }}
@@ -198,6 +200,8 @@ missing_data AS (
         t.position,
         t.type,
         t.v,
+        t.eth_value_precise_raw,
+        t.eth_value_precise,
         t.value,
         b.block_timestamp,
         FALSE AS is_pending,
@@ -206,12 +210,10 @@ missing_data AS (
         r.tx_status,
         r.cumulative_gas_used,
         r.effective_gas_price,
-        (
-            t.gas_price * r.gas_used
-        ) / pow(
-            10,
+        utils.udf_decimal_adjust(
+            r.effective_gas_price * r.gas_used,
             9
-        ) AS tx_fee,
+        ) AS tx_fee_precise,
         r.type AS tx_type,
         r.l1BlockNumber AS l1_block_number,
         r.gas_used_for_l1,
@@ -219,7 +221,8 @@ missing_data AS (
             t._inserted_timestamp,
             b._inserted_timestamp,
             r._inserted_timestamp
-        ) AS _inserted_timestamp
+        ) AS _inserted_timestamp,
+        t.data
     FROM
         {{ this }}
         t
@@ -265,6 +268,8 @@ FINAL AS (
         TYPE,
         v,
         VALUE,
+        eth_value_precise_raw,
+        eth_value_precise,
         block_timestamp,
         is_pending,
         gas_used,
@@ -273,6 +278,7 @@ FINAL AS (
         cumulative_gas_used,
         effective_gas_price,
         tx_fee,
+        tx_fee_precise,
         tx_type,
         l1_block_number,
         gas_used_for_l1,
@@ -302,6 +308,8 @@ SELECT
     TYPE,
     v,
     VALUE,
+    eth_value_precise_raw,
+    eth_value_precise,
     block_timestamp,
     is_pending,
     gas_used,
@@ -310,6 +318,7 @@ SELECT
     cumulative_gas_used,
     effective_gas_price,
     tx_fee,
+    tx_fee_precise,
     tx_type,
     l1_block_number,
     gas_used_for_l1,
@@ -338,6 +347,8 @@ SELECT
     TYPE,
     v,
     VALUE,
+    eth_value_precise_raw,
+    eth_value_precise,
     block_timestamp,
     CASE
         WHEN CONCAT(
@@ -358,6 +369,7 @@ SELECT
     cumulative_gas_used,
     effective_gas_price,
     tx_fee,
+    tx_fee_precise,
     tx_type,
     l1_block_number,
     gas_used_for_l1,
