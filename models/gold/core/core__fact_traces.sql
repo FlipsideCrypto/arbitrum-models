@@ -11,19 +11,6 @@ SELECT
     from_address,
     to_address,
     eth_value,
-    IFNULL(
-        utils.udf_hex_to_int(
-            COALESCE(
-                DATA :value :: STRING,
-                DATA :action :value :: STRING
-            )
-        ),
-        '0'
-    ) AS eth_value_precise_raw,
-    utils.udf_decimal_adjust(
-        eth_value_precise_raw,
-        18
-    ) AS eth_value_precise,
     gas,
     gas_used,
     input,
