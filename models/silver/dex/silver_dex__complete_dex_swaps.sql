@@ -1739,13 +1739,13 @@ FINAL AS (
     all_dex_custom C
 )
 SELECT
-  block_number,
-  block_timestamp,
-  tx_hash,
+  f.block_number,
+  f.block_timestamp,
+  f.tx_hash,
   origin_function_signature,
   origin_from_address,
   origin_to_address,
-  contract_address,
+  f.contract_address,
   CASE
     WHEN f.pool_name IS NULL THEN p.pool_name
     ELSE f.pool_name
@@ -1770,13 +1770,13 @@ SELECT
   sender,
   tx_to,
   event_index,
-  platform,
+  f.platform,
   token_in,
   token_out,
   symbol_in,
   symbol_out,
-  _log_id,
-  _inserted_timestamp
+  f._log_id,
+  f._inserted_timestamp
 FROM
   FINAL f
 LEFT JOIN {{ ref('silver_dex__complete_dex_liquidity_pools') }} p
