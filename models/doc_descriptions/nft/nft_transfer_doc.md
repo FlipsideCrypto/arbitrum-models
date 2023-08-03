@@ -1,5 +1,5 @@
 {% docs nft_transfer_doc %}
 
-This table contains NFT transfer events on the Optimism blockchain.
+This table contains NFT transfer events on the Arbitrum blockchain.
 
 {% enddocs %}
