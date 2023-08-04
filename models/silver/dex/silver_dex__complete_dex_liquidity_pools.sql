@@ -412,6 +412,9 @@ WHERE
 
 all_pools_standard AS (
     SELECT *
+    FROM camelot
+    UNION ALL
+    SELECT *
     FROM dodo_v1
     UNION ALL
     SELECT *
