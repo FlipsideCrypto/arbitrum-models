@@ -1,9 +1,9 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "pool_address"
+    unique_key = "pool_address",
+    full_refresh = false,
+    tags = ['non_realtime']
 ) }}
-
---    full_refresh = false
 
 WITH pools_registered AS (
 
@@ -55,7 +55,7 @@ SELECT
     decoded_flat :assetManagers AS asset_managers,
     _log_id,
     _inserted_timestamp
-FROM ethereum.silver.decoded_logs
+FROM {{ ref('silver__decoded_logs') }}
 WHERE
     topics[0]::STRING = '0xf5847d3f2197b16cdcd2098ec95d0905cd1abdaf415f07bb7cef2bba8ac5dec4' --TokensRegistered
     AND contract_address = '0xba12222222228d8ba445958a75a0704d566bf2c8'
