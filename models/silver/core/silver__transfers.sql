@@ -2,12 +2,8 @@
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
     unique_key = "block_number",
-<<<<<<< HEAD:models/silver/core/silver__transfers.sql
     cluster_by = ['block_timestamp::DATE', '_inserted_timestamp::DATE'],
     tags = ['non_realtime']
-=======
-    cluster_by = ['block_timestamp::DATE', '_inserted_timestamp::DATE']
->>>>>>> 8cd754b (An 3670/precise columns (#107)):models/silver/silver__transfers.sql
 ) }}
 
 WITH logs AS (
