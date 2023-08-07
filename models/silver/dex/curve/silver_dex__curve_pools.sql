@@ -4,7 +4,6 @@
     full_refresh = false,
     tags = ['non_realtime']
 ) }}
---    full_refresh = false
 
 WITH contract_deployments AS (
 
