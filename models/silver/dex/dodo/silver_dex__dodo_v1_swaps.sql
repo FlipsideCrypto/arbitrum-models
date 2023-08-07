@@ -8,25 +8,10 @@
 WITH pools AS (
 
     SELECT
-        '0xfe176a2b1e1f67250d2903b8d25f56c0dabcd6b2' AS pool_address,
-        'WETH' AS base_token_symbol,
-        'USDC' AS quote_token_symbol,
-        '0x82af49447d8a07e3bd95bd0d56f35241523fbab1' AS base_token,
-        '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8' AS quote_token
-    UNION
-    SELECT
-        '0xe4b2dfc82977dd2dce7e8d37895a6a8f50cbb4fb', 
-        'USDT',
-        'USDC',
-        '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9',
-        '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8'
-    UNION
-    SELECT
-        '0xb42a054d950dafd872808b3c839fbb7afb86e14c',
-        'WBTC',
-        'USDC',
-        '0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f',
-        '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8'
+        pool_address,
+        base_token,
+        quote_token
+    FROM {{ ref('silver_dex__dodo_v1_pools') }}
 ),  
 proxies AS (
     SELECT
