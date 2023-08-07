@@ -95,7 +95,9 @@ SELECT
 FROM
     row_nos rn
 WHERE
-    row_no = {{ item }} + 1 {% if not loop.last %}
+    row_no = {{ item }}
+
+    {% if not loop.last %}
     UNION ALL
     {% endif %}
 {% endfor %})
