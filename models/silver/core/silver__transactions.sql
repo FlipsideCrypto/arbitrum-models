@@ -5,7 +5,6 @@
     unique_key = "block_number",
     cluster_by = "block_timestamp::date, _inserted_timestamp::date",
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
-    full_refresh = false,
     tags = ['core','non_realtime']
 ) }}
 
@@ -105,12 +104,7 @@ base_tx AS (
         A.data :v :: STRING AS v,
         utils.udf_hex_to_int(
             A.data :value :: STRING
-        ) AS eth_value_precise_raw,
-        utils.udf_decimal_adjust(
-            eth_value_precise_raw,
-            18
-        ) AS eth_value_precise,
-        eth_value_precise :: FLOAT AS VALUE,
+        ) :: FLOAT AS VALUE,
         A._INSERTED_TIMESTAMP,
         A.data
     FROM
@@ -136,8 +130,6 @@ new_records AS (
         t.position,
         t.type,
         t.v,
-        t.eth_value_precise_raw,
-        t.eth_value_precise,
         t.value,
         block_timestamp,
         CASE
@@ -201,8 +193,6 @@ missing_data AS (
         t.position,
         t.type,
         t.v,
-        t.eth_value_precise_raw,
-        t.eth_value_precise,
         t.value,
         b.block_timestamp,
         FALSE AS is_pending,
@@ -270,8 +260,6 @@ FINAL AS (
         TYPE,
         v,
         VALUE,
-        eth_value_precise_raw,
-        eth_value_precise,
         block_timestamp,
         is_pending,
         gas_used,
@@ -311,8 +299,6 @@ SELECT
     TYPE,
     v,
     VALUE,
-    eth_value_precise_raw,
-    eth_value_precise,
     block_timestamp,
     is_pending,
     gas_used,
@@ -351,8 +337,6 @@ SELECT
     TYPE,
     v,
     VALUE,
-    eth_value_precise_raw,
-    eth_value_precise,
     block_timestamp,
     CASE
         WHEN CONCAT(
