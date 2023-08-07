@@ -1,4 +1,4 @@
-{# {% macro get_merge_sql(
+{% macro get_merge_sql(
         target,
         source,
         unique_key,
@@ -41,4 +41,4 @@
         predicates
     ) %}
     {{ return(merge_sql) }}
-{% endmacro %} #}
+{% endmacro %}
