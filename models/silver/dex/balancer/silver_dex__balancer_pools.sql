@@ -5,8 +5,6 @@
     tags = ['non_realtime']
 ) }}
 
---    full_refresh = false
-
 WITH pools_registered AS (
 
     SELECT
