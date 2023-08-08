@@ -1,5 +1,5 @@
 {% docs nft_mint_price %}
 
-The price paid in AVAX to mint the NFT(s).
+The price paid in ETH to mint the NFT(s).
 
 {% enddocs %}
