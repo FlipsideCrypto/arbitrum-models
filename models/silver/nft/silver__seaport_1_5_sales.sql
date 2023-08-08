@@ -1547,7 +1547,7 @@ mao_orderhash AS (
                 erc1155_value,
                 IFF(
                     currency_address = '0x0000000000000000000000000000000000000000',
-                    'MATIC',
+                    'ETH',
                     currency_address
                 ) AS currency_address,
                 total_sale_amount_raw,
@@ -1582,7 +1582,7 @@ mao_orderhash AS (
                 erc1155_value,
                 IFF(
                     currency_address = '0x0000000000000000000000000000000000000000',
-                    'MATIC',
+                    'ETH',
                     currency_address
                 ) AS currency_address,
                 total_sale_amount_raw,
@@ -1617,7 +1617,7 @@ mao_orderhash AS (
                 erc1155_value,
                 IFF(
                     currency_address = '0x0000000000000000000000000000000000000000',
-                    'MATIC',
+                    'ETH',
                     currency_address
                 ) AS currency_address,
                 total_sale_amount_raw,
