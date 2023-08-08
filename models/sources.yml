@@ -53,3 +53,8 @@ sources:
     schema: silver
     tables:
       - name: verified_abis
+  - name: arbitrum_bronze_api
+    database: arbitrum
+    schema: bronze_api
+    tables:
+      - name: contract_abis
