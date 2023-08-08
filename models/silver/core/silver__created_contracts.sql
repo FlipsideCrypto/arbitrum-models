@@ -13,7 +13,7 @@ SELECT
     input AS created_contract_input,
     _inserted_timestamp
 FROM
-    {{ ref('silver__traces2') }}
+    {{ ref('silver__traces') }}
 WHERE
     TYPE ILIKE 'create%'
     AND to_address IS NOT NULL
@@ -25,9 +25,7 @@ WHERE
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
+        MAX(_inserted_timestamp) - INTERVAL '24 hours'
     FROM
         {{ this }}
 )
