@@ -5,9 +5,9 @@
     unique_key = "block_number",
     cluster_by = "ROUND(block_number, -3)",
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(tx_hash)",
-    tags = ['core']
+    full_refresh = false,
+    tags = ['core','non_realtime']
 ) }}
---add back after backfill completes - full_refresh = false
 
 WITH base AS (
 
@@ -79,9 +79,12 @@ FINAL AS (
             ELSE to_address1
         END AS to_address,
         DATA :transactionHash :: STRING AS tx_hash,
-        utils.udf_hex_to_int(
-            DATA :transactionIndex :: STRING
-        ) :: INT AS POSITION,
+        CASE
+            WHEN block_number <> blockNumber THEN NULL
+            ELSE utils.udf_hex_to_int(
+                DATA :transactionIndex :: STRING
+            ) :: INT
+        END AS POSITION,
         utils.udf_hex_to_int(
             DATA :type :: STRING
         ) :: INT AS TYPE,
@@ -94,6 +97,7 @@ SELECT
 FROM
     FINAL
 WHERE
-    tx_hash IS NOT NULL qualify(ROW_NUMBER() over (PARTITION BY block_number, POSITION
+    tx_hash IS NOT NULL
+    AND POSITION IS NOT NULL qualify(ROW_NUMBER() over (PARTITION BY block_number, POSITION
 ORDER BY
     _inserted_timestamp DESC)) = 1

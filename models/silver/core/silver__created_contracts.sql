@@ -1,0 +1,38 @@
+{{ config (
+    materialized = "incremental",
+    unique_key = "created_contract_address",
+    tags = ['non_realtime']
+) }}
+
+SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    to_address AS created_contract_address,
+    from_address AS creator_address,
+    input AS created_contract_input,
+    _inserted_timestamp
+FROM
+    {{ ref('silver__traces2') }}
+WHERE
+    TYPE ILIKE 'create%'
+    AND to_address IS NOT NULL
+    AND input IS NOT NULL
+    AND input != '0x'
+    AND tx_status = 'SUCCESS'
+    AND traces_status = 'SUCCESS'
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        ) :: DATE - 1
+    FROM
+        {{ this }}
+)
+{% endif %}
+
+qualify(ROW_NUMBER() over(PARTITION BY created_contract_address
+ORDER BY
+    _inserted_timestamp DESC)) = 1

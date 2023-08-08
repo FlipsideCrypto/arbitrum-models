@@ -42,8 +42,19 @@ sources:
       - name: address_labels
       - name: token_prices_priority_hourly
       - name: asset_metadata_priority
+      - name: number_sequence
   - name: crosschain_public
     database: crosschain
     schema: bronze_public
     tables:
       - name: user_abis
+  - name: arbitrum_silver
+    database: arbitrum
+    schema: silver
+    tables:
+      - name: verified_abis
+  - name: arbitrum_bronze_api
+    database: arbitrum
+    schema: bronze_api
+    tables:
+      - name: contract_abis
