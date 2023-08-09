@@ -336,7 +336,10 @@ SELECT
     POSITION,
     TYPE,
     v,
-    VALUE,
+    VALUE / pow(
+        10,
+        18
+    ) AS VALUE,
     block_timestamp,
     CASE
         WHEN CONCAT(
