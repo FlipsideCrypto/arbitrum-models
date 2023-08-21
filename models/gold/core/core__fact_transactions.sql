@@ -64,9 +64,12 @@ FROM
             tx_type,
             l1_block_number,
             gas_used_for_l1,
-            to_varchar(
-                TO_NUMBER(REPLACE(DATA :value :: STRING, '0x'), REPEAT('X', LENGTH(REPLACE(DATA :value :: STRING, '0x'))))
-            ) AS eth_value_precise_raw,
+            CASE
+                WHEN tx_hash <> '0xefc4b1845f162fd61b496766c69fc0da9ee1317f0153efa30b3cb30d8f7884ba' THEN to_varchar(
+                    TO_NUMBER(REPLACE(DATA :value :: STRING, '0x'), REPEAT('X', LENGTH(REPLACE(DATA :value :: STRING, '0x'))))
+                )
+                ELSE NULL
+            END AS eth_value_precise_raw,
             IFF(LENGTH(eth_value_precise_raw) > 18, LEFT(eth_value_precise_raw, LENGTH(eth_value_precise_raw) - 18) || '.' || RIGHT(eth_value_precise_raw, 18), '0.' || LPAD(eth_value_precise_raw, 18, '0')) AS rough_conversion,
             IFF(
                 POSITION(

@@ -11,14 +11,20 @@ SELECT
     from_address,
     to_address,
     eth_value,
-    IFNULL(
-        eth_value_precise_raw,
-        '0'
-    ) AS eth_value_precise_raw,
-    IFNULL(
-        eth_value_precise,
-        '0'
-    ) AS eth_value_precise,
+    CASE
+        WHEN tx_hash <> '0xefc4b1845f162fd61b496766c69fc0da9ee1317f0153efa30b3cb30d8f7884ba' THEN IFNULL(
+            eth_value_precise_raw,
+            '0'
+        )
+        ELSE NULL
+    END AS eth_value_precise_raw,
+    CASE
+        WHEN tx_hash <> '0xefc4b1845f162fd61b496766c69fc0da9ee1317f0153efa30b3cb30d8f7884ba' THEN IFNULL(
+            eth_value_precise,
+            '0'
+        )
+        ELSE NULL
+    END AS eth_value_precise,
     gas,
     gas_used,
     input,
@@ -63,19 +69,21 @@ FROM
                 ),
                 '0x'
             ) AS hex,
-            to_varchar(TO_NUMBER(hex, REPEAT('X', LENGTH(hex)))) AS eth_value_precise_raw,
-            IFF(LENGTH(eth_value_precise_raw) > 18, LEFT(eth_value_precise_raw, LENGTH(eth_value_precise_raw) - 18) || '.' || RIGHT(eth_value_precise_raw, 18), '0.' || LPAD(eth_value_precise_raw, 18, '0')) AS rough_conversion,
-            IFF(
-                POSITION(
-                    '.000000000000000000' IN rough_conversion
-                ) > 0,
-                LEFT(rough_conversion, LENGTH(rough_conversion) - 19),
-                REGEXP_REPLACE(
-                    rough_conversion,
-                    '0*$',
-                    ''
-                )
-            ) AS eth_value_precise
-        FROM
-            {{ ref('silver__traces') }}
-    )
+            CASE
+                WHEN tx_hash <> '0xefc4b1845f162fd61b496766c69fc0da9ee1317f0153efa30b3cb30d8f7884ba' THEN to_varchar(TO_NUMBER(hex, REPEAT('X', LENGTH(hex))))
+                ELSE null end AS eth_value_precise_raw,
+                IFF(LENGTH(eth_value_precise_raw) > 18, LEFT(eth_value_precise_raw, LENGTH(eth_value_precise_raw) - 18) || '.' || RIGHT(eth_value_precise_raw, 18), '0.' || LPAD(eth_value_precise_raw, 18, '0')) AS rough_conversion,
+                IFF(
+                    POSITION(
+                        '.000000000000000000' IN rough_conversion
+                    ) > 0,
+                    LEFT(rough_conversion, LENGTH(rough_conversion) - 19),
+                    REGEXP_REPLACE(
+                        rough_conversion,
+                        '0*$',
+                        ''
+                    )
+                ) AS eth_value_precise
+                FROM
+                    {{ ref('silver__traces') }}
+            )
