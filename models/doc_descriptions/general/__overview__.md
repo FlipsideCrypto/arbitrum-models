@@ -26,7 +26,6 @@ There is more information on how to use dbt docs in the last section of this doc
 - [fact_blocks](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.core__fact_blocks)
 - [fact_event_logs](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.core__fact_event_logs)
 - [fact_decoded_event_logs](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.core__fact_decoded_event_logs)
-- [fact_hourly_token_prices](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.core__fact_hourly_token_prices)
 - [fact_token_transfers](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.core__fact_token_transfers)
 - [fact_traces](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.core__fact_traces)
 - [fact_transactions](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.core__fact_transactions)
@@ -35,12 +34,20 @@ There is more information on how to use dbt docs in the last section of this doc
 - [ez_eth_transfers](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.core__ez_eth_transfers)
 - [ez_token_transfers](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.core__ez_token_transfers)
 - [ez_decoded_event_logs](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.core__ez_decoded_event_logs)
-- [ez_dex_swaps](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.core__ez_dex_swaps)
-- [ez_nft_transfers](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.core__ez_nft_transfers)
-- [ez_nft_sales](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.core__ez_nft_sales)
+
+### Price Tables (arbitrum.price)
+- [fact_hourly_token_prices](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.price__fact_hourly_token_prices)
+- [ez_hourly_token_prices](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.price__ez_hourly_token_prices)
+- [dim_asset_metadata](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.price__dim_asset_metadata)
+- [ez_asset_metadata](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.price__ez_asset_metadata)
 
 ### DeFi Tables (arbitrum.defi)
 - [dim_dex_liquidity_pools](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.defi__dim_dex_liquidity_pools)
+- [ez_dex_swaps](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.defi__ez_dex_swaps)
+
+### NFT Tables (arbitrum.nft)
+- [ez_nft_sales](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.nft__ez_nft_sales)
+- [ez_nft_transfers](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.nft__ez_nft_transfers)
 
 ## **Helpful User-Defined Functions (UDFs)**
 

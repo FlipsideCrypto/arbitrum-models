@@ -1,23 +1,17 @@
 version: 2
 
 sources:
-  - name: prod
-    database: chainwalkers
-    schema: prod
-    tables:
-      - name: arbitrum_blocks
-      - name: arbitrum_txs
   - name: crosschain
-    database: crosschain
+    database: "{{ 'crosschain' if target.database == 'ARBITRUM' else 'crosschain_dev' }}"
     schema: core
     tables:
-      - name: address_labels
-      - name: ez_hourly_prices
+      - name: dim_labels
   - name: ethereum
     database: ethereum
     schema: core
     tables:
       - name: fact_hourly_token_prices
+      - name: ez_hourly_token_prices
   - name: bronze_streamline
     database: streamline
     schema: |
@@ -43,6 +37,8 @@ sources:
       - name: token_prices_priority_hourly
       - name: asset_metadata_priority
       - name: number_sequence
+      - name: token_prices_all_providers_hourly
+      - name: asset_metadata_all_providers
   - name: crosschain_public
     database: crosschain
     schema: bronze_public
