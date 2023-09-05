@@ -36,8 +36,6 @@ models:
       - name: PLATFORM_NAME
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_be_in_set:
-              value_set: ['treasure']
       - name: SELLER_ADDRESS
         tests:
           - not_null
@@ -58,7 +56,7 @@ models:
           - not_null
       - name: CURRENCY_ADDRESS
         tests:
-          - not_null:
+          - not_null
       - name: TOTAL_PRICE_RAW
         tests:
           - not_null

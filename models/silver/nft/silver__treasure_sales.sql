@@ -327,6 +327,11 @@ token_payment_raw AS (
             raw_amount,
             0
         ) AS platform_fee_raw_,
+        IFF(
+            to_address = '0x539bde0d7dbd336b79148aa742883198bbf60342',
+            'stop',
+            NULL
+        ) AS stop_tag,
         CASE
             WHEN platform_address_tag IS NOT NULL THEN ROW_NUMBER() over (
                 PARTITION BY tx_hash
@@ -384,6 +389,68 @@ token_payment_intra_fill AS (
 ),
 token_payment_payment_fill AS (
     SELECT
+        *
+    FROM
+        token_payment_intra_fill
+    WHERE
+        intra_tx_grouping_fill IS NOT NULL
+),
+token_payment_intra_fill_platform_tag AS (
+    SELECT
+        tx_hash,
+        intra_tx_grouping_fill,
+        ROW_NUMBER() over (
+            PARTITION BY tx_hash
+            ORDER BY
+                event_index ASC
+        ) AS platform_tag_row_number
+    FROM
+        token_payment_intra_fill
+    WHERE
+        platform_address_tag IS NOT NULL
+),
+base_sales_token AS (
+    SELECT
+        tx_hash,
+        total_price_raw,
+        intra_tx_grouping_raw AS platform_tag_row_number
+    FROM
+        base_sales
+    WHERE
+        currency_address = '0x539bde0d7dbd336b79148aa742883198bbf60342'
+        OR (
+            currency_address = '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'
+            AND event_name = 'BidAccepted'
+        )
+),
+base_sales_token_total_price AS (
+    SELECT
+        *
+    FROM
+        token_payment_intra_fill_platform_tag
+        JOIN base_sales_token USING (
+            tx_hash,
+            platform_tag_row_number
+        )
+),
+token_payment_payment_fill_total_price AS (
+    SELECT
+        *,
+        SUM(raw_amount) over (
+            PARTITION BY tx_hash,
+            intra_tx_grouping_fill
+            ORDER BY
+                event_index ASC
+        ) AS cumulative_grouping_sale
+    FROM
+        token_payment_payment_fill
+        LEFT JOIN base_sales_token_total_price USING (
+            tx_hash,
+            intra_tx_grouping_fill
+        ) qualify cumulative_grouping_sale <= total_price_raw
+),
+token_payment_payment_fill_filtered AS (
+    SELECT
         *,
         CASE
             WHEN ROW_NUMBER() over (
@@ -401,7 +468,7 @@ token_payment_payment_fill AS (
             ELSE 0
         END AS creator_fee_raw_
     FROM
-        token_payment_intra_fill
+        token_payment_payment_fill_total_price
 ),
 token_payment_payment_fill_agg AS (
     SELECT
@@ -410,9 +477,7 @@ token_payment_payment_fill_agg AS (
         SUM(platform_fee_raw_) AS platform_fee_raw,
         SUM(creator_fee_raw_) AS creator_fee_raw
     FROM
-        token_payment_payment_fill
-    WHERE
-        intra_tx_grouping_fill IS NOT NULL
+        token_payment_payment_fill_filtered
     GROUP BY
         ALL
 ),
