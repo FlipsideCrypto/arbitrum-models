@@ -77,4 +77,4 @@ FROM
 ORDER BY
     block_number ASC
 LIMIT
-    14000
+    28000
