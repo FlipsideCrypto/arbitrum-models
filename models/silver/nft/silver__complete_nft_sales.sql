@@ -1,8 +1,10 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = 'nft_log_id',
+    incremental_strategy = 'delete+insert',
+    unique_key = ['block_number','platform_name','platform_exchange_version'],
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['non_realtime']
+    post_hook = "{{ fsc_utils.block_reorg(this, 12) }}",
+  tags = ['non_realtime']
 ) }}
 
 WITH nft_base_models AS (
@@ -40,9 +42,7 @@ WITH nft_base_models AS (
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(
-                _inserted_timestamp
-            ) :: DATE - 1
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
@@ -81,9 +81,7 @@ FROM
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(
-                _inserted_timestamp
-            ) :: DATE - 1
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
@@ -122,9 +120,7 @@ FROM
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(
-                _inserted_timestamp
-            ) :: DATE - 1
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
@@ -163,9 +159,7 @@ FROM
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(
-                _inserted_timestamp
-            ) :: DATE - 1
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
@@ -194,15 +188,6 @@ prices_raw AS (
                 nft_base_models
         )
         AND token_address != '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'
-
-{% if is_incremental() %}
-AND HOUR >= (
-    SELECT
-        MAX(_inserted_timestamp) :: DATE - 2
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 eth_price AS (
     SELECT
@@ -220,15 +205,6 @@ eth_price AS (
             FROM
                 nft_base_models
         )
-
-{% if is_incremental() %}
-AND HOUR >= (
-    SELECT
-        MAX(_inserted_timestamp) :: DATE - 2
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 all_prices AS (
     SELECT
