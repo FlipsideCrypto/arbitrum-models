@@ -34,7 +34,7 @@ WHERE
                             (
                                 {{ var(
                                     'TRACES_BLOCKS',
-                                    500000
+                                    3000000
                                 ) }} / 100000
                             ) * 100000
                         )
@@ -52,7 +52,7 @@ WHERE
             SELECT
                 MAX(block_number) + {{ var(
                     'TRACES_BLOCKS',
-                    500000
+                    3000000
                 ) }}
             FROM
                 {{ this }}
@@ -60,7 +60,7 @@ WHERE
         {% else %}
             {{ ref('bronze__streamline_FR_traces') }}
         WHERE
-            _partition_by_block_id <= 10000000
+            _partition_by_block_id <= 20000000
         {% endif %}
     ),
     debug_traces AS (
@@ -148,6 +148,8 @@ WHERE
             f.index IS NULL
             AND f.key != 'calls'
             AND f.path != 'result'
+            AND f.path NOT LIKE 'afterEVMTransfers[%'
+            AND f.path NOT LIKE 'beforeEVMTransfers[%'
         GROUP BY
             block_number,
             tx_position,
@@ -438,6 +440,8 @@ WHERE
             f.type,
             f.identifier,
             f.sub_traces,
+            f.after_evm_transfers,
+            f.before_evm_transfers,
             f.error_reason,
             IFF(
                 f.error_reason IS NULL,
@@ -455,7 +459,7 @@ WHERE
             f._call_id,
             f._inserted_timestamp
         FROM
-            final_traces f
+            all_traces f
             LEFT OUTER JOIN {{ ref('silver__transactions') }}
             t
             ON f.tx_position = t.position
@@ -491,6 +495,8 @@ missing_data AS (
         t.type,
         t.identifier,
         t.sub_traces,
+        t.after_evm_transfers,
+        t.before_evm_transfers,
         t.error_reason,
         t.trace_status,
         t.data,
@@ -533,6 +539,8 @@ FINAL AS (
         sub_traces,
         error_reason,
         trace_status,
+        after_evm_transfers,
+        before_evm_transfers,
         DATA,
         is_pending,
         _call_id,
@@ -563,6 +571,8 @@ SELECT
     sub_traces,
     error_reason,
     trace_status,
+    after_evm_transfers,
+    before_evm_transfers,
     DATA,
     is_pending,
     _call_id,

@@ -4,8 +4,8 @@ run-name: dbt_run_scheduled_temp
 on:
   workflow_dispatch:
   schedule:
-    # Runs every 2 hours on the 45th minute
-    - cron: "45 */2 * * *"
+    # Runs every 2 hours on the 25th minute
+    - cron: "25 */2 * * *"
     
 env:
   DBT_PROFILES_DIR: ./
@@ -42,4 +42,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run -m models/silver/core/silver__traces2.sql --vars '{"TRACES_BLOCKS":500000}'    
+          dbt run -m models/silver/core/silver__traces2.sql --vars '{"TRACES_BLOCKS":3000000}'    
