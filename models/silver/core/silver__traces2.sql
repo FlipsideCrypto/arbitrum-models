@@ -307,7 +307,7 @@ WHERE
             eth_value_precise :: FLOAT AS eth_value,
             utils.udf_hex_to_int(
                 DATA :action :gas :: STRING
-            ) AS gas,
+            ) :: INT AS gas,
             ROW_NUMBER() over (
                 PARTITION BY block_number,
                 tx_position
@@ -319,7 +319,7 @@ WHERE
                     DATA :result :gasUsed :: STRING
                 ),
                 0
-            ) AS gas_used,
+            ) :: INT AS gas_used,
             COALESCE(
                 DATA :action :input :: STRING,
                 DATA :action :init :: STRING
