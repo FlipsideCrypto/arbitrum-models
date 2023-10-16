@@ -5,7 +5,7 @@
     meta={
         'database_tags':{
             'table': {
-                'PROTOCOL': 'TRADER JOE, WOOFI, GMX, KYBERSWAP, ZYBERSWAP, DODO, FRAX, CAMELOT, UNISWAP, SUSHI, CURVE, BALANCER',
+                'PROTOCOL': 'TRADER JOE, WOOFI, GMX, KYBERSWAP, ZYBERSWAP, DODO, FRAX, CAMELOT, UNISWAP, SUSHI, CURVE, BALANCER, HASHFLOW',
                 'PURPOSE': 'DEX, SWAPS'
             }
         }
@@ -22,8 +22,10 @@ SELECT
   contract_address,
   pool_name,
   event_name,
+  amount_in_unadj,
   amount_in,
   amount_in_usd,
+  amount_out_unadj,
   amount_out,
   amount_out_usd,
   sender,

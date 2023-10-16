@@ -204,8 +204,8 @@ missing_data AS (
         utils.udf_decimal_adjust(
             r.effective_gas_price * r.gas_used,
             9
-        ) AS tx_fee_precise,
-        tx_fee_precise :: FLOAT AS tx_fee,
+        ) AS tx_fee_precise_heal,
+        tx_fee_precise_heal :: FLOAT AS tx_fee,
         r.type AS tx_type,
         r.l1BlockNumber AS l1_block_number,
         r.gas_used_for_l1,
@@ -307,7 +307,7 @@ SELECT
     cumulative_gas_used,
     effective_gas_price,
     tx_fee,
-    tx_fee_precise,
+    tx_fee_precise_heal AS tx_fee_precise,
     tx_type,
     l1_block_number,
     gas_used_for_l1,
