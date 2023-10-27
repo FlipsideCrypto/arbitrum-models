@@ -1,0 +1,201 @@
+{{ config(
+  materialized = 'incremental',
+  incremental_strategy = 'delete+insert',
+  unique_key = ['block_number','platform'],
+  cluster_by = ['block_timestamp::DATE'],
+  tags = ['non_realtime','reorg','curated']
+) }}
+
+WITH compv2_join AS (
+  SELECT
+    tx_hash,
+    block_number,
+    block_timestamp,
+    event_index,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    contract_address,
+    liquidator,
+    borrower,
+    liquidation_amount,
+    liquidation_amount_usd,
+    l.ctoken AS protocol_collateral_asset,
+    liquidation_contract_address AS collateral_asset,
+    liquidation_contract_symbol AS collateral_asset_symbol,
+    l.ctoken_symbol AS collateral_symbol,
+    collateral_ctoken AS protocol_debt_asset,
+    collateral_token AS debt_asset,
+    collateral_symbol AS debt_asset_symbol,
+    NULL AS debt_to_cover_amount,
+    NULL AS debt_to_cover_amount_usd,
+    l.compound_version AS platform,
+    'ethereum' AS blockchain,
+    l._LOG_ID,
+    l._INSERTED_TIMESTAMP
+  FROM
+    {{ ref('silver__compv3_liquidations') }}
+    l
+
+{% if is_incremental() %}
+WHERE
+  l._inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+    FROM
+      {{ this }}
+  )
+{% endif %}
+),
+liquidation_union AS (
+  SELECT
+    tx_hash,
+    block_number,
+    block_timestamp,
+    event_index,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    contract_address,
+    liquidator,
+    borrower,
+    liquidation_amount AS liquidated_amount,
+    liquidation_amount_usd AS liquidated_amount_usd,
+    protocol_collateral_asset,
+    collateral_asset,
+    collateral_asset_symbol,
+    protocol_debt_asset,
+    debt_asset,
+    debt_asset_symbol,
+    debt_to_cover_amount,
+    debt_to_cover_amount_usd,
+    platform,
+    blockchain,
+    _LOG_ID,
+    _INSERTED_TIMESTAMP
+  FROM
+    compv2_join
+  UNION ALL
+  SELECT
+    tx_hash,
+    block_number,
+    block_timestamp,
+    event_index,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    contract_address,
+    liquidator,
+    borrower,
+    liquidated_amount,
+    liquidated_amount_usd,
+    collateral_aave_token AS protocol_collateral_asset,
+    collateral_asset,
+    collateral_token_symbol AS collateral_asset_symbol,
+    debt_aave_token AS protocol_debt_asset,
+    debt_asset,
+    debt_token_symbol AS debt_asset_symbol,
+    debt_to_cover_amount,
+    debt_to_cover_amount_usd,
+    aave_version AS platform,
+    blockchain,
+    _LOG_ID,
+    _INSERTED_TIMESTAMP
+  FROM
+    {{ ref('silver__aave_liquidations') }}
+
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+    FROM
+      {{ this }}
+  )
+{% endif %}
+),
+contracts as (
+  SELECT
+    *
+  FROM
+    {{ ref('silver__contracts') }}
+  where 
+    address in (
+      SELECT distinct(collateral_asset) AS asset FROM liquidation_union
+      UNION ALL
+      SELECT distinct(debt_asset) AS asset FROM liquidation_union
+    )
+),
+prices as (
+  SELECT
+    *
+  FROM
+    {{ ref('core__fact_hourly_token_prices') }} p
+  where 
+    token_address in (
+      SELECT distinct(collateral_asset) AS asset FROM liquidation_union
+      UNION ALL
+      SELECT distinct(debt_asset) AS asset FROM liquidation_union
+    )
+  AND
+    HOUR > (SELECT MIN(block_timestamp) FROM liquidation_union)
+
+)
+
+SELECT
+  tx_hash,
+  block_number,
+  block_timestamp,
+  event_index,
+  origin_from_address,
+  origin_to_address,
+  origin_function_signature,
+  contract_address,
+  CASE 
+    WHEN platform = 'Fraxlend' THEN 'Liquidate'
+    WHEN platform = 'Compound V3' THEN 'AbsorbCollateral'
+    WHEN platform = 'Compound V2' THEN 'LiquidateBorrow'
+    ELSE 'LiquidationCall'
+  END AS event_name,
+  liquidator,
+  borrower,
+  protocol_collateral_asset,
+  collateral_asset,
+  collateral_asset_symbol,
+  liquidated_amount AS liquidation_amount,
+  CASE
+    WHEN platform IN ('Fraxlenmd','Spark') 
+    THEN ROUND(liquidated_amount * p.price / pow(10,C.decimals),2)
+    ELSE ROUND(liquidated_amount_usd,2) 
+    END AS liquidation_amount_usd,
+  protocol_debt_asset,
+  debt_asset,
+  debt_asset_symbol,
+  debt_to_cover_amount,
+  CASE
+    WHEN platform = 'Fraxlenmd'
+    THEN ROUND(debt_to_cover_amount * p2.price / pow(10,c2.decimals),2)
+    ELSE ROUND(debt_to_cover_amount_usd,2) 
+    END AS debt_to_cover_amount_usd,
+  platform,
+  a.blockchain,
+  a._LOG_ID,
+  a._INSERTED_TIMESTAMP
+FROM
+  liquidation_union a
+LEFT JOIN prices p
+ON collateral_asset = p.token_address
+AND DATE_TRUNC(
+  'hour',
+  block_timestamp
+) = p.hour
+LEFT JOIN contracts C
+ON collateral_asset = C.address
+LEFT JOIN prices p2
+ON debt_asset = p2.token_address
+AND DATE_TRUNC(
+  'hour',
+  block_timestamp
+) = p2.hour
+LEFT JOIN contracts c2
+ON debt_asset = C.address
