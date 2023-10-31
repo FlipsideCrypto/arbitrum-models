@@ -54,7 +54,7 @@ sources:
     tables:
       - name: contract_abis
   - name: github_actions
-    database: polygon
+    database: arbitrum
     schema: github_actions
     tables:
       - name: workflows
