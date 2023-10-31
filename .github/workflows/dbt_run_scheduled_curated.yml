@@ -3,8 +3,8 @@ run-name: dbt_run_scheduled_curated
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '20,50 * * * *'
+    branches:
+      - "main"
     
 env:
   DBT_PROFILES_DIR: ./
