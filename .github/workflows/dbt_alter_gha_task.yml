@@ -1,5 +1,5 @@
-name: dbt_run_alter_gha_task
-run-name: dbt_run_alter_gha_task
+name: dbt_alter_gha_task
+run-name: dbt_alter_gha_task
 
 on:
   workflow_dispatch:
