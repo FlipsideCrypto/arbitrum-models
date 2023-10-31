@@ -3,8 +3,8 @@ run-name: dbt_run_scheduled_non_realtime
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '3,15,27,39,51 * * * *'
+    branches:
+      - "main"
     
 env:
   DBT_PROFILES_DIR: ./
