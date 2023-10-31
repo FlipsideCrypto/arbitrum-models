@@ -3,8 +3,8 @@ run-name: dbt_run_streamline_decoder
 
 on:
   workflow_dispatch:
-    branches:
-      - "main"
+  schedule:
+    - cron: '0,12,24,36,48 * * * *'
     
 env:
   DBT_PROFILES_DIR: ./
