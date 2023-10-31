@@ -42,5 +42,5 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt test --exclude tag:full_test tag:recent_test
+          dbt test --exclude "arbitrum_models,tag:full_test" "arbitrum_models,tag:recent_test" livequery_models
   
