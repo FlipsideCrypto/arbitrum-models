@@ -5,8 +5,7 @@
     cluster_by = ['block_timestamp::DATE'],
     tags = ['curated','reorg']
 ) }}
-
-WITH seaport_fees_wallet AS (
+test WITH seaport_fees_wallet AS (
 
     SELECT
         *
