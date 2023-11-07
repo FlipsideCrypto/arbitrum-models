@@ -14,4 +14,3 @@ models:
                 - 2
               config: 
                   severity: warn
-                  warn_if: ">0"
