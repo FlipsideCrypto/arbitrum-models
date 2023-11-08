@@ -50,33 +50,11 @@ AND l._inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) - INTERVAL '36 hours'
+        ) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
 {% endif %}
-),
-prices AS (
-    SELECT
-        HOUR AS block_hour,
-        token_address AS asset,
-        compound_market_address,
-        AVG(price) AS token_price
-    FROM
-        {{ ref('price__ez_hourly_token_prices') }}
-        INNER JOIN {{ ref('silver__compv3_asset_details') }}
-        ON token_address = underlying_asset_address
-    WHERE
-        HOUR :: DATE IN (
-            SELECT
-                block_timestamp :: DATE
-            FROM
-                repayments
-        )
-    GROUP BY
-        1,
-        2,
-        3
 )
 SELECT
     tx_hash,
@@ -92,22 +70,12 @@ SELECT
         10,
         w.compound_market_decimals
     ) AS repayed_tokens,
-    amount * token_price / pow(
-        10,
-        w.compound_market_decimals
-    ) AS repayed_usd,
     w.underlying_asset_symbol AS repay_asset_symbol,
     compound_version,
     blockchain,
     _log_id,
     _inserted_timestamp
 FROM
-    repayments w
-    LEFT JOIN prices p
-    ON DATE_TRUNC(
-        'hour',
-        block_timestamp
-    ) = block_hour
-    AND w.asset = p.compound_market_address qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    repayments w qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1
