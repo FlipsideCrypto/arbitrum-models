@@ -48,7 +48,7 @@ WITH liquidation AS(
     FROM
         {{ ref('silver__logs') }}
     WHERE
-        topics [0] :: STRING IN = '0xe413a321e8681d831f4dbccbca790d2952b56f977908e45be37335533e005286'
+        topics [0] :: STRING = '0xe413a321e8681d831f4dbccbca790d2952b56f977908e45be37335533e005286'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

@@ -5,8 +5,8 @@
     cluster_by = ['block_timestamp::DATE'],
     tags = ['non_realtime','reorg','curated']
 ) }}
-
-WITH deposits AS(
+WITH --borrows from Aave LendingPool contracts
+borrow AS (
 
     SELECT
         tx_hash,
@@ -21,18 +21,29 @@ WITH deposits AS(
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS reserve_1,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS onBehalfOf,
         utils.udf_hex_to_int(
-            topics [3] :: STRING
-        ) :: INTEGER AS refferal,
-        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 42)) AS userAddress,
+                topics [3] :: STRING
+            ) :: INTEGER
+        AS refferal,
+        CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40)) AS userAddress,
         utils.udf_hex_to_int(
                 segmented_data [1] :: STRING
             ) :: INTEGER
-        AS deposit_quantity,
+        AS borrow_quantity,
+        utils.udf_hex_to_int(
+                segmented_data [2] :: STRING
+            ) :: INTEGER
+        AS borrow_rate_mode,
+        utils.udf_hex_to_int(
+                segmented_data [3] :: STRING
+            ) :: INTEGER
+        AS borrowrate,
+        _inserted_timestamp,
+        _log_id,
         CASE
-            WHEN contract_address = LOWER('0xC13e21B648A5Ee794902342038FF3aDAB66BE987') THEN 'aave'
+            WHEN contract_address = LOWER('0x794a61358D6845594F94dc1DB02A252b5b4814aD') THEN 'aave'
             ELSE 'ERROR'
         END AS aave_version,
-        origin_from_address AS depositor_address,
+        origin_from_address AS borrower_address,
         COALESCE(
             origin_to_address,
             contract_address
@@ -40,13 +51,11 @@ WITH deposits AS(
         CASE
             WHEN reserve_1 = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
             ELSE reserve_1
-        END AS aave_market,
-        _log_id,
-        _inserted_timestamp
+        END AS aave_market
     FROM
         {{ ref('silver__logs') }}
     WHERE
-        topics [0] :: STRING = '0x2b627736bca15cd5381dcf80b0bf11fd197d01a037c52b927a881a10fb73ba61'
+        topics [0] :: STRING = '0xb3d084820fb1a9decffb176436bd02558d15fac9b0ddfed8c465bc7359d7dce0'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -93,25 +102,30 @@ SELECT
     LOWER(
         atoken_meta.atoken_address
     ) AS aave_token,
-    deposit_quantity / pow(
+    borrow_quantity / pow(
         10,
         atoken_meta.underlying_decimals
-    ) AS issued_tokens,
+    ) AS borrowed_tokens,
     LOWER(
-        depositor_address
-    ) AS depositor_address,
+        borrower_address
+    ) AS borrower_address,
+    CASE
+        WHEN borrow_rate_mode = 2 THEN 'Variable Rate'
+        ELSE 'Stable Rate'
+    END AS borrow_rate_mode,
     LOWER(
         lending_pool_contract
     ) AS lending_pool_contract,
     aave_version AS platform,
     atoken_meta.underlying_symbol AS symbol,
+    atoken_meta.underlying_decimals AS underlying_decimals,
     'ethereum' AS blockchain,
     _log_id,
     _inserted_timestamp
 FROM
-    deposits
+    borrow
     LEFT JOIN atoken_meta
-    ON deposits.aave_market = atoken_meta.underlying_address
+    ON borrow.aave_market = atoken_meta.underlying_address
     AND atoken_version = aave_version qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1

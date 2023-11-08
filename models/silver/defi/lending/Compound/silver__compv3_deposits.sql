@@ -32,7 +32,7 @@ WITH supply AS (
         {{ ref('silver__logs') }}
         l
         LEFT JOIN {{ ref('silver__contracts') }} C
-        ON asset = address
+        ON asset = c.contract_address
     WHERE
         topics [0] = '0xfa56f7b24f17183d81894d3ac2ee654e3c26388d17a28dbd9549b8114304e1f4' --SupplyCollateral
 

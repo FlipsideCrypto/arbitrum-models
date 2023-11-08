@@ -30,8 +30,6 @@ WITH DECODE AS (
         l
     WHERE
         topics [0] = '0xb19e051f8af41150ccccb3fc2c2d8d15f4a4cf434f32a559ba75fe73d6eea20b'
-    {# AND
-        radiant_version_pool =LOWER('0xF4B1486DD74D07706052A33d31d7c0AAFD0659E1') #}
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
