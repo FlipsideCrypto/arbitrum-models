@@ -19,7 +19,8 @@ WITH deposits AS(
         contract_address,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS asset_address,
-        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS borrow_address,
+        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS depositor_address,
+        CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) AS reciever_address,
         utils.udf_hex_to_int(
             segmented_data [0] :: STRING
         ) :: INTEGER AS amount,
@@ -38,7 +39,7 @@ WITH deposits AS(
     ON
         l.contract_address = p.silo_address
     WHERE
-        topics [0] :: STRING = '0x312a5e5e1079f5dda4e95dbbd0b908b291fd5b992ef22073643ab691572c5b52'
+        topics [0] :: STRING = '0x3b5f15635b488fe265654176726b3222080f3d6500a562f4664233b3ea2f0283'
         AND tx_status = 'SUCCESS' --excludes failed txs
 
 {% if is_incremental() %}
@@ -66,10 +67,10 @@ SELECT
         10,
         token_decimals
     ) AS amount,
-    collateral_only,
     LOWER(
-        borrow_address
-    ) AS borrow_address,
+        depositor_address
+    ) AS depositor_address,
+    reciever_address,
     'Silo' AS platform,
     token_name,
     token_symbol AS symbol,

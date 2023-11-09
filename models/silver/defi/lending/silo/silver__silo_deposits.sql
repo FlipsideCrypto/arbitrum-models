@@ -39,7 +39,7 @@ WITH deposits AS(
         AND tx_status = 'SUCCESS' --excludes failed txs
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND l._inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp

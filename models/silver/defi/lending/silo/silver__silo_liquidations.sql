@@ -19,13 +19,14 @@ WITH deposits AS(
         contract_address,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS asset_address,
-        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS borrow_address,
+        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS depositor_address,
+        CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) AS reciever_address,
         utils.udf_hex_to_int(
             segmented_data [0] :: STRING
-        ) :: INTEGER AS amount,
+        ) :: INTEGER AS ShareAmountRepaid,
         utils.udf_hex_to_int(
             segmented_data [1] :: STRING
-        ) :: INTEGER AS collateral_only,
+        ) :: INTEGER AS amount,
         p.token_name,
         p.token_symbol,
         p.token_decimals,
@@ -38,7 +39,7 @@ WITH deposits AS(
     ON
         l.contract_address = p.silo_address
     WHERE
-        topics [0] :: STRING = '0x312a5e5e1079f5dda4e95dbbd0b908b291fd5b992ef22073643ab691572c5b52'
+        topics [0] :: STRING = '0xf3fa0eaee8f258c23b013654df25d1527f98a5c7ccd5e951dd77caca400ef972'
         AND tx_status = 'SUCCESS' --excludes failed txs
 
 {% if is_incremental() %}
@@ -66,10 +67,10 @@ SELECT
         10,
         token_decimals
     ) AS amount,
-    collateral_only,
     LOWER(
-        borrow_address
-    ) AS borrow_address,
+        depositor_address
+    ) AS depositor_address,
+    reciever_address,
     'Silo' AS platform,
     token_name,
     token_symbol AS symbol,
