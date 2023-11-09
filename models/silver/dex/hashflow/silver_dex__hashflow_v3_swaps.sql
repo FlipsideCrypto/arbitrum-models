@@ -73,8 +73,14 @@ SELECT
     effective_trader_address AS sender,
     trader_address AS tx_to,
     txid,
-    tokenIn AS token_in,
-    tokenOut AS token_out,
+    CASE
+        WHEN tokenIn = '0x0000000000000000000000000000000000000000' THEN '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'
+        ELSE tokenIn
+    END AS token_in,
+    CASE
+        WHEN tokenOut = '0x0000000000000000000000000000000000000000' THEN '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'
+        ELSE tokenOut
+    END AS token_out,
     amountIn AS amount_in_unadj,
     amountOut AS amount_out_unadj,
     'Trade' AS event_name,
