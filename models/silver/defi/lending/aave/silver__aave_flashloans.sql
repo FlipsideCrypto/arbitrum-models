@@ -37,7 +37,7 @@ WITH flashloan AS (
             contract_address
         ) AS lending_pool_contract,
         CASE
-            WHEN contract_address = LOWER('0x794a61358D6845594F94dc1DB02A252b5b4814aD') THEN 'aave'
+            WHEN contract_address = lower('0x794a61358D6845594F94dc1DB02A252b5b4814aD') THEN 'Aave V3'
             ELSE 'ERROR'
         END AS aave_version,
         CASE

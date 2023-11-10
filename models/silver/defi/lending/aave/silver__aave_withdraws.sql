@@ -26,7 +26,7 @@ WITH withdraw AS(
         _log_id,
         tx_hash,
         CASE
-            WHEN contract_address = LOWER('0x794a61358D6845594F94dc1DB02A252b5b4814aD') THEN 'aave'
+            WHEN contract_address = lower('0x794a61358D6845594F94dc1DB02A252b5b4814aD') THEN 'Aave V3'
             ELSE 'ERROR'
         END AS aave_version,
         origin_to_address AS lending_pool_contract,

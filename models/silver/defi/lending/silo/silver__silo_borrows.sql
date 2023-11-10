@@ -6,7 +6,7 @@
     tags = ['reorg','curated']
 ) }}
 
-WITH deposits AS(
+WITH borrows AS(
 
     SELECT
         tx_hash,
@@ -16,7 +16,7 @@ WITH deposits AS(
         origin_from_address,
         origin_to_address,
         origin_function_signature,
-        contract_address,
+        l.contract_address,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS asset_address,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS borrow_address,
@@ -26,9 +26,7 @@ WITH deposits AS(
         utils.udf_hex_to_int(
             segmented_data [1] :: STRING
         ) :: INTEGER AS collateral_only,
-        p.token_name,
-        p.token_symbol,
-        p.token_decimals,
+        p.token_address as silo_market,
         l._log_id,
         l._inserted_timestamp
     FROM
@@ -60,21 +58,25 @@ SELECT
     origin_from_address,
     origin_to_address,
     origin_function_signature,
-    contract_address,
-    contract_address AS silo_market,
+    d.contract_address,
+    silo_market,
+    asset_address AS token_address,
+    c.token_symbol,
+    token_decimals,
     amount / pow(
         10,
-        token_decimals
+        c.token_decimals
     ) AS amount,
-    collateral_only,
     borrow_address as borrower,
     'Silo' AS platform,
-    asset_address AS token_address,
-    token_symbol,
     'ethereum' AS blockchain,
-    _log_id,
-    _inserted_timestamp
+    d._log_id,
+    d._inserted_timestamp
 FROM
-    deposits qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    borrows d
+LEFT JOIN
+    {{ ref('silver__contracts') }} c
+ON
+    d.asset_address = c.contract_address qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
-    _inserted_timestamp DESC)) = 1
+    d._inserted_timestamp DESC)) = 1

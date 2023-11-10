@@ -17,13 +17,12 @@ WITH deposits AS (
     origin_to_address,
     origin_function_signature,
     contract_address,
-    aave_market AS deposit_asset,
-    aave_token AS market,
-    issued_tokens AS deposit_amount,
-    supplied_usd AS deposit_amount_usd,
     depositor_address,
-    aave_version AS platform,
-    symbol,
+    aave_token AS protocol_market,
+    aave_market AS token_address,
+    symbol as token_symbol,
+    issued_tokens AS amount,
+    platform,
     blockchain,
     _LOG_ID,
     _INSERTED_TIMESTAMP
@@ -34,7 +33,38 @@ WITH deposits AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
+    FROM
+      {{ this }}
+  )
+{% endif %}
+UNION ALL
+  SELECT
+    tx_hash,
+    block_number,
+    block_timestamp,
+    event_index,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    contract_address,
+    depositor_address,
+    radiant_token AS protocol_market,
+    radiant_market AS token_address,
+    symbol as token_symbol,
+    issued_tokens AS amount,
+    platform,
+    blockchain,
+    _LOG_ID,
+    _INSERTED_TIMESTAMP
+  FROM
+    {{ ref('silver__radiant_deposits') }}
+
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
     FROM
       {{ this }}
   )
@@ -49,11 +79,11 @@ SELECT
   origin_to_address,
   origin_function_signature,
   contract_address,
-  ctoken AS protocol_market,
+  depositor_address,
+  compound_market AS protocol_market,
   token_address,
   token_symbol,
   amount,
-  depositor_address,
   compound_version AS platform,
   'ethereum' AS blockchain,
   _LOG_ID,
@@ -65,7 +95,38 @@ FROM
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
+    FROM
+      {{ this }}
+  )
+{% endif %}
+UNION ALL
+SELECT
+  tx_hash,
+  block_number,
+  block_timestamp,
+  event_index,
+  origin_from_address,
+  origin_to_address,
+  origin_function_signature,
+  contract_address,
+  depositor_address,
+  silo_market AS protocol_market,
+  token_address,
+  token_symbol,
+  amount,
+  platform,
+  'ethereum' AS blockchain,
+  _LOG_ID,
+  _INSERTED_TIMESTAMP
+FROM
+  {{ ref('silver__silo_deposits') }}
+
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
     FROM
       {{ this }}
   )
@@ -79,34 +140,29 @@ SELECT
   origin_from_address,
   origin_to_address,
   origin_function_signature,
-  contract_address,
+  a.contract_address,
   CASE 
     WHEN platform = 'Fraxlend' THEN 'AddCollateral'
     WHEN platform = 'Compound V3' THEN 'SupplyCollateral'
     WHEN platform in ('Spark','Aave V3') THEN 'Supply'
     ELSE 'Deposit'
   END AS event_name,
-  market AS protocol_market,
-  deposit_asset,
-  deposit_amount,
-  CASE
-    WHEN platform IN ('Fraxlenmd','Spark') 
-    THEN ROUND(deposit_amount * price / pow(10,C.decimals),2)
-    ELSE ROUND(deposit_amount_usd,2) 
-    END AS deposit_amount_usd,
-  depositor_address,
+  protocol_market,
+  a.token_address,
+  a.token_symbol,
+  amount,
+  ROUND(amount * price,2) AS amount_usd,
   platform,
-  a.symbol,
-  a.blockchain,
+  blockchain,
   a._LOG_ID,
   a._INSERTED_TIMESTAMP
 FROM
   deposits a
-LEFT JOIN {{ ref('core__fact_hourly_token_prices') }} p
-ON deposit_asset = p.token_address
+LEFT JOIN {{ ref('price__fact_hourly_token_prices') }} p
+ON a.token_address = p.token_address
 AND DATE_TRUNC(
     'hour',
     block_timestamp
 ) = p.hour
 LEFT JOIN {{ ref('silver__contracts') }} C
-ON deposit_asset = C.address
+ON a.token_address = C.contract_address

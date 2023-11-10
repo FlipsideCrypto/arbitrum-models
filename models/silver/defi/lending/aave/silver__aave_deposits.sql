@@ -29,7 +29,7 @@ WITH deposits AS(
             ) :: INTEGER
         AS deposit_quantity,
         CASE
-            WHEN contract_address = lower('0x794a61358D6845594F94dc1DB02A252b5b4814aD') THEN 'aave'
+            WHEN contract_address = lower('0x794a61358D6845594F94dc1DB02A252b5b4814aD') THEN 'Aave V3'
             ELSE 'ERROR'
         END AS aave_version,
         origin_from_address AS depositor_address,

@@ -23,9 +23,7 @@ WITH deposits AS(
         utils.udf_hex_to_int(
             segmented_data [0] :: STRING
         ) :: INTEGER AS amount,
-        p.token_name,
-        p.token_symbol,
-        p.token_decimals,
+        p.token_address as silo_market,
         l._log_id,
         l._inserted_timestamp
     FROM
@@ -57,22 +55,24 @@ SELECT
     origin_from_address,
     origin_to_address,
     origin_function_signature,
-    contract_address,
-    asset_address AS silo_market,
+    d.contract_address,
+    silo_market,
+    asset_address AS token_address,
+    c.token_symbol,
     amount / pow(
         10,
-        token_decimals
+        c.token_decimals
     ) AS amount,
-    LOWER(
-        depositor_address
-    ) AS depositor_address,
+    depositor_address,
     'Silo' AS platform,
-    token_name,
-    token_symbol AS symbol,
     'ethereum' AS blockchain,
-    _log_id,
-    _inserted_timestamp
+    d._log_id,
+    d._inserted_timestamp
 FROM
-    deposits qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    deposits d
+LEFT JOIN
+    {{ ref('silver__contracts') }} c
+ON
+    d.asset_address = c.contract_address qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
-    _inserted_timestamp DESC)) = 1
+    d._inserted_timestamp DESC)) = 1
