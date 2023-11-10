@@ -1,16 +1,16 @@
 version: 2
 models:
-  - name: silver__compv3_borrows
+  - name: silver__comp_repayments
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - TX_HASH
             - EVENT_INDEX
     columns:
-      - name: TX_HASH
+      - name: BLOCK_NUMBER
         tests:
           - not_null
-      - name: BLOCK_NUMBER
+      - name: TX_HASH
         tests:
           - not_null
       - name: BLOCK_TIMESTAMP
@@ -24,31 +24,33 @@ models:
           - not_null
       - name: COMPOUND_MARKET
         tests:
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
-      - name: BORROWED_TOKENS
+          - not_null 
+      - name: REPAYER
         tests:
           - not_null
-      - name: BORROWED_USD
-        tests:
-        - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float    
-      - name: BORROWER_ADDRESS
-        tests:
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
-      - name: COMPOUND_VERSION
+      - name: BORROWER
         tests: 
           - not_null
-      - name: TOKEN_PRICE
+      - name: REPAY_ASSET
+        tests: 
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: REPAYED_TOKENS
         tests: 
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
-                - float
-      - name: SYMBOL
-      - name: BLOCKCHAIN
+                - float 
+      - name: REPAYED_USD
         tests: 
-          - not_null 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float 
+      - name: REPAY_ASSET_SYMBOL
+        tests: 
+          - not_null
+      - name: COMPOUND_VERSION
+        tests: 
+          - not_null
+

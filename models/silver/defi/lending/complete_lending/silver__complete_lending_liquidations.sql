@@ -34,7 +34,7 @@ WITH compv2_join AS (
     l._LOG_ID,
     l._INSERTED_TIMESTAMP
   FROM
-    {{ ref('silver__compv3_liquidations') }}
+    {{ ref('silver__comp_liquidations') }}
     l
 
 {% if is_incremental() %}

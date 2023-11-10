@@ -13,6 +13,10 @@ WITH liquidations AS (
         block_number,
         block_timestamp,
         event_index,
+        origin_from_address,
+        origin_to_address,
+        origin_function_signature,
+        contract_address,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         contract_address AS compound_market,
         CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) AS asset,
@@ -55,10 +59,16 @@ SELECT
     block_number,
     block_timestamp,
     event_index,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    contract_address,
     compound_market,
     absorber,
     borrower,
     depositor_address,
+    asset AS token_address,
+    symbol AS token_symbol,
     collateral_absorbed / pow(
         10,
         decimals
@@ -67,8 +77,6 @@ SELECT
         10,
         8
     ) AS liquidated_amount_usd,
-    asset AS collateral_asset,
-    symbol AS collateral_asset_symbol,
     A.underlying_asset_address AS debt_asset,
     A.underlying_asset_symbol AS debt_asset_symbol,
     compound_version,
@@ -77,5 +85,5 @@ SELECT
     l._inserted_timestamp
 FROM
     liquidations l
-    LEFT JOIN {{ ref('silver__compv3_asset_details') }} A
+    LEFT JOIN {{ ref('silver__comp_asset_details') }} A
     ON l.compound_market = A.compound_market_address

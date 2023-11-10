@@ -65,7 +65,7 @@ SELECT
     _LOG_ID,
     _INSERTED_TIMESTAMP
 FROM
-    {{ ref('silver__compv3_withdraws') }}
+    {{ ref('silver__comp_withdraws') }}
 
 {% if is_incremental() %}
 WHERE

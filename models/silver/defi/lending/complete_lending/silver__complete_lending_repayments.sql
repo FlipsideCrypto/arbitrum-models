@@ -65,7 +65,7 @@ SELECT
   _LOG_ID,
   _INSERTED_TIMESTAMP
 FROM
-  {{ ref('silver__compv3_repayments') }}
+  {{ ref('silver__comp_repayments') }}
 
 {% if is_incremental() %}
 WHERE

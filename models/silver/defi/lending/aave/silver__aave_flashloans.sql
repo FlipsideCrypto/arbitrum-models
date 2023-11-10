@@ -113,7 +113,6 @@ SELECT
 FROM
     flashloan
     LEFT JOIN atoken_meta
-    ON flashloan.aave_market = atoken_meta.underlying_address
-    AND atoken_version = aave_version qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    ON flashloan.aave_market = atoken_meta.underlying_address qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1

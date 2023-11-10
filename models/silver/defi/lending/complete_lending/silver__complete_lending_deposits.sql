@@ -49,21 +49,17 @@ SELECT
   origin_to_address,
   origin_function_signature,
   contract_address,
-  CASE
-    WHEN supplied_symbol = 'ETH' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-    ELSE supplied_contract_addr
-  END AS deposit_asset,
-  ctoken AS market,
-  supplied_base_asset AS deposit_amount,
-  supplied_base_asset_usd AS deposit_amount_usd,
-  supplier AS depositor_address,
+  ctoken AS protocol_market,
+  token_address,
+  token_symbol,
+  amount,
+  depositor_address,
   compound_version AS platform,
-  supplied_symbol AS symbol,
   'ethereum' AS blockchain,
   _LOG_ID,
   _INSERTED_TIMESTAMP
 FROM
-  {{ ref('silver__compv3_deposits') }}
+  {{ ref('silver__comp_deposits') }}
 
 {% if is_incremental() %}
 WHERE
@@ -87,7 +83,6 @@ SELECT
   CASE 
     WHEN platform = 'Fraxlend' THEN 'AddCollateral'
     WHEN platform = 'Compound V3' THEN 'SupplyCollateral'
-    WHEN platform = 'Compound V2' THEN 'Mint'
     WHEN platform in ('Spark','Aave V3') THEN 'Supply'
     ELSE 'Deposit'
   END AS event_name,

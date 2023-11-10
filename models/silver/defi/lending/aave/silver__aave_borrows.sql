@@ -40,7 +40,7 @@ borrow AS (
         _inserted_timestamp,
         _log_id,
         CASE
-            WHEN contract_address = LOWER('0x794a61358D6845594F94dc1DB02A252b5b4814aD') THEN 'aave'
+            WHEN contract_address = LOWER('0x794a61358D6845594F94dc1DB02A252b5b4814aD') THEN 'Aave V3'
             ELSE 'ERROR'
         END AS aave_version,
         origin_from_address AS borrower_address,
@@ -125,7 +125,6 @@ SELECT
 FROM
     borrow
     LEFT JOIN atoken_meta
-    ON borrow.aave_market = atoken_meta.underlying_address
-    AND atoken_version = aave_version qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    ON borrow.aave_market = atoken_meta.underlying_address qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1

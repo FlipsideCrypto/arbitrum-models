@@ -61,18 +61,16 @@ SELECT
     origin_to_address,
     origin_function_signature,
     contract_address,
-    asset_address AS silo_market,
+    contract_address AS silo_market,
     amount / pow(
         10,
         token_decimals
     ) AS amount,
     collateral_only,
-    LOWER(
-        borrow_address
-    ) AS borrow_address,
+    borrow_address as borrower,
     'Silo' AS platform,
-    token_name,
-    token_symbol AS symbol,
+    asset_address AS token_address,
+    token_symbol,
     'ethereum' AS blockchain,
     _log_id,
     _inserted_timestamp

@@ -48,7 +48,7 @@ a_token_step_1 AS (
     FROM
         DECODE
     WHERE
-        atoken_name LIKE '%Radiant%'
+        atoken_name LIKE '%Aave%'
 ),
 debt_tokens AS (
     SELECT
@@ -75,7 +75,7 @@ debt_tokens AS (
 a_token_step_2 AS (
     SELECT
         *,
-        'Radiant' AS protocol
+        'Aave V3' AS protocol
     FROM
         a_token_step_1
     where aave_version_pool = LOWER('0x794a61358D6845594F94dc1DB02A252b5b4814aD')

@@ -117,9 +117,7 @@ FROM
     liquidation
     LEFT JOIN atoken_meta amc
     ON liquidation.collateral_asset = amc.underlying_address
-    AND liquidation.radiant_version = amc.atoken_version
     LEFT JOIN atoken_meta amd
-    ON liquidation.debt_asset = amd.underlying_address
-    AND liquidation.radiant_version = amd.atoken_version qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    ON liquidation.debt_asset = amd.underlying_address qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1
