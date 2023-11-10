@@ -17,15 +17,12 @@ WITH flashloans AS (
     origin_to_address,
     origin_function_signature,
     contract_address,
-    aave_market AS market,
+    aave_market AS token_address,
     aave_token AS protocol_token,
     flashloan_amount,
-    flashloan_amount_usd,
-    premium_amount,
-    premium_amount_usd,
     initiator_address,
     target_address,
-    aave_version AS platform,
+    'Aave V3' AS platform,
     symbol,
     blockchain,
     _LOG_ID,
@@ -37,7 +34,39 @@ WITH flashloans AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
+    FROM
+      {{ this }}
+  )
+{% endif %}
+UNION ALL
+SELECT
+  tx_hash,
+  block_number,
+  block_timestamp,
+  event_index,
+  origin_from_address,
+  origin_to_address,
+  origin_function_signature,
+  contract_address,
+  radiant_market AS token_address,
+  radiant_token AS protocol_token,
+  flashloan_amount,
+  initiator_address,
+  target_address,
+  'Radiant' AS platform,
+  symbol AS token_symbol,
+  blockchain,
+  _LOG_ID,
+  _INSERTED_TIMESTAMP
+FROM
+  {{ ref('silver__radiant_flashloans') }}
+
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
     FROM
       {{ this }}
   )
@@ -51,20 +80,30 @@ SELECT
   origin_from_address,
   origin_to_address,
   origin_function_signature,
-  contract_address,
+  f.contract_address,
   'FlashLoan' AS event_name,
-  protocol_token as protocol_market,
-  market,
+  protocol_token AS protocol_market,
+  f.token_address,
   flashloan_amount,
-  ROUND(flashloan_amount_usd,2) AS flashloan_amount_usd,
-  premium_amount,
-  premium_amount_usd,
+  ROUND(
+    flashloan_amount * price,
+    2
+  ) AS flashloan_amount_usd,
   initiator_address,
   target_address,
   platform,
-  symbol,
+  token_symbol,
   blockchain,
-  _LOG_ID,
-  _INSERTED_TIMESTAMP
+  f._LOG_ID,
+  f._INSERTED_TIMESTAMP
 FROM
-  flashloans
+  flashloans f
+  LEFT JOIN {{ ref('price__fact_hourly_token_prices') }}
+  p
+  ON f.token_address = p.token_address
+  AND DATE_TRUNC(
+    'hour',
+    block_timestamp
+  ) = p.hour
+  LEFT JOIN {{ ref('silver__contracts') }} C
+  ON f.token_address = C.contract_address

@@ -17,14 +17,13 @@ WITH repayments AS (
     origin_to_address,
     origin_function_signature,
     contract_address,
-    aave_market AS repay_asset,
-    aave_token AS protocol_token,
-    repayed_tokens AS repay_amount,
-    repayed_usd AS repay_amount_usd,
-    symbol AS repay_symbol,
+    aave_market AS token_address,
+    aave_token AS protocol_market,
+    repayed_tokens AS amount,
+    symbol AS token_symbol,
     payer AS payer_address,
-    borrower AS borrower_address,
-    aave_version AS platform,
+    borrower,
+    'Aave V3' AS platform,
     blockchain,
     _LOG_ID,
     _INSERTED_TIMESTAMP
@@ -35,7 +34,39 @@ WITH repayments AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
+    FROM
+      {{ this }}
+  )
+{% endif %}
+UNION ALL
+  SELECT
+    tx_hash,
+    block_number,
+    block_timestamp,
+    event_index,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    contract_address,
+    radiant_market AS token_address,
+    radiant_token AS protocol_market,
+    repayed_tokens AS amount,
+    symbol AS token_symbol,
+    payer AS payer_address,
+    borrower,
+    'Radiant' AS platform,
+    blockchain,
+    _LOG_ID,
+    _INSERTED_TIMESTAMP
+  FROM
+    {{ ref('silver__radiant_repayments') }}
+
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
     FROM
       {{ this }}
   )
@@ -50,16 +81,12 @@ SELECT
   origin_to_address,
   origin_function_signature,
   contract_address,
-  CASE
-    WHEN repay_contract_symbol = 'ETH' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-    ELSE repay_contract_address
-  END AS repay_asset,
-  ctoken AS protocol_token,
-  repayed_amount AS repay_amount,
-  repayed_amount_usd AS repay_amount_usd,
-  repay_contract_symbol AS repay_symbol,
-  payer AS payer_address,
-  borrower AS borrower_address,
+  token_address,
+  compound_market AS protocol_market,
+  amount,
+  token_symbol,
+  repayer AS payer_address,
+  borrower,
   compound_version AS platform,
   'ethereum' AS blockchain,
   _LOG_ID,
@@ -71,7 +98,39 @@ FROM
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
+    FROM
+      {{ this }}
+  )
+{% endif %}
+UNION ALL
+SELECT
+  tx_hash,
+  block_number,
+  block_timestamp,
+  event_index,
+  origin_from_address,
+  origin_to_address,
+  origin_function_signature,
+  contract_address,
+  token_address,
+  silo_market AS protocol_market,
+  amount,
+  token_symbol,
+  NULL as payer_address,
+  depositor_address as borrower,
+  platform,
+  'ethereum' AS blockchain,
+  _LOG_ID,
+  _INSERTED_TIMESTAMP
+FROM
+  {{ ref('silver__silo_repayments') }}
+
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
     FROM
       {{ this }}
   )
@@ -85,35 +144,31 @@ SELECT
   origin_from_address,
   origin_to_address,
   origin_function_signature,
-  contract_address,
+  a.contract_address,
   CASE 
     WHEN platform = 'Fraxlend' THEN 'RepayAsset'
     WHEN platform = 'Compound V3' THEN 'Supply'
     WHEN platform = 'Compound V2' THEN 'RepayBorrow'
     ELSE 'Repay'
   END AS event_name,
-  protocol_token as protocol_market,
-  repay_asset,
-  repay_amount,
-  CASE
-        WHEN platform IN ('Fraxlenmd','Spark') 
-        THEN ROUND(repay_amount * price / pow(10,C.decimals),2)
-        ELSE ROUND(repay_amount_usd,2) 
-  END AS repay_amount_usd,
-  repay_symbol,
+  protocol_market,
+  a.token_address,
+  amount,
+  ROUND(amount * price,2) AS amount_usd,
+  a.token_symbol,
   payer_address,
-  borrower_address,
+  borrower,
   platform,
   blockchain,
   a._LOG_ID,
   a._INSERTED_TIMESTAMP
 FROM
   repayments a
-LEFT JOIN {{ ref('core__fact_hourly_token_prices') }} p
-ON repay_asset = p.token_address
+LEFT JOIN {{ ref('price__fact_hourly_token_prices') }} p
+ON a.token_address = p.token_address
 AND DATE_TRUNC(
     'hour',
     block_timestamp
 ) = p.hour
 LEFT JOIN {{ ref('silver__contracts') }} C
-ON repay_asset = C.address
+ON a.token_address = C.contract_address

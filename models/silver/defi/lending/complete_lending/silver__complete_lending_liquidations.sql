@@ -113,6 +113,44 @@ WHERE
       {{ this }}
   )
 {% endif %}
+  UNION ALL
+  SELECT
+    tx_hash,
+    block_number,
+    block_timestamp,
+    event_index,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    contract_address,
+    liquidator,
+    borrower,
+    liquidated_amount,
+    liquidated_amount_usd,
+    collateral_aave_token AS protocol_collateral_asset,
+    collateral_asset,
+    collateral_token_symbol AS collateral_asset_symbol,
+    debt_aave_token AS protocol_debt_asset,
+    debt_asset,
+    debt_token_symbol AS debt_asset_symbol,
+    debt_to_cover_amount,
+    debt_to_cover_amount_usd,
+    aave_version AS platform,
+    blockchain,
+    _LOG_ID,
+    _INSERTED_TIMESTAMP
+  FROM
+    {{ ref('silver__radiant_liquidations') }}
+
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+    FROM
+      {{ this }}
+  )
+{% endif %}
 ),
 contracts as (
   SELECT
@@ -130,7 +168,7 @@ prices as (
   SELECT
     *
   FROM
-    {{ ref('core__fact_hourly_token_prices') }} p
+    {{ ref('price__fact_hourly_token_prices') }} p
   where 
     token_address in (
       SELECT distinct(collateral_asset) AS asset FROM liquidation_union
