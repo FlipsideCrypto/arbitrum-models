@@ -16,19 +16,15 @@ WITH compv2_join AS (
     origin_to_address,
     origin_function_signature,
     contract_address,
-    liquidator,
+    absorber as  liquidator,
     borrower,
-    liquidation_amount,
-    liquidation_amount_usd,
-    l.ctoken AS protocol_collateral_asset,
-    liquidation_contract_address AS collateral_asset,
-    liquidation_contract_symbol AS collateral_asset_symbol,
-    l.ctoken_symbol AS collateral_symbol,
-    collateral_ctoken AS protocol_debt_asset,
-    collateral_token AS debt_asset,
-    collateral_symbol AS debt_asset_symbol,
-    NULL AS debt_to_cover_amount,
-    NULL AS debt_to_cover_amount_usd,
+    liquidated_amount,
+    liquidated_amount_usd,
+    compound_market AS protocol_collateral_asset,
+    token_address AS collateral_asset,
+    token_symbol AS collateral_asset_symbol,
+    debt_asset,
+    debt_asset_symbol,
     l.compound_version AS platform,
     'ethereum' AS blockchain,
     l._LOG_ID,
@@ -59,16 +55,13 @@ liquidation_union AS (
     contract_address,
     liquidator,
     borrower,
-    liquidation_amount AS liquidated_amount,
-    liquidation_amount_usd AS liquidated_amount_usd,
+    liquidated_amount,
+    liquidated_amount_usd,
     protocol_collateral_asset,
     collateral_asset,
     collateral_asset_symbol,
-    protocol_debt_asset,
     debt_asset,
     debt_asset_symbol,
-    debt_to_cover_amount,
-    debt_to_cover_amount_usd,
     platform,
     blockchain,
     _LOG_ID,
@@ -88,16 +81,13 @@ liquidation_union AS (
     liquidator,
     borrower,
     liquidated_amount,
-    liquidated_amount_usd,
+    NULL AS liquidated_amount_usd,
     collateral_aave_token AS protocol_collateral_asset,
     collateral_asset,
     collateral_token_symbol AS collateral_asset_symbol,
-    debt_aave_token AS protocol_debt_asset,
     debt_asset,
     debt_token_symbol AS debt_asset_symbol,
-    debt_to_cover_amount,
-    debt_to_cover_amount_usd,
-    aave_version AS platform,
+    'Aave V3' AS platform,
     blockchain,
     _LOG_ID,
     _INSERTED_TIMESTAMP
@@ -126,16 +116,13 @@ WHERE
     liquidator,
     borrower,
     liquidated_amount,
-    liquidated_amount_usd,
-    collateral_aave_token AS protocol_collateral_asset,
+    NULL AS liquidated_amount_usd,
+    collateral_radiant_token AS protocol_collateral_asset,
     collateral_asset,
     collateral_token_symbol AS collateral_asset_symbol,
-    debt_aave_token AS protocol_debt_asset,
     debt_asset,
     debt_token_symbol AS debt_asset_symbol,
-    debt_to_cover_amount,
-    debt_to_cover_amount_usd,
-    aave_version AS platform,
+    'Radiant' AS platform,
     blockchain,
     _LOG_ID,
     _INSERTED_TIMESTAMP
@@ -156,12 +143,10 @@ contracts as (
   SELECT
     *
   FROM
-    {{ ref('silver__contracts') }}
+    {{ ref('silver__contracts') }} c
   where 
-    address in (
+    c.contract_address in (
       SELECT distinct(collateral_asset) AS asset FROM liquidation_union
-      UNION ALL
-      SELECT distinct(debt_asset) AS asset FROM liquidation_union
     )
 ),
 prices as (
@@ -172,8 +157,6 @@ prices as (
   where 
     token_address in (
       SELECT distinct(collateral_asset) AS asset FROM liquidation_union
-      UNION ALL
-      SELECT distinct(debt_asset) AS asset FROM liquidation_union
     )
   AND
     HOUR > (SELECT MIN(block_timestamp) FROM liquidation_union)
@@ -188,7 +171,7 @@ SELECT
   origin_from_address,
   origin_to_address,
   origin_function_signature,
-  contract_address,
+  a.contract_address,
   CASE 
     WHEN platform = 'Fraxlend' THEN 'Liquidate'
     WHEN platform = 'Compound V3' THEN 'AbsorbCollateral'
@@ -202,19 +185,12 @@ SELECT
   collateral_asset_symbol,
   liquidated_amount AS liquidation_amount,
   CASE
-    WHEN platform IN ('Fraxlenmd','Spark') 
-    THEN ROUND(liquidated_amount * p.price / pow(10,C.decimals),2)
+    WHEN platform <> 'Compound V3'
+    THEN ROUND(liquidated_amount * p.price,2)
     ELSE ROUND(liquidated_amount_usd,2) 
     END AS liquidation_amount_usd,
-  protocol_debt_asset,
   debt_asset,
   debt_asset_symbol,
-  debt_to_cover_amount,
-  CASE
-    WHEN platform = 'Fraxlenmd'
-    THEN ROUND(debt_to_cover_amount * p2.price / pow(10,c2.decimals),2)
-    ELSE ROUND(debt_to_cover_amount_usd,2) 
-    END AS debt_to_cover_amount_usd,
   platform,
   a.blockchain,
   a._LOG_ID,
@@ -228,12 +204,4 @@ AND DATE_TRUNC(
   block_timestamp
 ) = p.hour
 LEFT JOIN contracts C
-ON collateral_asset = C.address
-LEFT JOIN prices p2
-ON debt_asset = p2.token_address
-AND DATE_TRUNC(
-  'hour',
-  block_timestamp
-) = p2.hour
-LEFT JOIN contracts c2
-ON debt_asset = C.address
+ON collateral_asset = C.contract_address
