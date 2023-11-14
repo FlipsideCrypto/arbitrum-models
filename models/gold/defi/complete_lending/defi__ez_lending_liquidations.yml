@@ -5,23 +5,23 @@ models:
 
     columns:
       - name: BLOCK_NUMBER
-        description: '{{ doc("eth_block_number") }}'
+        description: '{{ doc("arb_block_number") }}'
       - name: BLOCK_TIMESTAMP
-        description: '{{ doc("eth_block_timestamp") }}'
+        description: '{{ doc("arb_block_timestamp") }}'
       - name: TX_HASH
-        description: '{{ doc("eth_logs_tx_hash") }}'
+        description: '{{ doc("arb_logs_tx_hash") }}'
       - name: CONTRACT_ADDRESS
-        description: '{{ doc("eth_logs_contract_address") }}'
+        description: '{{ doc("arb_logs_contract_address") }}'
       - name: EVENT_NAME
-        description: '{{ doc("eth_event_name") }}'
+        description: '{{ doc("arb_event_name") }}'
       - name: EVENT_INDEX
-        description: '{{ doc("eth_event_index") }}'
+        description: '{{ doc("arb_event_index") }}'
       - name: ORIGIN_FUNCTION_SIGNATURE
         description: '{{ doc("nft_origin_sig") }}'
       - name: ORIGIN_FROM_ADDRESS
-        description: '{{ doc("eth_origin_from") }}'
+        description: '{{ doc("arb_origin_from") }}'
       - name: ORIGIN_TO_ADDRESS
-        description: '{{ doc("eth_origin_to") }}'
+        description: '{{ doc("arb_origin_to") }}'
       - name: PLATFORM
         description: '{{ doc("complete_lending_platform") }}'
       - name: LIQUIDATOR
@@ -41,4 +41,3 @@ models:
       - name: DEBT_TOKEN
         description: '{{ doc("complete_lending_debt_asset") }}'
       - name: DEBT_TOKEN_SYMBOL
-        description: '{{ doc("eth_prices_symbol") }}'
