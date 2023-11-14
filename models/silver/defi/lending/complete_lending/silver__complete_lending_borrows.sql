@@ -100,7 +100,7 @@ WHERE
         SELECT
             MAX(
                 _inserted_timestamp
-            ) - INTERVAL '12 hours'
+            ) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
