@@ -24,7 +24,7 @@ WITH repayments AS (
     payer AS payer_address,
     borrower,
     'Aave V3' AS platform,
-    blockchain,
+    'arbitrum' AS blockchain,
     _LOG_ID,
     _INSERTED_TIMESTAMP
   FROM
@@ -56,11 +56,43 @@ UNION ALL
     payer AS payer_address,
     borrower,
     'Radiant' AS platform,
-    blockchain,
+    'arbitrum' AS blockchain,
     _LOG_ID,
     _INSERTED_TIMESTAMP
   FROM
     {{ ref('silver__radiant_repayments') }}
+
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
+    FROM
+      {{ this }}
+  )
+{% endif %}
+UNION ALL
+  SELECT
+    tx_hash,
+    block_number,
+    block_timestamp,
+    event_index,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    contract_address,
+    repay_contract_address AS token_address,
+    itoken AS protocol_market,
+    repayed_amount AS amount,
+    repay_contract_symbol AS token_symbol,
+    payer AS payer_address,
+    borrower,
+    platform,
+    'arbitrum' AS blockchain,
+    _LOG_ID,
+    _INSERTED_TIMESTAMP
+  FROM
+    {{ ref('silver__lodestar_repayments') }}
 
 {% if is_incremental() %}
 WHERE
@@ -88,7 +120,7 @@ SELECT
   repayer AS payer_address,
   borrower,
   compound_version AS platform,
-  'ethereum' AS blockchain,
+  'arbitrum' AS blockchain,
   _LOG_ID,
   _INSERTED_TIMESTAMP
 FROM
@@ -120,7 +152,7 @@ SELECT
   NULL as payer_address,
   depositor_address as borrower,
   platform,
-  'ethereum' AS blockchain,
+  'arbitrum' AS blockchain,
   _LOG_ID,
   _INSERTED_TIMESTAMP
 FROM
@@ -156,7 +188,7 @@ SELECT
   amount,
   ROUND(amount * price,2) AS amount_usd,
   a.token_symbol,
-  payer_address,
+  payer_address as payer,
   borrower,
   platform,
   blockchain,

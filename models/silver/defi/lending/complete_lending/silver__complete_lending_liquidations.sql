@@ -6,7 +6,8 @@
   tags = ['non_realtime','reorg','curated']
 ) }}
 
-WITH compv2_join AS (
+WITH liquidation_union AS (
+
   SELECT
     tx_hash,
     block_number,
@@ -16,7 +17,7 @@ WITH compv2_join AS (
     origin_to_address,
     origin_function_signature,
     contract_address,
-    absorber as  liquidator,
+    absorber AS liquidator,
     borrower,
     liquidated_amount,
     liquidated_amount_usd,
@@ -26,7 +27,7 @@ WITH compv2_join AS (
     debt_asset,
     debt_asset_symbol,
     l.compound_version AS platform,
-    'ethereum' AS blockchain,
+    'arbitrum' AS blockchain,
     l._LOG_ID,
     l._INSERTED_TIMESTAMP
   FROM
@@ -37,132 +38,12 @@ WITH compv2_join AS (
 WHERE
   l._inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
     FROM
       {{ this }}
   )
 {% endif %}
-),
-liquidation_union AS (
-  SELECT
-    tx_hash,
-    block_number,
-    block_timestamp,
-    event_index,
-    origin_from_address,
-    origin_to_address,
-    origin_function_signature,
-    contract_address,
-    liquidator,
-    borrower,
-    liquidated_amount,
-    liquidated_amount_usd,
-    protocol_collateral_asset,
-    collateral_asset,
-    collateral_asset_symbol,
-    debt_asset,
-    debt_asset_symbol,
-    platform,
-    blockchain,
-    _LOG_ID,
-    _INSERTED_TIMESTAMP
-  FROM
-    compv2_join
-  UNION ALL
-  SELECT
-    tx_hash,
-    block_number,
-    block_timestamp,
-    event_index,
-    origin_from_address,
-    origin_to_address,
-    origin_function_signature,
-    contract_address,
-    liquidator,
-    borrower,
-    liquidated_amount,
-    NULL AS liquidated_amount_usd,
-    collateral_aave_token AS protocol_collateral_asset,
-    collateral_asset,
-    collateral_token_symbol AS collateral_asset_symbol,
-    debt_asset,
-    debt_token_symbol AS debt_asset_symbol,
-    'Aave V3' AS platform,
-    blockchain,
-    _LOG_ID,
-    _INSERTED_TIMESTAMP
-  FROM
-    {{ ref('silver__aave_liquidations') }}
-
-{% if is_incremental() %}
-WHERE
-  _inserted_timestamp >= (
-    SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
-    FROM
-      {{ this }}
-  )
-{% endif %}
-  UNION ALL
-  SELECT
-    tx_hash,
-    block_number,
-    block_timestamp,
-    event_index,
-    origin_from_address,
-    origin_to_address,
-    origin_function_signature,
-    contract_address,
-    liquidator,
-    borrower,
-    liquidated_amount,
-    NULL AS liquidated_amount_usd,
-    collateral_radiant_token AS protocol_collateral_asset,
-    collateral_asset,
-    collateral_token_symbol AS collateral_asset_symbol,
-    debt_asset,
-    debt_token_symbol AS debt_asset_symbol,
-    'Radiant' AS platform,
-    blockchain,
-    _LOG_ID,
-    _INSERTED_TIMESTAMP
-  FROM
-    {{ ref('silver__radiant_liquidations') }}
-
-{% if is_incremental() %}
-WHERE
-  _inserted_timestamp >= (
-    SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
-    FROM
-      {{ this }}
-  )
-{% endif %}
-),
-contracts as (
-  SELECT
-    *
-  FROM
-    {{ ref('silver__contracts') }} c
-  where 
-    c.contract_address in (
-      SELECT distinct(collateral_asset) AS asset FROM liquidation_union
-    )
-),
-prices as (
-  SELECT
-    *
-  FROM
-    {{ ref('price__fact_hourly_token_prices') }} p
-  where 
-    token_address in (
-      SELECT distinct(collateral_asset) AS asset FROM liquidation_union
-    )
-  AND
-    HOUR > (SELECT MIN(block_timestamp) FROM liquidation_union)
-
-)
-
+UNION ALL
 SELECT
   tx_hash,
   block_number,
@@ -171,8 +52,147 @@ SELECT
   origin_from_address,
   origin_to_address,
   origin_function_signature,
-  a.contract_address,
-  CASE 
+  contract_address,
+  liquidator,
+  borrower,
+  liquidation_amount,
+  NULL AS liquidated_amount_usd,
+  itoken AS protocol_collateral_asset,
+  collateral_token AS collateral_asset,
+  collateral_symbol AS collateral_asset_symbol,
+  liquidation_contract_address AS debt_asset,
+  liquidation_contract_symbol AS debt_asset_symbol,
+  platform,
+  'arbitrum' AS blockchain,
+  l._LOG_ID,
+  l._INSERTED_TIMESTAMP
+FROM
+  {{ ref('silver__lodestar_liquidations') }}
+  l
+
+{% if is_incremental() %}
+WHERE
+  l._inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
+    FROM
+      {{ this }}
+  )
+{% endif %}
+UNION ALL
+SELECT
+  tx_hash,
+  block_number,
+  block_timestamp,
+  event_index,
+  origin_from_address,
+  origin_to_address,
+  origin_function_signature,
+  contract_address,
+  liquidator,
+  borrower,
+  liquidated_amount,
+  NULL AS liquidated_amount_usd,
+  collateral_aave_token AS protocol_collateral_asset,
+  collateral_asset,
+  collateral_token_symbol AS collateral_asset_symbol,
+  debt_asset,
+  debt_token_symbol AS debt_asset_symbol,
+  'Aave V3' AS platform,
+  'arbitrum' AS blockchain,
+  _LOG_ID,
+  _INSERTED_TIMESTAMP
+FROM
+  {{ ref('silver__aave_liquidations') }}
+
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+    FROM
+      {{ this }}
+  )
+{% endif %}
+UNION ALL
+SELECT
+  tx_hash,
+  block_number,
+  block_timestamp,
+  event_index,
+  origin_from_address,
+  origin_to_address,
+  origin_function_signature,
+  contract_address,
+  liquidator,
+  borrower,
+  liquidated_amount,
+  NULL AS liquidated_amount_usd,
+  collateral_radiant_token AS protocol_collateral_asset,
+  collateral_asset,
+  collateral_token_symbol AS collateral_asset_symbol,
+  debt_asset,
+  debt_token_symbol AS debt_asset_symbol,
+  'Radiant' AS platform,
+  'arbitrum' AS blockchain,
+  _LOG_ID,
+  _INSERTED_TIMESTAMP
+FROM
+  {{ ref('silver__radiant_liquidations') }}
+
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+    FROM
+      {{ this }}
+  )
+{% endif %}
+),
+contracts AS (
+  SELECT
+    *
+  FROM
+    {{ ref('silver__contracts') }} C
+  WHERE
+    C.contract_address IN (
+      SELECT
+        DISTINCT(collateral_asset) AS asset
+      FROM
+        liquidation_union
+    )
+),
+prices AS (
+  SELECT
+    *
+  FROM
+    {{ ref('price__fact_hourly_token_prices') }}
+    p
+  WHERE
+    token_address IN (
+      SELECT
+        DISTINCT(collateral_asset) AS asset
+      FROM
+        liquidation_union
+    )
+    AND HOUR > (
+      SELECT
+        MIN(block_timestamp)
+      FROM
+        liquidation_union
+    )
+)
+SELECT
+  tx_hash,
+  block_number,
+  block_timestamp,
+  event_index,
+  origin_from_address,
+  origin_to_address,
+  origin_function_signature,
+  A.contract_address,
+  CASE
     WHEN platform = 'Fraxlend' THEN 'Liquidate'
     WHEN platform = 'Compound V3' THEN 'AbsorbCollateral'
     WHEN platform = 'Compound V2' THEN 'LiquidateBorrow'
@@ -180,28 +200,33 @@ SELECT
   END AS event_name,
   liquidator,
   borrower,
-  protocol_collateral_asset,
-  collateral_asset,
-  collateral_asset_symbol,
-  liquidated_amount AS liquidation_amount,
+  protocol_collateral_asset AS protocol_market,
+  collateral_asset AS collateral_token,
+  collateral_asset_symbol AS collateral_token_symbol,
+  liquidated_amount AS amount,
   CASE
-    WHEN platform <> 'Compound V3'
-    THEN ROUND(liquidated_amount * p.price,2)
-    ELSE ROUND(liquidated_amount_usd,2) 
-    END AS liquidation_amount_usd,
-  debt_asset,
-  debt_asset_symbol,
+    WHEN platform <> 'Compound V3' THEN ROUND(
+      liquidated_amount * p.price,
+      2
+    )
+    ELSE ROUND(
+      liquidated_amount_usd,
+      2
+    )
+  END AS amount_usd,
+  debt_asset AS debt_token,
+  debt_asset_symbol AS debt_token_symbol,
   platform,
-  a.blockchain,
-  a._LOG_ID,
-  a._INSERTED_TIMESTAMP
+  A.blockchain,
+  A._LOG_ID,
+  A._INSERTED_TIMESTAMP
 FROM
-  liquidation_union a
-LEFT JOIN prices p
-ON collateral_asset = p.token_address
-AND DATE_TRUNC(
-  'hour',
-  block_timestamp
-) = p.hour
-LEFT JOIN contracts C
-ON collateral_asset = C.contract_address
+  liquidation_union A
+  LEFT JOIN prices p
+  ON collateral_asset = p.token_address
+  AND DATE_TRUNC(
+    'hour',
+    block_timestamp
+  ) = p.hour
+  LEFT JOIN contracts C
+  ON collateral_asset = C.contract_address

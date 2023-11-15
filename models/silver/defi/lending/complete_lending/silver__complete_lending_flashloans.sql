@@ -83,16 +83,16 @@ SELECT
   f.contract_address,
   'FlashLoan' AS event_name,
   protocol_token AS protocol_market,
-  f.token_address,
+  f.token_address AS flashloan_token,
   flashloan_amount,
   ROUND(
     flashloan_amount * price,
     2
   ) AS flashloan_amount_usd,
-  initiator_address,
-  target_address,
+  initiator_address AS initiator,
+  target_address AS target,
   platform,
-  token_symbol,
+  token_symbol AS flashloan_token_symbol,
   blockchain,
   f._LOG_ID,
   f._INSERTED_TIMESTAMP

@@ -22,7 +22,7 @@ with borrow_union AS (
         symbol as token_symbol,
         borrowed_tokens AS amount,
         platform,
-        blockchain,
+        'arbitrum' as blockchain,
         A._LOG_ID,
         A._INSERTED_TIMESTAMP
     FROM
@@ -54,11 +54,44 @@ UNION ALL
         symbol as token_symbol,
         borrowed_tokens AS amount,
         platform,
-        blockchain,
+        'arbitrum' as blockchain,
         A._LOG_ID,
         A._INSERTED_TIMESTAMP
     FROM
         {{ ref('silver__radiant_borrows') }} A 
+
+{% if is_incremental() %}
+WHERE
+    A._inserted_timestamp >= (
+        SELECT
+            MAX(
+                _inserted_timestamp
+            ) - INTERVAL '36 hours'
+        FROM
+            {{ this }}
+    )
+{% endif %}
+UNION ALL
+    SELECT
+        tx_hash,
+        block_number,
+        block_timestamp,
+        event_index,
+        origin_from_address,
+        origin_to_address,
+        origin_function_signature,
+        contract_address,
+        borrower,
+        itoken AS protocol_market,
+        borrows_contract_address AS token_address,
+        borrows_contract_symbol as token_symbol,
+        loan_amount AS amount,
+        platform,
+        'arbitrum' as blockchain,
+        A._LOG_ID,
+        A._INSERTED_TIMESTAMP
+    FROM
+        {{ ref('silver__lodestar_borrows') }} A 
 
 {% if is_incremental() %}
 WHERE
@@ -87,7 +120,7 @@ SELECT
     token_symbol,
     amount,
     compound_version AS platform,
-    'ethereum' AS blockchain,
+    'arbitrum' as blockchain,
     l._LOG_ID,
     l._INSERTED_TIMESTAMP
 FROM
@@ -121,7 +154,7 @@ SELECT
     token_symbol,
     amount,
     platform,
-    'ethereum' AS blockchain,
+    'arbitrum' as blockchain,
     l._LOG_ID,
     l._INSERTED_TIMESTAMP
 FROM
@@ -134,7 +167,7 @@ WHERE
         SELECT
             MAX(
                 _inserted_timestamp
-            ) - INTERVAL '12 hours'
+            ) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )

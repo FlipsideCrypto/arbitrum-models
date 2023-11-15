@@ -23,7 +23,7 @@ WITH withdraws AS (
     withdrawn_tokens AS amount,
     depositor_address,
     'Aave V3' AS platform,
-    blockchain,
+    'arbitrum' AS blockchain,
     _LOG_ID,
     _INSERTED_TIMESTAMP
     FROM
@@ -35,7 +35,7 @@ WHERE
         SELECT
             MAX(
                 _inserted_timestamp
-            ) - INTERVAL '12 hours'
+            ) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
@@ -56,7 +56,7 @@ UNION ALL
     withdrawn_tokens AS amount,
     depositor_address,
     'Radiant' AS platform,
-    blockchain,
+    'arbitrum' AS blockchain,
     _LOG_ID,
     _INSERTED_TIMESTAMP
     FROM
@@ -68,7 +68,7 @@ WHERE
         SELECT
             MAX(
                 _inserted_timestamp
-            ) - INTERVAL '12 hours'
+            ) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
@@ -89,7 +89,7 @@ SELECT
     amount,
     depositor_address,
     compound_version AS platform,
-    'ethereum' AS blockchain,
+    'arbitrum' AS blockchain,
     _LOG_ID,
     _INSERTED_TIMESTAMP
 FROM
@@ -101,7 +101,40 @@ WHERE
         SELECT
             MAX(
                 _inserted_timestamp
-            ) - INTERVAL '12 hours'
+            ) - INTERVAL '36 hours'
+        FROM
+            {{ this }}
+    )
+{% endif %}
+UNION ALL
+SELECT
+    tx_hash,
+    block_number,
+    block_timestamp,
+    event_index,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    contract_address,
+    itoken AS protocol_market,
+    received_contract_address AS token_address,
+    received_contract_symbol token_symbol,
+    received_amount,
+    redeemer AS depositor_address,
+    platform,
+    'arbitrum' AS blockchain,
+    _LOG_ID,
+    _INSERTED_TIMESTAMP
+FROM
+    {{ ref('silver__lodestar_withdraws') }}
+
+{% if is_incremental() %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(
+                _inserted_timestamp
+            ) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
@@ -134,7 +167,7 @@ WHERE
         SELECT
             MAX(
                 _inserted_timestamp
-            ) - INTERVAL '12 hours'
+            ) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
@@ -161,7 +194,7 @@ SELECT
     a.token_symbol,
     amount,
     ROUND(amount * price,2) AS amount_usd,
-    depositor_address,
+    depositor_address as depositor,
     platform,
     blockchain,
     a._log_id,

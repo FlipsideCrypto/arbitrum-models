@@ -24,10 +24,10 @@ SELECT
     origin_to_address,
     platform,
     protocol_market,
-    depositor_address as depositor,
-    deposit_asset as token_address,
-    symbol as token_symbol,
-    deposit_amount as amount,
-    deposit_amount_usd as amount_usd
+    depositor,
+    token_address,
+    token_symbol,
+    amount,
+    amount_usd
 FROM 
     {{ ref('silver__complete_lending_deposits') }}

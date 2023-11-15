@@ -23,12 +23,12 @@ SELECT
     contract_address,
     event_name,
     platform,
-    payer_address AS payer,
-    borrower_address AS borrower,
+    payer,
+    borrower,
     protocol_market,
-    repay_asset as token_address,
-    repay_symbol as token_symbol,
-    repay_amount as amount,
-    repay_amount_usd as amount_usd
+    token_address,
+    token_symbol,
+    amount,
+    amount_usd
 FROM 
     {{ ref('silver__complete_lending_repayments') }}

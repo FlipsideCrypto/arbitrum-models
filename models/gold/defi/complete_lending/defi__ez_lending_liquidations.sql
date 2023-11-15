@@ -25,12 +25,12 @@ SELECT
     platform,
     liquidator,
     borrower,
-    protocol_collateral_asset as protocol_market,
-    collateral_asset AS collateral_token,
-    collateral_asset_symbol AS collateral_token_symbol,
-    liquidation_amount as amount,
-    liquidation_amount_usd as amount_usd,
-    debt_asset as debt_token,
-    debt_asset_symbol debt_token_symbol
+    protocol_market,
+    collateral_token,
+    collateral_token_symbol,
+    amount,
+    amount_usd,
+    debt_token,
+    debt_token_symbol
 FROM 
     {{ ref('silver__complete_lending_liquidations') }}

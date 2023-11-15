@@ -24,10 +24,10 @@ SELECT
     origin_to_address,
     platform,
     protocol_market,
-    borrower_address as borrower,
-    borrow_asset as token_address,
-    symbol as token_symbol,
-    borrow_amount as amount,
-    borrow_amount_usd as amount_usd
+    borrower,
+    token_address,
+    token_symbol,
+    amount,
+    amount_usd
 FROM 
     {{ ref('silver__complete_lending_borrows') }}

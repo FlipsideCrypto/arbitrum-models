@@ -33,12 +33,8 @@ models:
       - name: FLASHLOAN_TOKEN
         description: '{{ doc("complete_lending_market") }}'
       - name: FLASHLOAN_TOKEN_SYMBOL
-        description: '{{ doc("arb_prices_symbol") }}'
+        description: hold
       - name: FLASHLOAN_AMOUNT
         description: '{{ doc("complete_lending_flashloan_amount") }}' 
       - name: FLASHLOAN_AMOUNT_USD
         description: '{{ doc("complete_lending_flashloan_amount_usd") }}' 
-      - name: PREMIUM_AMOUNT
-        description: '{{ doc("complete_lending_premium_amount") }}' 
-      - name: PREMIUM_AMOUNT_USD
-        description: '{{ doc("complete_lending_premium_amount_usd") }}' 

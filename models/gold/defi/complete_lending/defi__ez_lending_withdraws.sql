@@ -23,11 +23,11 @@ SELECT
     origin_from_address,
     origin_to_address,
     platform,
-    depositor_address AS depositor,
+    depositor,
     protocol_market,
-    withdraw_asset AS token_address,
-    withdraw_symbol AS token_symbol,
-    withdraw_amount as amount,
-    withdraw_amount_usd as amount_usd
+    token_address,
+    token_symbol,
+    amount, 
+    amount_usd
 FROM 
     {{ ref('silver__complete_lending_withdraws') }}
