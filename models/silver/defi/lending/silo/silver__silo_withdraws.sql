@@ -63,6 +63,7 @@ SELECT
     silo_market,
     asset_address AS token_address,
     c.token_symbol,
+    amount AS amount_unadj,
     amount / pow(
         10,
         c.token_decimals

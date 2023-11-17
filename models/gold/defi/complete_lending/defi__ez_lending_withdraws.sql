@@ -27,6 +27,7 @@ SELECT
     protocol_market,
     token_address,
     token_symbol,
+    amount_unadj,
     amount, 
     amount_usd
 FROM 

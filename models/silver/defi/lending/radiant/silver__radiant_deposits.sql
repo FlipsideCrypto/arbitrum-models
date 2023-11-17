@@ -94,6 +94,7 @@ SELECT
     LOWER(
         atoken_meta.atoken_address
     ) AS radiant_token,
+    deposit_quantity AS amount_unadj,
     deposit_quantity / pow(
         10,
         atoken_meta.underlying_decimals

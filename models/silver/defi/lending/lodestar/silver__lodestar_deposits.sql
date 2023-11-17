@@ -106,6 +106,7 @@ SELECT
     10,
     itoken_decimals
   ) AS issued_itokens,
+  mintAmount_raw AS amount_unadj,
   mintAmount_raw / pow(
     10,
     underlying_decimals

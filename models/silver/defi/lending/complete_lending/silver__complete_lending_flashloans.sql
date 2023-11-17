@@ -19,6 +19,7 @@ WITH flashloans AS (
     contract_address,
     aave_market AS token_address,
     aave_token AS protocol_token,
+    amount_unadj,
     flashloan_amount,
     initiator_address,
     target_address,
@@ -51,6 +52,7 @@ SELECT
   contract_address,
   radiant_market AS token_address,
   radiant_token AS protocol_token,
+  amount_unadj,
   flashloan_amount,
   initiator_address,
   target_address,
@@ -84,6 +86,7 @@ SELECT
   'FlashLoan' AS event_name,
   protocol_token AS protocol_market,
   f.token_address AS flashloan_token,
+  amount_unadj,
   flashloan_amount,
   ROUND(
     flashloan_amount * price,

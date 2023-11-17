@@ -102,6 +102,7 @@ SELECT
     contract_address,
     itoken,
     itoken_symbol,
+    received_amount_raw AS  amount_unadj,
     received_amount_raw / pow(
         10,
         underlying_decimals

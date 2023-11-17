@@ -84,6 +84,7 @@ SELECT
     LOWER(
         atoken_meta.atoken_address
     ) AS aave_token,
+    repayed_amount AS amount_unadj,
     repayed_amount / pow(
         10,
         atoken_meta.underlying_decimals

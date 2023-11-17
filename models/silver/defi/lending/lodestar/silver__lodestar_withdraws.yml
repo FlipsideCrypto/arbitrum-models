@@ -15,10 +15,10 @@ models:
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
               interval: 3
-      - name: CTOKEN
+      - name: ITOKEN
         tests:
           - not_null
-      - name: CTOKEN_SYMBOL
+      - name: ITOKEN_SYMBOL
         tests:
           - not_null
       - name: RECEIVED_AMOUNT
@@ -40,7 +40,7 @@ models:
       - name: RECEIVED_CONTRACT_SYMBOL
         tests:
           - not_null
-      - name: REDEEMED_CTOKEN
+      - name: REDEEMED_ITOKEN
         tests: 
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:

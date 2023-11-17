@@ -70,11 +70,12 @@ SELECT
     borrower_address as borrower,
     w.underlying_asset_address AS token_address,
     w.underlying_asset_symbol AS token_symbol,
+    borrow_amount AS amount_unadj,
     borrow_amount / pow(
         10,
         w.decimals
     ) AS amount,
-    w.symbol as ctoken_symbol,
+    w.symbol as itoken_symbol,
     compound_version,
     blockchain,
     _log_id,

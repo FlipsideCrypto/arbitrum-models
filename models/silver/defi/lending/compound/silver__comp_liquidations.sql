@@ -69,6 +69,7 @@ SELECT
     depositor_address,
     asset AS token_address,
     symbol AS token_symbol,
+    collateral_absorbed AS amount_unadj,
     collateral_absorbed / pow(
         10,
         decimals

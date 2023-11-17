@@ -95,6 +95,7 @@ SELECT
     LOWER(
         amc.atoken_address
     ) AS collateral_aave_token,
+    liquidated_amount as amount_unadj,
     liquidated_amount / pow(
         10,
         amc.atoken_decimals

@@ -89,6 +89,7 @@ liquidation_union as (
     asd2.itoken_symbol AS collateral_itoken_symbol,
     asd2.underlying_asset_address AS collateral_token,
     asd2.underlying_symbol AS collateral_symbol,
+    repayAmount_raw AS amount_unadj,
     repayAmount_raw / pow(
       10,
       asd1.underlying_decimals

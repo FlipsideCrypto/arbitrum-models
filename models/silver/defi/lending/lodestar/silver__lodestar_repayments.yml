@@ -18,10 +18,10 @@ models:
       - name: BORROWER
         tests:
           - not_null
-      - name: CTOKEN
+      - name: ITOKEN
         tests:
           - not_null
-      - name: CTOKEN_SYMBOL
+      - name: ITOKEN_SYMBOL
         tests:
           - not_null
       - name: PAYER

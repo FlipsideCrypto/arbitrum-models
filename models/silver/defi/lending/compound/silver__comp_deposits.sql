@@ -64,6 +64,7 @@ SELECT
     depositor_address,
     w.underlying_asset_address AS token_address,
     w.token_symbol AS token_symbol,
+    supply_amount AS amount_unadj,
     supply_amount / pow(
         10,
         w.token_decimals

@@ -63,6 +63,7 @@ SELECT
     depositor_address,
     w.token_address,
     w.token_symbol,
+    withdraw_amount AS amount_unadj,
     withdraw_amount / pow(
         10,
         w.token_decimals

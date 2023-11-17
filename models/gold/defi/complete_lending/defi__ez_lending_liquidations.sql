@@ -28,6 +28,7 @@ SELECT
     protocol_market,
     collateral_token,
     collateral_token_symbol,
+    amount_unadj,
     amount,
     amount_usd,
     debt_token,

@@ -64,6 +64,7 @@ SELECT
     asset_address AS token_address,
     c.token_symbol,
     token_decimals,
+    amount AS amount_unadj,
     amount / pow(
         10,
         c.token_decimals

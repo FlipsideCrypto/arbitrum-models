@@ -102,6 +102,7 @@ SELECT
     LOWER(
         atoken_meta.atoken_address
     ) AS aave_token,
+    borrow_quantity as amount_unadj,
     borrow_quantity / pow(
         10,
         atoken_meta.underlying_decimals

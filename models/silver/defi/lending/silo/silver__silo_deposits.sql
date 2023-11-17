@@ -22,7 +22,7 @@ WITH deposits AS(
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS depositor_address,
         utils.udf_hex_to_int(
             segmented_data [0] :: STRING
-        ) :: INTEGER AS amount,
+        ) :: INTEGER AS amount_unadj,
         p.token_address as silo_market,
         l._log_id,
         l._inserted_timestamp
@@ -59,7 +59,8 @@ SELECT
     silo_market,
     asset_address AS token_address,
     c.token_symbol,
-    amount / pow(
+    amount_unadj,
+    amount_unadj / pow(
         10,
         c.token_decimals
     ) AS amount,

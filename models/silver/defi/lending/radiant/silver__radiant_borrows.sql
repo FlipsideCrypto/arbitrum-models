@@ -99,6 +99,7 @@ SELECT
     LOWER(
         atoken_meta.atoken_address
     ) AS radiant_token,
+    borrow_quantity AS amount_unadj,
     borrow_quantity / pow(
         10,
         atoken_meta.underlying_decimals

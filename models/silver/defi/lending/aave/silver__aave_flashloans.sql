@@ -95,6 +95,7 @@ SELECT
     LOWER(
         atoken_meta.atoken_address
     ) AS aave_token,
+    flashloan_quantity as amount_unadj,
     flashloan_quantity / pow(
         10,
         atoken_meta.underlying_decimals

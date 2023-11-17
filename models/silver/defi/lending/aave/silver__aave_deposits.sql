@@ -93,6 +93,7 @@ SELECT
     LOWER(
         atoken_meta.atoken_address
     ) AS aave_token,
+    deposit_quantity as amount_unadj,
     deposit_quantity / pow(
         10,
         atoken_meta.underlying_decimals

@@ -84,6 +84,7 @@ SELECT
     LOWER(
         atoken_meta.atoken_address
     ) AS radiant_token,
+    withdraw_amount AS amount_unadj,
     withdraw_amount / pow(
         10,
         atoken_meta.underlying_decimals

@@ -74,6 +74,7 @@ SELECT
     depositor,
     underlying_asset AS token_address,
     w.underlying_asset_symbol AS token_symbol,
+    amount AS amount_unadj,
     amount / pow(
         10,
         w.compound_market_decimals
