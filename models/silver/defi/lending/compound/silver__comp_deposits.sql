@@ -75,3 +75,9 @@ SELECT
     _inserted_timestamp
 FROM
     supply w
+WHERE compound_market IN (
+    '0xa5edbdd9646f8dff606d7448e414884c7d905dca',
+    '0x9c4ec768c28520b50860ea7a15bd7213a9ff58bf'
+) qualify(ROW_NUMBER() over(PARTITION BY _log_id
+ORDER BY
+    _inserted_timestamp DESC)) = 1

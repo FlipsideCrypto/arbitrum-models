@@ -16,9 +16,9 @@ WITH liquidations AS (
         origin_from_address,
         origin_to_address,
         origin_function_signature,
-        contract_address,
+        l.contract_address,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
-        contract_address AS compound_market,
+        l.contract_address AS compound_market,
         CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) AS asset,
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS absorber,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS borrower,
@@ -30,16 +30,17 @@ WITH liquidations AS (
         ) :: INTEGER AS usd_value,
         origin_from_address AS depositor_address,
         'Compound V3' AS compound_version,
-        C.name,
-        C.symbol,
-        C.decimals,
+        C.token_name,
+        C.token_symbol,
+        C.token_decimals,
         'ethereum' AS blockchain,
         _log_id,
         l._inserted_timestamp
     FROM
-        ethereum_dev.silver.logs l
-        LEFT JOIN ethereum_dev.silver.contracts C
-        ON asset = address
+        {{ ref('silver__logs') }}
+        l
+        LEFT JOIN {{ ref('silver__contracts') }} C
+        ON asset = c.contract_address
     WHERE
         topics [0] = '0x9850ab1af75177e4a9201c65a2cf7976d5d28e40ef63494b44366f86b2f9412e' --AbsorbCollateral
 
@@ -62,22 +63,22 @@ SELECT
     origin_from_address,
     origin_to_address,
     origin_function_signature,
-    contract_address,
+    l.contract_address,
     compound_market,
     absorber,
     borrower,
     depositor_address,
     asset AS token_address,
-    symbol AS token_symbol,
+    token_symbol,
     collateral_absorbed AS amount_unadj,
     collateral_absorbed / pow(
         10,
-        decimals
-    ) AS liquidated_amount,
+        token_decimals
+    ) AS amount,
     usd_value / pow(
         10,
         8
-    ) AS liquidated_amount_usd,
+    ) AS amount_usd,
     A.underlying_asset_address AS debt_asset,
     A.underlying_asset_symbol AS debt_asset_symbol,
     compound_version,
@@ -88,3 +89,9 @@ FROM
     liquidations l
     LEFT JOIN {{ ref('silver__comp_asset_details') }} A
     ON l.compound_market = A.compound_market_address
+WHERE compound_market IN (
+    '0xa5edbdd9646f8dff606d7448e414884c7d905dca',
+    '0x9c4ec768c28520b50860ea7a15bd7213a9ff58bf'
+) qualify(ROW_NUMBER() over(PARTITION BY _log_id
+ORDER BY
+    _inserted_timestamp DESC)) = 1

@@ -38,24 +38,24 @@ models:
         tests: 
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: LIQUIDATED_AMOUNT
+      - name: TOKEN_ADDRESS
+        tests: 
+          - not_null
+      - name: TOKEN_SYMBOL
+        tests: 
+          - not_null
+      - name: AMOUNT_UNADJ
+        tests:
+          - not_null 
+      - name: AMOUNT
+        tests:
+          - not_null
+      - name: AMOUNT_USD
         tests: 
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
-                - float 
-      - name: LIQUIDATED_AMOUNT_USD
-        tests: 
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float 
-      - name: COLLATERAL_ASSET
-        tests:
-          - not_null 
-      - name: COLLATERAL_ASSET_SYMBOL
-        tests:
-          - not_null 
+                - float
       - name: DEBT_ASSET
         tests:
           - not_null 

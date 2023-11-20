@@ -26,29 +26,25 @@ models:
         tests:
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: BORROWED_TOKENS
-        tests:
-          - not_null
-      - name: BORROWED_USD
-        tests:
-        - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float    
-      - name: BORROWER_ADDRESS
+      - name: BORROWER
         tests:
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
+      - name: TOKEN_ADDRESS
+        tests: 
+          - not_null
+      - name: TOKEN_SYMBOL
+        tests: 
+          - not_null
+      - name: AMOUNT_UNADJ
+        tests:
+          - not_null 
+      - name: AMOUNT
+        tests:
+          - not_null
       - name: COMPOUND_VERSION
         tests: 
           - not_null
-      - name: TOKEN_PRICE
-        tests: 
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float
-      - name: SYMBOL
       - name: BLOCKCHAIN
         tests: 
           - not_null 

@@ -31,24 +31,17 @@ models:
       - name: BORROWER
         tests: 
           - not_null
-      - name: REPAY_ASSET
+      - name: TOKEN_ADDRESS
         tests: 
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
-      - name: REPAYED_TOKENS
+          - not_null
+      - name: TOKEN_SYMBOL
         tests: 
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float 
-      - name: REPAYED_USD
-        tests: 
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float 
-      - name: REPAY_ASSET_SYMBOL
-        tests: 
+          - not_null
+      - name: AMOUNT_UNADJ
+        tests:
+          - not_null 
+      - name: AMOUNT
+        tests:
           - not_null
       - name: COMPOUND_VERSION
         tests: 
