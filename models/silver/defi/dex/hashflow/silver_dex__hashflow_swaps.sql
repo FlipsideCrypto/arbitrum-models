@@ -3,7 +3,7 @@
     incremental_strategy = 'delete+insert',
     unique_key = 'block_number',
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['non_realtime','reorg']
+    tags = ['curated','reorg']
 ) }}
 
 WITH pools AS (
@@ -197,8 +197,14 @@ SELECT
     contract_address,
     sender,
     tx_to,
-    token_in,
-    token_out,
+    CASE
+        WHEN token_in = '0x0000000000000000000000000000000000000000' THEN '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'
+        ELSE token_in
+    END AS token_in,
+    CASE
+        WHEN token_out = '0x0000000000000000000000000000000000000000' THEN '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'
+        ELSE token_out
+    END AS token_out,
     amount_in_unadj,
     amount_out_unadj,
     event_name,
@@ -207,6 +213,3 @@ SELECT
     _inserted_timestamp
 FROM
     FINAL
-WHERE
-    token_in <> '0x0000000000000000000000000000000000000000'
-    AND token_out <> '0x0000000000000000000000000000000000000000'

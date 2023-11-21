@@ -42,5 +42,5 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run -m tag:abis
+          dbt run -m "arbitrum_models,tag:abis"
   
