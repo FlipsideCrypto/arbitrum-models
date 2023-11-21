@@ -44,6 +44,12 @@ There is more information on how to use dbt docs in the last section of this doc
 ### DeFi Tables (arbitrum.defi)
 - [dim_dex_liquidity_pools](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.defi__dim_dex_liquidity_pools)
 - [ez_dex_swaps](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.defi__ez_dex_swaps)
+- [ez_borrows](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.defi__ez_borrows) 
+- [ez_deposits](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.defi__ez_deposits)
+- [ez_flashloans](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.defi__ez_flashloans)
+- [ez_liquidations](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.defi__ez_liquidations)
+- [ez_repayments](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.defi__ez_repayments)
+- [ez_withdraws](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.defi__ez_withdraws)
 
 ### NFT Tables (arbitrum.nft)
 - [ez_nft_sales](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.nft__ez_nft_sales)
