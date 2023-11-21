@@ -18,7 +18,7 @@ borrow AS (
         origin_function_signature,
         contract_address,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
-        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS reserve_1,
+        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS radiant_market,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS onBehalfOf,
         utils.udf_hex_to_int(
                 topics [3] :: STRING
@@ -88,27 +88,19 @@ SELECT
     origin_to_address,
     origin_function_signature,
     contract_address,
-    LOWER(
-        radiant_market
-    ) AS radiant_market,
-    LOWER(
-        atoken_meta.atoken_address
-    ) AS radiant_token,
+    radiant_market,
+    atoken_meta.atoken_address AS radiant_token,
     borrow_quantity AS amount_unadj,
     borrow_quantity / pow(
         10,
         atoken_meta.underlying_decimals
     ) AS borrowed_tokens,
-    LOWER(
-        borrower_address
-    ) AS borrower_address,
+    borrower_address,
     CASE
         WHEN borrow_rate_mode = 2 THEN 'Variable Rate'
         ELSE 'Stable Rate'
     END AS borrow_rate_mode,
-    LOWER(
-        lending_pool_contract
-    ) AS lending_pool_contract,
+    lending_pool_contract,
     atoken_meta.underlying_symbol AS symbol,
     atoken_meta.underlying_decimals AS underlying_decimals,
     'Radiant' AS platform,

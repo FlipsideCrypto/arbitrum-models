@@ -20,7 +20,7 @@ WITH liquidations AS(
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS asset_address,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS depositor_address,
-        CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) AS reciever_address,
+        origin_from_address AS receiver_address,
         utils.udf_hex_to_int(
             segmented_data [0] :: STRING
         ) :: INTEGER AS ShareAmountRepaid,
@@ -61,6 +61,8 @@ SELECT
     origin_function_signature,
     d.contract_address,
     silo_market,
+    depositor_address,
+    receiver_address,
     asset_address AS token_address,
     c.token_symbol,
     token_decimals,
@@ -69,8 +71,6 @@ SELECT
         10,
         c.token_decimals
     ) AS amount,
-    depositor_address,
-    reciever_address,
     'Silo' AS platform,
     'ethereum' AS blockchain,
     d._log_id,

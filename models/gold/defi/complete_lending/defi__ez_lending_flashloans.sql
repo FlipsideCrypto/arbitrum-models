@@ -28,7 +28,7 @@ SELECT
     protocol_market,
     flashloan_token,
     flashloan_token_symbol,
-    amount_unadj,
+    flashloan_amount_unadj,
     flashloan_amount,
     flashloan_amount_usd
 FROM 

@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver__aave_borrows
+  - name: silver__radiant_borrows
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -22,7 +22,7 @@ models:
       - name: EVENT_INDEX
         tests:
           - not_null
-      - name: aave_MARKET
+      - name: RADIANT_MARKET
         tests:
           - not_null
       - name: BORROWED_TOKENS

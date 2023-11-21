@@ -1,15 +1,12 @@
 version: 2
 models:
-  - name: silver__radiant_repayments
+  - name: silver__silo_repayments
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - TX_HASH
             - EVENT_INDEX
     columns:
-      - name: BLOCKCHAIN
-        tests:
-          - not_null
       - name: BLOCK_NUMBER
         tests:
           - not_null
@@ -25,38 +22,27 @@ models:
       - name: EVENT_INDEX
         tests:
           - not_null
-      - name: radiant_MARKET
+      - name: SILO_MARKET
         tests:
           - not_null 
-      - name: radiant_TOKEN
-      - name: REPAYED_TOKENS
-        tests: 
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float 
-      - name: REPAYED_USD
-        tests: 
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float 
-      - name: PAYER
+      - name: TOKEN_ADDRESS
         tests:
-          - not_null
-      - name: BORROWER
+          - not_null 
+      - name: TOKEN_SYMBOL
+        tests:
+          - not_null 
+      - name: AMOUNT_UNADJ
         tests: 
-          - not_null
-      - name: LENDING_POOL_CONTRACT
+          - not_null 
+      - name: AMOUNT
         tests: 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float 
+      - name: DEPOSITOR_ADDRESS
+        tests:
           - not_null
       - name: PLATFORM
         tests: 
           - not_null
-      - name: TOKEN_PRICE
-        tests: 
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float 
-      - name: SYMBOL

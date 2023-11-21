@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver__aave_withdraws
+  - name: silver__radiant_deposits
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -8,9 +8,6 @@ models:
             - EVENT_INDEX
     columns:
       - name: BLOCKCHAIN
-        tests:
-          - not_null
-      - name: TX_HASH
         tests:
           - not_null
       - name: BLOCK_NUMBER
@@ -21,27 +18,34 @@ models:
           - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
-              interval: 3
-      - name: EVENT_INDEX
-        tests: 
-          - not_null
-      - name: aave_MARKET
+              interval: 3  
+      - name: TX_HASH
         tests:
-          - not_null 
-      - name: aave_TOKEN
-      - name: WITHDRAWN_TOKENS
-        tests: 
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float 
-      - name: WITHDRAWN_USD
-        tests: 
+          - not_null
+      - name: SUPPLIED_USD
+        tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float
+      - name: ISSUED_TOKENS
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+      - name: EVENT_INDEX
+        tests:
+          - not_null
+      - name: RADIANT_MARKET
+        tests:
+          - not_null 
       - name: DEPOSITOR_ADDRESS
+        tests:
+          - not_null
+      - name: LENDING_POOL_CONTRACT
+        tests:
+          - not_null
       - name: PLATFORM
         tests: 
           - not_null

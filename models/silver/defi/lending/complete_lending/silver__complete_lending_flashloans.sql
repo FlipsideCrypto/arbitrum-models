@@ -89,12 +89,12 @@ SELECT
   target_address AS target,
   f.token_address AS flashloan_token,
   token_symbol AS flashloan_token_symbol,
-  amount_unadj,
-  flashloan_amount AS amount,
+  amount_unadj AS flashloan_amount_unadj,
+  flashloan_amount,
   ROUND(
     flashloan_amount * price,
     2
-  ) AS amount_usd,
+  ) AS flashloan_amount_usd,
   platform,
   blockchain,
   f._LOG_ID,

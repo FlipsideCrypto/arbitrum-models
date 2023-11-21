@@ -16,7 +16,7 @@ WITH withdraw AS(
         origin_function_signature,
         contract_address,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
-        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS reserve_1,
+        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS radiant_market,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS useraddress,
         CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) as depositor,
         utils.udf_hex_to_int(
@@ -25,15 +25,7 @@ WITH withdraw AS(
         _inserted_timestamp,
         _log_id,
         tx_hash,
-        CASE
-            WHEN contract_address = lower('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F') THEN 'radiant'
-            ELSE 'ERROR'
-        END AS radiant_version,
-        origin_to_address AS lending_pool_contract,
-        CASE
-            WHEN reserve_1 = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-            ELSE reserve_1
-        END AS radiant_market
+        origin_to_address AS lending_pool_contract
     FROM
         {{ ref('silver__logs') }}
     WHERE
@@ -78,21 +70,15 @@ SELECT
     origin_to_address,
     origin_function_signature,
     contract_address,
-    LOWER(
-        radiant_market
-    ) AS radiant_market,
-    LOWER(
-        atoken_meta.atoken_address
-    ) AS radiant_token,
+    radiant_market,
+    atoken_meta.atoken_address AS radiant_token,
     withdraw_amount AS amount_unadj,
     withdraw_amount / pow(
         10,
         atoken_meta.underlying_decimals
     ) AS withdrawn_tokens,
-    LOWER(
-        depositor
-    ) AS depositor_address,
-    radiant_version as platform,
+    depositor AS depositor_address,
+    'Radiant' as platform,
     atoken_meta.underlying_symbol AS symbol,
     'ethereum' AS blockchain,
     _log_id,

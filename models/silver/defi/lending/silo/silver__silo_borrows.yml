@@ -25,17 +25,21 @@ models:
       - name: SILO_MARKET
         tests:
           - not_null
-      - name: AMOUNT
-        tests:
+      - name: TOKEN_ADDRESS
+        tests: 
           - not_null
-      - name: BORROWER
+      - name: TOKEN_SYMBOL
+        tests: 
+          - not_null
+      - name: AMOUNT_UNADJ
+        tests:
+          - not_null 
+      - name: AMOUNT
         tests:
           - not_null
       - name: PLATFORM
         tests: 
           - not_null
-      - name: TOKEN_NAME
-      - name: TOKEN_SYMBOL
       - name: BLOCKCHAIN
-        tests: 
-          - not_null 
+        tests:
+          - not_null

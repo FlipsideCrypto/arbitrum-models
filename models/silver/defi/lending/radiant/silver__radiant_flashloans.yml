@@ -22,10 +22,10 @@ models:
       - name: TX_HASH
         tests:
           - not_null
-      - name: radiant_MARKET
+      - name: RADIANT_MARKET
         tests:
           - not_null 
-      - name: radiant_TOKEN
+      - name: RADIANT_TOKEN
       - name: FLASHLOAN_AMOUNT
         tests: 
           - dbt_expectations.expect_column_values_to_be_in_type_list:
@@ -59,3 +59,10 @@ models:
       - name: PLATFORM
         tests: 
           - not_null
+      - name: TOKEN_PRICE
+        tests: 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float 
+      - name: SYMBOL

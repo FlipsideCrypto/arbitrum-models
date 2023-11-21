@@ -18,7 +18,7 @@ WITH deposits AS(
         origin_function_signature,
         contract_address,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
-        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS reserve_1,
+        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS radiant_market,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS onBehalfOf,
         utils.udf_hex_to_int(
             topics [3] :: STRING
@@ -33,10 +33,6 @@ WITH deposits AS(
             origin_to_address,
             contract_address
         ) AS lending_pool_contract,
-        CASE
-            WHEN reserve_1 = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-            ELSE reserve_1
-        END AS radiant_market,
         _log_id,
         _inserted_timestamp
     FROM
@@ -54,9 +50,9 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
-AND
-contract_address = lower('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F')
-AND tx_status = 'SUCCESS' --excludes failed txs
+AND contract_address = lower('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F')
+AND tx_status = 'SUCCESS' 
+AND radiant_market <> LOWER('0xA130A97c841ffA12CFb5E3AEA503fD5825a39bA6') --weird one supply token deposit, just excluding as causing errors up in complete tables
 ),
 atoken_meta AS (
     SELECT
@@ -84,23 +80,15 @@ SELECT
     origin_to_address,
     origin_function_signature,
     contract_address,
-    LOWER(
-        radiant_market
-    ) AS radiant_market,
-    LOWER(
-        atoken_meta.atoken_address
-    ) AS radiant_token,
+    radiant_market,
+    atoken_meta.atoken_address AS radiant_token,
     deposit_quantity AS amount_unadj,
     deposit_quantity / pow(
         10,
         atoken_meta.underlying_decimals
     ) AS issued_tokens,
-    LOWER(
-        depositor_address
-    ) AS depositor_address,
-    LOWER(
-        lending_pool_contract
-    ) AS lending_pool_contract,
+    depositor_address,
+    lending_pool_contract,
     'Radiant' AS platform,
     atoken_meta.underlying_symbol AS symbol,
     'ethereum' AS blockchain,

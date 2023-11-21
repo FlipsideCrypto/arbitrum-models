@@ -92,8 +92,8 @@ SELECT
         10,
         atoken_meta.underlying_decimals
     ) AS premium_amount,
-    LOWER(initiator_address) AS initiator_address,
-    LOWER(target_address) AS target_address,
+    initiator_address AS initiator_address,
+    target_address AS target_address,
     'Radiant' AS platform,
     atoken_meta.underlying_symbol AS symbol,
     'ethereum' AS blockchain,
