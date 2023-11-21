@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'table',
-    tags = ['static']
+    tags = ['curated']
 ) }}
 -- Pulls contract details for relevant c assets.  The case when handles cETH.
 WITH asset_pull AS (
@@ -29,7 +29,7 @@ underlying_address_map AS(
             WHEN A.itoken_address = '0xd12d43cdf498e377d3bfa2c6217f05b466e14228' THEN LOWER('0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F') --FRAX
             WHEN A.itoken_address = '0x4987782da9a63bc3abace48648b15546d821c720' THEN LOWER('0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1') --ARB
             WHEN A.itoken_address = '0x9365181a7df82a1cc578eae443efd89f00dbb643' THEN LOWER('0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9') --ETH
-            WHEN A.itoken_address = '0xfece754d92bd956f681a941cef4632ab65710495' THEN LOWER('0x0fBcbaEA96Ce0cF7Ee00A8c19c3ab6f5Dc8E1921') --DPX
+            WHEN A.itoken_address = '0xfece754d92bd956f681a941cef4632ab65710495' THEN LOWER('0x5979D7b546E38E414F7E9822514be443A4800529') --wstETH
             WHEN A.itoken_address = '0x8991d64fe388fa79a4f7aa7826e8da09f0c3c96a' THEN LOWER('0x912CE59144191C1204E64559FE8253a0e49E6548') --GMX TOKEN
             WHEN A.itoken_address = '0x2193c45244af12c280941281c8aa67dd08be0a64' THEN LOWER('0x82aF49447D8a07e3bd95BD0d56f35241523fBab1') --Plutus Vault GLP Token
             WHEN A.itoken_address = '0x5d27cff80df09f28534bb37d386d43aa60f88e25' THEN LOWER('0x6C2C06790b3E3E3c38e12Ee22F8183b37a13EE55') --MAGIC Token

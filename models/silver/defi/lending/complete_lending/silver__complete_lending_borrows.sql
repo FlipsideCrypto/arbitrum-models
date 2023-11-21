@@ -198,17 +198,19 @@ SELECT
     amount_unadj,
     amount,
     ROUND(amount * price,2) AS amount_usd,
+    p.hour,
+    p.price,
     platform,
     blockchain,
     b._LOG_ID,
     b._INSERTED_TIMESTAMP
 FROM
     borrow_union b
-LEFT JOIN {{ ref('price__fact_hourly_token_prices') }} p
+LEFT JOIN {{ ref('price__ez_hourly_token_prices') }} p
 ON b.token_address = p.token_address
 AND DATE_TRUNC(
     'hour',
     block_timestamp
 ) = p.hour
 LEFT JOIN {{ ref('silver__contracts') }} C
-ON b.token_address = C.contract_address
+ON b.token_address = C.contract_address 

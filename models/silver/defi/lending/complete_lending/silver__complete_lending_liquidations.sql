@@ -20,8 +20,8 @@ WITH liquidation_union AS (
     absorber AS liquidator,
     borrower,
     amount_unadj,
-    amount,
-    amount_usd,
+    amount AS liquidated_amount,
+    amount_usd AS liquidated_amount_usd,
     compound_market AS protocol_collateral_asset,
     token_address AS collateral_asset,
     token_symbol AS collateral_asset_symbol,
@@ -148,7 +148,7 @@ FROM
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
     FROM
       {{ this }}
   )
@@ -171,7 +171,7 @@ prices AS (
   SELECT
     *
   FROM
-    {{ ref('price__fact_hourly_token_prices') }}
+    {{ ref('price__ez_hourly_token_prices') }}
     p
   WHERE
     token_address IN (

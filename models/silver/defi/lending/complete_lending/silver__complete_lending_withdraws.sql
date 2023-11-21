@@ -195,19 +195,19 @@ SELECT
       ELSE 'Withdraw'
     END AS event_name,
     protocol_market,
+    depositor_address as depositor,
     a.token_address,
     a.token_symbol,
     amount_unadj,
     amount,
     ROUND(amount * price,2) AS amount_usd,
-    depositor_address as depositor,
     platform,
     blockchain,
     a._log_id,
     a._inserted_timestamp
 FROM
     withdraws a
-LEFT JOIN {{ ref('price__fact_hourly_token_prices') }} p
+LEFT JOIN {{ ref('price__ez_hourly_token_prices') }} p
 ON a.token_address = p.token_address
 AND DATE_TRUNC(
     'hour',

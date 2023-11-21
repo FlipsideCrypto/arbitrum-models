@@ -28,10 +28,6 @@ WITH deposits AS(
                 segmented_data [1] :: STRING
             ) :: INTEGER
         AS deposit_quantity,
-        CASE
-            WHEN contract_address = lower('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F') THEN 'radiant'
-            ELSE 'ERROR'
-        END AS radiant_version,
         origin_from_address AS depositor_address,
         COALESCE(
             origin_to_address,
@@ -105,7 +101,7 @@ SELECT
     LOWER(
         lending_pool_contract
     ) AS lending_pool_contract,
-    radiant_version AS platform,
+    'Radiant' AS platform,
     atoken_meta.underlying_symbol AS symbol,
     'ethereum' AS blockchain,
     _log_id,

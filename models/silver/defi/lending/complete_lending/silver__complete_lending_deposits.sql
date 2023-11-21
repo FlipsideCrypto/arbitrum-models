@@ -202,7 +202,7 @@ SELECT
   A._INSERTED_TIMESTAMP
 FROM
   deposits A
-  LEFT JOIN {{ ref('price__fact_hourly_token_prices') }}
+  LEFT JOIN {{ ref('price__ez_hourly_token_prices') }}
   p
   ON A.token_address = p.token_address
   AND DATE_TRUNC(
@@ -210,4 +210,4 @@ FROM
     block_timestamp
   ) = p.hour
   LEFT JOIN {{ ref('silver__contracts') }} C
-  ON A.token_address = C.contract_address
+  ON A.token_address = C.contract_address 

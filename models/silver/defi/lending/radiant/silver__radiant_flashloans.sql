@@ -19,8 +19,8 @@ WITH flashloan AS (
         contract_address,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS target_address,
-        origin_to_address AS initiator_address,
-        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS asset_1,
+        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS initiator_address,
+        CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) AS radiant_market,
         utils.udf_hex_to_int(
             segmented_data [1] :: STRING
         ) :: INTEGER AS flashloan_quantity,
@@ -28,22 +28,14 @@ WITH flashloan AS (
             segmented_data [3] :: STRING
         ) :: INTEGER AS premium_quantity,
         utils.udf_hex_to_int(
-            topics[3] :: STRING
+            segmented_data[3] :: STRING
         ) :: INTEGER AS refferalCode,
         _log_id,
         _inserted_timestamp,
         COALESCE(
             origin_to_address,
             contract_address
-        ) AS lending_pool_contract,
-        CASE
-            WHEN contract_address = lower('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F') THEN 'radiant'
-            ELSE 'ERROR'
-        END AS radiant_version,
-        CASE
-            WHEN asset_1 = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-            ELSE asset_1
-        END AS radiant_market
+        ) AS lending_pool_contract
     FROM
         {{ ref('silver__logs') }}
     WHERE
@@ -89,12 +81,8 @@ SELECT
     origin_to_address,
     origin_function_signature,
     contract_address,
-    LOWER(
-        radiant_market
-    ) AS radiant_market,
-    LOWER(
-        atoken_meta.atoken_address
-    ) AS radiant_token,
+    radiant_market,
+    atoken_meta.atoken_address AS radiant_token,
     flashloan_quantity AS amount_unadj,
     flashloan_quantity / pow(
         10,
@@ -106,7 +94,7 @@ SELECT
     ) AS premium_amount,
     LOWER(initiator_address) AS initiator_address,
     LOWER(target_address) AS target_address,
-    radiant_version AS platform,
+    'Radiant' AS platform,
     atoken_meta.underlying_symbol AS symbol,
     'ethereum' AS blockchain,
     _log_id,

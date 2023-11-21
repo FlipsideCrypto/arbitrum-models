@@ -39,16 +39,11 @@ borrow AS (
         AS borrowrate,
         _inserted_timestamp,
         _log_id,
-        'Radiant' AS radiant_version,
         origin_from_address AS borrower_address,
         COALESCE(
             origin_to_address,
             contract_address
-        ) AS lending_pool_contract,
-        CASE
-            WHEN reserve_1 = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-            ELSE reserve_1
-        END AS radiant_market
+        ) AS lending_pool_contract
     FROM
         {{ ref('silver__logs') }}
     WHERE
@@ -61,7 +56,7 @@ AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) - INTERVAL '36 hours'
+        ) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
@@ -114,9 +109,9 @@ SELECT
     LOWER(
         lending_pool_contract
     ) AS lending_pool_contract,
-    radiant_version AS platform,
     atoken_meta.underlying_symbol AS symbol,
     atoken_meta.underlying_decimals AS underlying_decimals,
+    'Radiant' AS platform,
     'ethereum' AS blockchain,
     _log_id,
     _inserted_timestamp

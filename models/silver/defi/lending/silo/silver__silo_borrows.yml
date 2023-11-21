@@ -28,12 +28,12 @@ models:
       - name: AMOUNT
         tests:
           - not_null
-      - name: BORROWER_ADDRESS
+      - name: BORROWER
         tests:
           - not_null
       - name: PLATFORM
         tests: 
-          - not_nulL
+          - not_null
       - name: TOKEN_NAME
       - name: TOKEN_SYMBOL
       - name: BLOCKCHAIN

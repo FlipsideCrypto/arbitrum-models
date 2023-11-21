@@ -38,7 +38,7 @@ WITH repay AS(
     FROM
         {{ ref('silver__logs') }}
     WHERE
-        topics [0] :: STRING =  '0x4cdde6e09bb755c9a5589ebaec640bbfedff1362d4b255ebf8339782b9942faa'
+        topics [0] :: STRING =  '0xa534c8dbe71f871f9f3530e97a74601fea17b426cae02e1c5aee42c96c784051'
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
