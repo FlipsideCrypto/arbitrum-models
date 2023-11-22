@@ -78,7 +78,11 @@ a_token_step_2 AS (
         'Radiant' AS protocol
     FROM
         a_token_step_1
-    where radiant_version_pool = LOWER('0xF4B1486DD74D07706052A33d31d7c0AAFD0659E1') 
+    where radiant_version_pool IN
+        (
+            lower('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F'),
+            LOWER('0xF4B1486DD74D07706052A33d31d7c0AAFD0659E1')
+        )
 )
 SELECT
     A.atoken_created_block,

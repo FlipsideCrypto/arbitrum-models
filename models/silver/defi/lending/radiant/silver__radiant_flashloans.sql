@@ -52,7 +52,11 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
-AND contract_address = lower('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F')
+AND contract_address IN
+(
+    lower('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F'),
+    LOWER('0xF4B1486DD74D07706052A33d31d7c0AAFD0659E1')
+)
 AND tx_status = 'SUCCESS' --excludes failed txs
 ),
 atoken_meta AS (
@@ -94,9 +98,12 @@ SELECT
     ) AS premium_amount,
     initiator_address AS initiator_address,
     target_address AS target_address,
-    'Radiant' AS platform,
+    CASE 
+        WHEN contract_address = lower('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F') THEN 'Radiant V1'
+        WHEN contract_address = LOWER('0xF4B1486DD74D07706052A33d31d7c0AAFD0659E1') THEN 'Radiant V2'
+    END AS platform,
     atoken_meta.underlying_symbol AS symbol,
-    'ethereum' AS blockchain,
+    'arbitrum' AS blockchain,
     _log_id,
     _inserted_timestamp
 FROM

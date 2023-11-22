@@ -72,7 +72,7 @@ SELECT
         c.token_decimals
     ) AS amount,
     'Silo' AS platform,
-    'ethereum' AS blockchain,
+    'arbitrum' AS blockchain,
     d._log_id,
     d._inserted_timestamp
 FROM

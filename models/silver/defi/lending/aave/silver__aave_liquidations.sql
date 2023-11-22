@@ -111,7 +111,7 @@ SELECT
     aave_version as platform,
     amc.underlying_symbol AS collateral_token_symbol,
     amd.underlying_symbol AS debt_token_symbol,
-    'ethereum' AS blockchain,
+    'arbitrum' AS blockchain,
     _log_id,
     _inserted_timestamp
 FROM

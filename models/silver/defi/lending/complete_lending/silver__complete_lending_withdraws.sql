@@ -160,7 +160,7 @@ SELECT
     amount,
     depositor_address,
     platform,
-    'ethereum' AS blockchain,
+    'arbitrum' AS blockchain,
     _LOG_ID,
     _INSERTED_TIMESTAMP
 FROM

@@ -28,7 +28,7 @@ WITH withdraw AS (
         C.token_name,
         C.token_symbol,
         C.token_decimals,
-        'ethereum' AS blockchain,
+        'arbitrum' AS blockchain,
         _log_id,
         l._inserted_timestamp
     FROM

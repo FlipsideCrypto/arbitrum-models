@@ -48,7 +48,11 @@ borrow AS (
         {{ ref('silver__logs') }}
     WHERE
         topics [0] :: STRING = '0xc6a898309e823ee50bac64e45ca8adba6690e99e7841c45d754e2a38e9019d9b'
-        AND contract_address = lower('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F')
+    AND contract_address IN
+        (
+            lower('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F'),
+            LOWER('0xF4B1486DD74D07706052A33d31d7c0AAFD0659E1')
+        )
         AND tx_status = 'SUCCESS' --excludes failed txs
 
 {% if is_incremental() %}
@@ -103,8 +107,11 @@ SELECT
     lending_pool_contract,
     atoken_meta.underlying_symbol AS symbol,
     atoken_meta.underlying_decimals AS underlying_decimals,
-    'Radiant' AS platform,
-    'ethereum' AS blockchain,
+    CASE 
+        WHEN contract_address = lower('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F') THEN 'Radiant V1'
+        WHEN contract_address = LOWER('0xF4B1486DD74D07706052A33d31d7c0AAFD0659E1') THEN 'Radiant V2'
+    END AS platform,
+    'arbitrum' AS blockchain,
     _log_id,
     _inserted_timestamp
 FROM

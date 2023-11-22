@@ -96,7 +96,7 @@ SELECT
     ) AS lending_pool_contract,
     aave_version as platform,
     atoken_meta.underlying_symbol AS symbol,
-    'ethereum' AS blockchain,
+    'arbitrum' AS blockchain,
     _log_id,
     _inserted_timestamp
 FROM

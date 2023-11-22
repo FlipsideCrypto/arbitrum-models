@@ -70,7 +70,7 @@ SELECT
     ) AS amount,
     depositor_address,
     'Silo' AS platform,
-    'ethereum' AS blockchain,
+    'arbitrum' AS blockchain,
     d._log_id,
     d._inserted_timestamp
 FROM
