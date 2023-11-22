@@ -25,11 +25,10 @@ WITH deposits AS(
         ) :: INTEGER AS refferal,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 42)) AS userAddress,
         utils.udf_hex_to_int(
-                segmented_data [1] :: STRING
-            ) :: INTEGER
-        AS deposit_quantity,
+            segmented_data [1] :: STRING
+        ) :: INTEGER AS deposit_quantity,
         CASE
-            WHEN contract_address = lower('0x794a61358D6845594F94dc1DB02A252b5b4814aD') THEN 'Aave V3'
+            WHEN contract_address = LOWER('0x794a61358D6845594F94dc1DB02A252b5b4814aD') THEN 'Aave V3'
             ELSE 'ERROR'
         END AS aave_version,
         origin_from_address AS depositor_address,
@@ -58,7 +57,7 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
-AND contract_address = lower('0x794a61358D6845594F94dc1DB02A252b5b4814aD')
+AND contract_address = LOWER('0x794a61358D6845594F94dc1DB02A252b5b4814aD')
 AND tx_status = 'SUCCESS' --excludes failed txs
 ),
 atoken_meta AS (
@@ -87,23 +86,15 @@ SELECT
     origin_to_address,
     origin_function_signature,
     contract_address,
-    LOWER(
-        aave_market
-    ) AS aave_market,
-    LOWER(
-        atoken_meta.atoken_address
-    ) AS aave_token,
-    deposit_quantity as amount_unadj,
+    aave_market,
+    atoken_meta.atoken_address AS aave_token,
+    deposit_quantity AS amount_unadj,
     deposit_quantity / pow(
         10,
         atoken_meta.underlying_decimals
     ) AS issued_tokens,
-    LOWER(
-        depositor_address
-    ) AS depositor_address,
-    LOWER(
-        lending_pool_contract
-    ) AS lending_pool_contract,
+    depositor_address,
+    lending_pool_contract,
     aave_version AS platform,
     atoken_meta.underlying_symbol AS symbol,
     'arbitrum' AS blockchain,

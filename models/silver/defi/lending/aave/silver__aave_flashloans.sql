@@ -28,7 +28,7 @@ WITH flashloan AS (
             segmented_data [3] :: STRING
         ) :: INTEGER AS premium_quantity,
         utils.udf_hex_to_int(
-            topics[3] :: STRING
+            topics [3] :: STRING
         ) :: INTEGER AS refferalCode,
         _log_id,
         _inserted_timestamp,
@@ -37,7 +37,7 @@ WITH flashloan AS (
             contract_address
         ) AS lending_pool_contract,
         CASE
-            WHEN contract_address = lower('0x794a61358D6845594F94dc1DB02A252b5b4814aD') THEN 'Aave V3'
+            WHEN contract_address = LOWER('0x794a61358D6845594F94dc1DB02A252b5b4814aD') THEN 'Aave V3'
             ELSE 'ERROR'
         END AS aave_version,
         CASE
@@ -48,7 +48,6 @@ WITH flashloan AS (
         {{ ref('silver__logs') }}
     WHERE
         topics [0] :: STRING = '0xefefaba5e921573100900a3ad9cf29f222d995fb3b6045797eaea7521bd8d6f0'
-
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -89,13 +88,9 @@ SELECT
     origin_to_address,
     origin_function_signature,
     contract_address,
-    LOWER(
-        aave_market
-    ) AS aave_market,
-    LOWER(
-        atoken_meta.atoken_address
-    ) AS aave_token,
-    flashloan_quantity as amount_unadj,
+    aave_market,
+    atoken_meta.atoken_address AS aave_token,
+    flashloan_quantity AS amount_unadj,
     flashloan_quantity / pow(
         10,
         atoken_meta.underlying_decimals
@@ -104,8 +99,8 @@ SELECT
         10,
         atoken_meta.underlying_decimals
     ) AS premium_amount,
-    LOWER(initiator_address) AS initiator_address,
-    LOWER(target_address) AS target_address,
+    initiator_address AS initiator_address,
+    target_address AS target_address,
     aave_version AS platform,
     atoken_meta.underlying_symbol AS symbol,
     'arbitrum' AS blockchain,

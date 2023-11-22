@@ -5,6 +5,7 @@
     cluster_by = ['block_timestamp::DATE'],
     tags = ['non_realtime','reorg','curated']
 ) }}
+
 WITH liquidation AS(
 
     SELECT
@@ -30,7 +31,7 @@ WITH liquidation AS(
         _log_id,
         _inserted_timestamp,
         CASE
-            WHEN contract_address = lower('0x794a61358D6845594F94dc1DB02A252b5b4814aD') THEN 'Aave V3'
+            WHEN contract_address = LOWER('0x794a61358D6845594F94dc1DB02A252b5b4814aD') THEN 'Aave V3'
             ELSE 'ERROR'
         END AS aave_version,
         COALESCE(
@@ -89,26 +90,18 @@ SELECT
     origin_to_address,
     origin_function_signature,
     contract_address,
-    LOWER(
-        collateral_asset
-    ) AS collateral_asset,
-    LOWER(
-        amc.atoken_address
-    ) AS collateral_aave_token,
-    liquidated_amount as amount_unadj,
+    collateral_asset,
+    amc.atoken_address AS collateral_aave_token,
+    liquidated_amount AS amount_unadj,
     liquidated_amount / pow(
         10,
         amc.atoken_decimals
     ) AS liquidated_amount,
-    LOWER(
-        debt_asset
-    ) AS debt_asset,
-    LOWER(
-        amd.atoken_address
-    ) AS debt_aave_token,
+    debt_asset,
+    amd.atoken_address AS debt_aave_token,
     liquidator_address AS liquidator,
     borrower_address AS borrower,
-    aave_version as platform,
+    aave_version AS platform,
     amc.underlying_symbol AS collateral_token_symbol,
     amd.underlying_symbol AS debt_token_symbol,
     'arbitrum' AS blockchain,

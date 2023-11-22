@@ -78,12 +78,8 @@ SELECT
     origin_to_address,
     origin_function_signature,
     contract_address,
-    LOWER(
-        aave_market
-    ) AS aave_market,
-    LOWER(
-        atoken_meta.atoken_address
-    ) AS aave_token,
+    aave_market,
+    atoken_meta.atoken_address AS aave_token,
     repayed_amount AS amount_unadj,
     repayed_amount / pow(
         10,
@@ -91,9 +87,7 @@ SELECT
     ) AS repayed_tokens,
     repayer_address AS payer,
     borrower_address AS borrower,
-    LOWER(
-        lending_pool_contract
-    ) AS lending_pool_contract,
+    lending_pool_contract,
     aave_version as platform,
     atoken_meta.underlying_symbol AS symbol,
     'arbitrum' AS blockchain,

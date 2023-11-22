@@ -67,7 +67,7 @@ SELECT
     origin_function_signature,
     contract_address,
     w.asset AS compound_market,
-    borrower_address as borrower,
+    borrower_address AS borrower,
     w.underlying_asset_address AS token_address,
     w.underlying_asset_symbol AS token_symbol,
     borrow_amount AS amount_unadj,
@@ -75,16 +75,17 @@ SELECT
         10,
         w.decimals
     ) AS amount,
-    w.symbol as itoken_symbol,
+    w.symbol AS itoken_symbol,
     compound_version,
     blockchain,
     _log_id,
     _inserted_timestamp
 FROM
     borrow w
-WHERE compound_market IN (
-    '0xa5edbdd9646f8dff606d7448e414884c7d905dca',
-    '0x9c4ec768c28520b50860ea7a15bd7213a9ff58bf'
-)  qualify(ROW_NUMBER() over(PARTITION BY _log_id
+WHERE
+    compound_market IN (
+        '0xa5edbdd9646f8dff606d7448e414884c7d905dca',
+        '0x9c4ec768c28520b50860ea7a15bd7213a9ff58bf'
+    ) qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1

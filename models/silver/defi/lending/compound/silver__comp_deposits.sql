@@ -36,7 +36,7 @@ WITH supply AS (
         {{ ref('silver__logs') }}
         l
         LEFT JOIN {{ ref('silver__contracts') }} C
-        ON asset = c.contract_address
+        ON asset = C.contract_address
     WHERE
         topics [0] = '0xfa56f7b24f17183d81894d3ac2ee654e3c26388d17a28dbd9549b8114304e1f4' --SupplyCollateral
 
@@ -75,9 +75,10 @@ SELECT
     _inserted_timestamp
 FROM
     supply w
-WHERE compound_market IN (
-    '0xa5edbdd9646f8dff606d7448e414884c7d905dca',
-    '0x9c4ec768c28520b50860ea7a15bd7213a9ff58bf'
-) qualify(ROW_NUMBER() over(PARTITION BY _log_id
+WHERE
+    compound_market IN (
+        '0xa5edbdd9646f8dff606d7448e414884c7d905dca',
+        '0x9c4ec768c28520b50860ea7a15bd7213a9ff58bf'
+    ) qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1

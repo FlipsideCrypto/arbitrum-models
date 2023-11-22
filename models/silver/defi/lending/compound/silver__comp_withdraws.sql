@@ -44,7 +44,7 @@ AND l._inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) - INTERVAL '36 hours'
+        ) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
@@ -73,11 +73,11 @@ SELECT
     _log_id,
     _inserted_timestamp
 FROM
-    withdraw w 
-WHERE compound_market IN (
-    '0xa5edbdd9646f8dff606d7448e414884c7d905dca',
-    '0x9c4ec768c28520b50860ea7a15bd7213a9ff58bf'
-) qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    withdraw w
+WHERE
+    compound_market IN (
+        '0xa5edbdd9646f8dff606d7448e414884c7d905dca',
+        '0x9c4ec768c28520b50860ea7a15bd7213a9ff58bf'
+    ) qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1
-

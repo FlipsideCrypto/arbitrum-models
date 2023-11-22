@@ -5,6 +5,7 @@
     cluster_by = ['block_timestamp::DATE'],
     tags = ['non_realtime','reorg','curated']
 ) }}
+
 WITH --borrows from Aave LendingPool contracts
 borrow AS (
 
@@ -21,22 +22,18 @@ borrow AS (
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS reserve_1,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS onBehalfOf,
         utils.udf_hex_to_int(
-                topics [3] :: STRING
-            ) :: INTEGER
-        AS refferal,
+            topics [3] :: STRING
+        ) :: INTEGER AS refferal,
         CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40)) AS userAddress,
         utils.udf_hex_to_int(
-                segmented_data [1] :: STRING
-            ) :: INTEGER
-        AS borrow_quantity,
+            segmented_data [1] :: STRING
+        ) :: INTEGER AS borrow_quantity,
         utils.udf_hex_to_int(
-                segmented_data [2] :: STRING
-            ) :: INTEGER
-        AS borrow_rate_mode,
+            segmented_data [2] :: STRING
+        ) :: INTEGER AS borrow_rate_mode,
         utils.udf_hex_to_int(
-                segmented_data [3] :: STRING
-            ) :: INTEGER
-        AS borrowrate,
+            segmented_data [3] :: STRING
+        ) :: INTEGER AS borrowrate,
         _inserted_timestamp,
         _log_id,
         CASE
@@ -67,7 +64,7 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
-AND contract_address = lower('0x794a61358D6845594F94dc1DB02A252b5b4814aD')
+AND contract_address = LOWER('0x794a61358D6845594F94dc1DB02A252b5b4814aD')
 AND tx_status = 'SUCCESS' --excludes failed txs
 ),
 atoken_meta AS (
@@ -96,27 +93,19 @@ SELECT
     origin_to_address,
     origin_function_signature,
     contract_address,
-    LOWER(
-        aave_market
-    ) AS aave_market,
-    LOWER(
-        atoken_meta.atoken_address
-    ) AS aave_token,
-    borrow_quantity as amount_unadj,
+    aave_market,
+    atoken_meta.atoken_address AS aave_token,
+    borrow_quantity AS amount_unadj,
     borrow_quantity / pow(
         10,
         atoken_meta.underlying_decimals
     ) AS borrowed_tokens,
-    LOWER(
-        borrower_address
-    ) AS borrower_address,
+    borrower_address,
     CASE
         WHEN borrow_rate_mode = 2 THEN 'Variable Rate'
         ELSE 'Stable Rate'
     END AS borrow_rate_mode,
-    LOWER(
-        lending_pool_contract
-    ) AS lending_pool_contract,
+    lending_pool_contract,
     aave_version AS platform,
     atoken_meta.underlying_symbol AS symbol,
     atoken_meta.underlying_decimals AS underlying_decimals,

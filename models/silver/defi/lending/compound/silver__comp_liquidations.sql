@@ -40,7 +40,7 @@ WITH liquidations AS (
         {{ ref('silver__logs') }}
         l
         LEFT JOIN {{ ref('silver__contracts') }} C
-        ON asset = c.contract_address
+        ON asset = C.contract_address
     WHERE
         topics [0] = '0x9850ab1af75177e4a9201c65a2cf7976d5d28e40ef63494b44366f86b2f9412e' --AbsorbCollateral
 
@@ -89,9 +89,10 @@ FROM
     liquidations l
     LEFT JOIN {{ ref('silver__comp_asset_details') }} A
     ON l.compound_market = A.compound_market_address
-WHERE compound_market IN (
-    '0xa5edbdd9646f8dff606d7448e414884c7d905dca',
-    '0x9c4ec768c28520b50860ea7a15bd7213a9ff58bf'
-) qualify(ROW_NUMBER() over(PARTITION BY _log_id
+WHERE
+    compound_market IN (
+        '0xa5edbdd9646f8dff606d7448e414884c7d905dca',
+        '0x9c4ec768c28520b50860ea7a15bd7213a9ff58bf'
+    ) qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1
