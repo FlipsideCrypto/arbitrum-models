@@ -177,40 +177,46 @@ WHERE
             {{ this }}
     )
 {% endif %}
+),
+FINAL AS (
+    SELECT
+        tx_hash,
+        block_number,
+        block_timestamp,
+        event_index,
+        origin_from_address,
+        origin_to_address,
+        origin_function_signature,
+        b.contract_address,
+        CASE
+            WHEN platform = 'Compound V3' THEN 'Withdraw'
+            ELSE 'Borrow'
+        END AS event_name,
+        borrower,
+        protocol_market,
+        b.token_address,
+        b.token_symbol,
+        amount_unadj,
+        amount,
+        ROUND(amount * price,2) AS amount_usd,
+        platform,
+        blockchain,
+        b._LOG_ID,
+        b._INSERTED_TIMESTAMP
+    FROM
+        borrow_union b
+    LEFT JOIN {{ ref('price__ez_hourly_token_prices') }} p
+    ON b.token_address = p.token_address
+    AND DATE_TRUNC(
+        'hour',
+        block_timestamp
+    ) = p.hour
+    LEFT JOIN {{ ref('silver__contracts') }} C
+    ON b.token_address = C.contract_address 
 )
 SELECT
-    tx_hash,
-    block_number,
-    block_timestamp,
-    event_index,
-    origin_from_address,
-    origin_to_address,
-    origin_function_signature,
-    b.contract_address,
-    CASE
-        WHEN platform = 'Compound V3' THEN 'Withdraw'
-        ELSE 'Borrow'
-    END AS event_name,
-    borrower,
-    protocol_market,
-    b.token_address,
-    b.token_symbol,
-    amount_unadj,
-    amount,
-    ROUND(amount * price,2) AS amount_usd,
-    p.hour,
-    p.price,
-    platform,
-    blockchain,
-    b._LOG_ID,
-    b._INSERTED_TIMESTAMP
+    *
 FROM
-    borrow_union b
-LEFT JOIN {{ ref('price__ez_hourly_token_prices') }} p
-ON b.token_address = p.token_address
-AND DATE_TRUNC(
-    'hour',
-    block_timestamp
-) = p.hour
-LEFT JOIN {{ ref('silver__contracts') }} C
-ON b.token_address = C.contract_address 
+    FINAL qualify(ROW_NUMBER() over(PARTITION BY _log_id
+ORDER BY
+    _inserted_timestamp DESC)) = 1

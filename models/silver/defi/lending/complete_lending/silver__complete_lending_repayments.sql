@@ -172,40 +172,48 @@ WHERE
       {{ this }}
   )
 {% endif %}
+),
+FINAL AS (
+  SELECT
+    tx_hash,
+    block_number,
+    block_timestamp,
+    event_index,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    a.contract_address,
+    CASE 
+      WHEN platform = 'Compound V3' THEN 'Supply'
+      WHEN platform = 'Lodestar' THEN 'RepayBorrow'
+      ELSE 'Repay'
+    END AS event_name,
+    protocol_market,
+    payer_address as payer,
+    borrower,
+    a.token_address,
+    a.token_symbol,
+    amount_unadj,
+    amount,
+    ROUND(amount * price,2) AS amount_usd,
+    platform,
+    blockchain,
+    a._LOG_ID,
+    a._INSERTED_TIMESTAMP
+  FROM
+    repayments a
+  LEFT JOIN {{ ref('price__ez_hourly_token_prices') }} p
+  ON a.token_address = p.token_address
+  AND DATE_TRUNC(
+      'hour',
+      block_timestamp
+  ) = p.hour
+  LEFT JOIN {{ ref('silver__contracts') }} C
+  ON a.token_address = C.contract_address
 )
 SELECT
-  tx_hash,
-  block_number,
-  block_timestamp,
-  event_index,
-  origin_from_address,
-  origin_to_address,
-  origin_function_signature,
-  a.contract_address,
-  CASE 
-    WHEN platform = 'Compound V3' THEN 'Supply'
-    WHEN platform = 'Lodestar' THEN 'RepayBorrow'
-    ELSE 'Repay'
-  END AS event_name,
-  protocol_market,
-  payer_address as payer,
-  borrower,
-  a.token_address,
-  a.token_symbol,
-  amount_unadj,
-  amount,
-  ROUND(amount * price,2) AS amount_usd,
-  platform,
-  blockchain,
-  a._LOG_ID,
-  a._INSERTED_TIMESTAMP
+  *
 FROM
-  repayments a
-LEFT JOIN {{ ref('price__ez_hourly_token_prices') }} p
-ON a.token_address = p.token_address
-AND DATE_TRUNC(
-    'hour',
-    block_timestamp
-) = p.hour
-LEFT JOIN {{ ref('silver__contracts') }} C
-ON a.token_address = C.contract_address
+  FINAL qualify(ROW_NUMBER() over(PARTITION BY _log_id
+ORDER BY
+  _inserted_timestamp DESC)) = 1

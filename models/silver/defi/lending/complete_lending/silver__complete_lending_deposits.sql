@@ -167,44 +167,52 @@ WHERE
       {{ this }}
   )
 {% endif %}
+),
+FINAL AS (
+  SELECT
+    tx_hash,
+    block_number,
+    block_timestamp,
+    event_index,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    A.contract_address,
+    CASE
+      WHEN platform = 'Lodestar' THEN 'Mint'
+      WHEN platform = 'Compound V3' THEN 'SupplyCollateral'
+      WHEN platform = 'Aave V3' THEN 'Supply'
+      ELSE 'Deposit'
+    END AS event_name,
+    protocol_market,
+    depositor_address AS depositor,
+    A.token_address,
+    A.token_symbol,
+    amount_unadj,
+    amount,
+    ROUND(
+      amount * price,
+      2
+    ) AS amount_usd,
+    platform,
+    blockchain,
+    A._LOG_ID,
+    A._INSERTED_TIMESTAMP
+  FROM
+    deposits A
+    LEFT JOIN {{ ref('price__ez_hourly_token_prices') }}
+    p
+    ON A.token_address = p.token_address
+    AND DATE_TRUNC(
+      'hour',
+      block_timestamp
+    ) = p.hour
+    LEFT JOIN {{ ref('silver__contracts') }} C
+    ON A.token_address = C.contract_address
 )
 SELECT
-  tx_hash,
-  block_number,
-  block_timestamp,
-  event_index,
-  origin_from_address,
-  origin_to_address,
-  origin_function_signature,
-  A.contract_address,
-  CASE
-    WHEN platform = 'Lodestar' THEN 'Mint'
-    WHEN platform = 'Compound V3' THEN 'SupplyCollateral'
-    WHEN platform = 'Aave V3' THEN 'Supply'
-    ELSE 'Deposit'
-  END AS event_name,
-  protocol_market,
-  depositor_address AS depositor,
-  A.token_address,
-  A.token_symbol,
-  amount_unadj,
-  amount,
-  ROUND(
-    amount * price,
-    2
-  ) AS amount_usd,
-  platform,
-  blockchain,
-  A._LOG_ID,
-  A._INSERTED_TIMESTAMP
+  *
 FROM
-  deposits A
-  LEFT JOIN {{ ref('price__ez_hourly_token_prices') }}
-  p
-  ON A.token_address = p.token_address
-  AND DATE_TRUNC(
-    'hour',
-    block_timestamp
-  ) = p.hour
-  LEFT JOIN {{ ref('silver__contracts') }} C
-  ON A.token_address = C.contract_address 
+  FINAL qualify(ROW_NUMBER() over(PARTITION BY _log_id
+ORDER BY
+  _inserted_timestamp DESC)) = 1

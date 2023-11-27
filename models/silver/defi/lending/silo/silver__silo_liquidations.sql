@@ -28,6 +28,7 @@ WITH liquidations AS(
             segmented_data [1] :: STRING
         ) :: INTEGER AS amount,
         p.token_address AS silo_market,
+        P.protocol_collateral_token_address AS protocol_collateral_token,
         CASE
             WHEN shareamountrepaid > 0 THEN 'debt_token_event'
             ELSE 'collateral_token_event'
@@ -96,6 +97,7 @@ SELECT
     origin_function_signature,
     d.contract_address,
     silo_market,
+    protocol_collateral_token,
     depositor_address,
     receiver_address,
     d.asset_address AS token_address,

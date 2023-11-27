@@ -131,7 +131,7 @@ SELECT
   amount_unadj,
   amount AS liquidated_amount,
   NULL AS liquidated_amount_usd,
-  NULL AS protocol_collateral_asset,
+  protocol_collateral_token AS protocol_collateral_asset,
   token_address AS collateral_asset,
   token_symbol AS collateral_asset_symbol,
   debt_asset,
@@ -222,52 +222,61 @@ prices AS (
       FROM
         liquidation_union
     )
+),
+FINAL AS (
+  SELECT
+    tx_hash,
+    block_number,
+    block_timestamp,
+    event_index,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    A.contract_address,
+    CASE
+      WHEN platform = 'Compound V3' THEN 'AbsorbCollateral'
+      WHEN platform = 'Lodestar' THEN 'LiquidateBorrow'
+      WHEN platform = 'Silo' THEN 'Liquidate'
+      ELSE 'LiquidationCall'
+    END AS event_name,
+    liquidator,
+    borrower,
+    protocol_collateral_asset AS protocol_market,
+    collateral_asset AS collateral_token,
+    collateral_asset_symbol AS collateral_token_symbol,
+    amount_unadj,
+    liquidated_amount AS amount,
+    CASE
+      WHEN platform <> 'Compound V3' THEN ROUND(
+        liquidated_amount * p.price,
+        2
+      )
+      ELSE ROUND(
+        liquidated_amount_usd,
+        2
+      )
+    END AS amount_usd,
+    debt_asset AS debt_token,
+    debt_asset_symbol AS debt_token_symbol,
+    platform,
+    A.blockchain,
+    A._LOG_ID,
+    A._INSERTED_TIMESTAMP
+  FROM
+    liquidation_union A
+    LEFT JOIN prices p
+    ON collateral_asset = p.token_address
+    AND DATE_TRUNC(
+      'hour',
+      block_timestamp
+    ) = p.hour
+    LEFT JOIN contracts C
+    ON collateral_asset = C.contract_address
 )
+
 SELECT
-  tx_hash,
-  block_number,
-  block_timestamp,
-  event_index,
-  origin_from_address,
-  origin_to_address,
-  origin_function_signature,
-  A.contract_address,
-  CASE
-    WHEN platform = 'Compound V3' THEN 'AbsorbCollateral'
-    WHEN platform = 'Lodestar' THEN 'LiquidateBorrow'
-    WHEN platform = 'Silo' THEN 'Liquidate'
-    ELSE 'LiquidationCall'
-  END AS event_name,
-  liquidator,
-  borrower,
-  protocol_collateral_asset AS protocol_market,
-  collateral_asset AS collateral_token,
-  collateral_asset_symbol AS collateral_token_symbol,
-  amount_unadj,
-  liquidated_amount AS amount,
-  CASE
-    WHEN platform <> 'Compound V3' THEN ROUND(
-      liquidated_amount * p.price,
-      2
-    )
-    ELSE ROUND(
-      liquidated_amount_usd,
-      2
-    )
-  END AS amount_usd,
-  debt_asset AS debt_token,
-  debt_asset_symbol AS debt_token_symbol,
-  platform,
-  A.blockchain,
-  A._LOG_ID,
-  A._INSERTED_TIMESTAMP
+  *
 FROM
-  liquidation_union A
-  LEFT JOIN prices p
-  ON collateral_asset = p.token_address
-  AND DATE_TRUNC(
-    'hour',
-    block_timestamp
-  ) = p.hour
-  LEFT JOIN contracts C
-  ON collateral_asset = C.contract_address
+  FINAL qualify(ROW_NUMBER() over(PARTITION BY _log_id
+ORDER BY
+  _inserted_timestamp DESC)) = 1

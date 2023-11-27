@@ -73,40 +73,48 @@ WHERE
       {{ this }}
   )
 {% endif %}
+),
+FINAL AS (
+  SELECT
+    tx_hash,
+    block_number,
+    block_timestamp,
+    event_index,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    f.contract_address,
+    'FlashLoan' AS event_name,
+    protocol_token AS protocol_market,
+    initiator_address AS initiator,
+    target_address AS target,
+    f.token_address AS flashloan_token,
+    token_symbol AS flashloan_token_symbol,
+    amount_unadj AS flashloan_amount_unadj,
+    flashloan_amount,
+    ROUND(
+      flashloan_amount * price,
+      2
+    ) AS flashloan_amount_usd,
+    platform,
+    blockchain,
+    f._LOG_ID,
+    f._INSERTED_TIMESTAMP
+  FROM
+    flashloans f
+    LEFT JOIN {{ ref('price__ez_hourly_token_prices') }}
+    p
+    ON f.token_address = p.token_address
+    AND DATE_TRUNC(
+      'hour',
+      block_timestamp
+    ) = p.hour
+    LEFT JOIN {{ ref('silver__contracts') }} C
+    ON f.token_address = C.contract_address
 )
 SELECT
-  tx_hash,
-  block_number,
-  block_timestamp,
-  event_index,
-  origin_from_address,
-  origin_to_address,
-  origin_function_signature,
-  f.contract_address,
-  'FlashLoan' AS event_name,
-  protocol_token AS protocol_market,
-  initiator_address AS initiator,
-  target_address AS target,
-  f.token_address AS flashloan_token,
-  token_symbol AS flashloan_token_symbol,
-  amount_unadj AS flashloan_amount_unadj,
-  flashloan_amount,
-  ROUND(
-    flashloan_amount * price,
-    2
-  ) AS flashloan_amount_usd,
-  platform,
-  blockchain,
-  f._LOG_ID,
-  f._INSERTED_TIMESTAMP
+  *
 FROM
-  flashloans f
-  LEFT JOIN {{ ref('price__ez_hourly_token_prices') }}
-  p
-  ON f.token_address = p.token_address
-  AND DATE_TRUNC(
-    'hour',
-    block_timestamp
-  ) = p.hour
-  LEFT JOIN {{ ref('silver__contracts') }} C
-  ON f.token_address = C.contract_address 
+  FINAL qualify(ROW_NUMBER() over(PARTITION BY _log_id
+ORDER BY
+  _inserted_timestamp DESC)) = 1

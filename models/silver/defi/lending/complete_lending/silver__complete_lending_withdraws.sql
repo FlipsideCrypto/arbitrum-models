@@ -9,24 +9,24 @@
 WITH withdraws AS (
 
     SELECT
-    tx_hash,
-    block_number,
-    block_timestamp,
-    event_index,
-    origin_from_address,
-    origin_to_address,
-    origin_function_signature,
-    contract_address,
-    aave_token AS protocol_market,
-    aave_market AS token_address,
-    symbol as token_symbol,
-    amount_unadj,
-    withdrawn_tokens AS amount,
-    depositor_address,
-    'Aave V3' AS platform,
-    'arbitrum' AS blockchain,
-    _LOG_ID,
-    _INSERTED_TIMESTAMP
+        tx_hash,
+        block_number,
+        block_timestamp,
+        event_index,
+        origin_from_address,
+        origin_to_address,
+        origin_function_signature,
+        contract_address,
+        aave_token AS protocol_market,
+        aave_market AS token_address,
+        symbol AS token_symbol,
+        amount_unadj,
+        withdrawn_tokens AS amount,
+        depositor_address,
+        'Aave V3' AS platform,
+        'arbitrum' AS blockchain,
+        _LOG_ID,
+        _INSERTED_TIMESTAMP
     FROM
         {{ ref('silver__aave_withdraws') }}
 
@@ -42,7 +42,7 @@ WHERE
     )
 {% endif %}
 UNION ALL
-    SELECT
+SELECT
     tx_hash,
     block_number,
     block_timestamp,
@@ -53,7 +53,7 @@ UNION ALL
     contract_address,
     radiant_token AS protocol_market,
     radiant_market AS token_address,
-    symbol as token_symbol,
+    symbol AS token_symbol,
     amount_unadj,
     withdrawn_tokens AS amount,
     depositor_address,
@@ -61,8 +61,8 @@ UNION ALL
     'arbitrum' AS blockchain,
     _LOG_ID,
     _INSERTED_TIMESTAMP
-    FROM
-        {{ ref('silver__radiant_withdraws') }}
+FROM
+    {{ ref('silver__radiant_withdraws') }}
 
 {% if is_incremental() %}
 WHERE
@@ -177,39 +177,51 @@ WHERE
             {{ this }}
     )
 {% endif %}
+),
+FINAL AS (
+    SELECT
+        tx_hash,
+        block_number,
+        block_timestamp,
+        event_index,
+        origin_from_address,
+        origin_to_address,
+        origin_function_signature,
+        A.contract_address,
+        CASE
+            WHEN platform = 'Compound V3' THEN 'WithdrawCollateral'
+            WHEN platform = 'Lodestar' THEN 'Redeem'
+            ELSE 'Withdraw'
+        END AS event_name,
+        protocol_market,
+        depositor_address AS depositor,
+        A.token_address,
+        A.token_symbol,
+        amount_unadj,
+        amount,
+        ROUND(
+            amount * price,
+            2
+        ) AS amount_usd,
+        platform,
+        blockchain,
+        A._log_id,
+        A._inserted_timestamp
+    FROM
+        withdraws A
+        LEFT JOIN {{ ref('price__ez_hourly_token_prices') }}
+        p
+        ON A.token_address = p.token_address
+        AND DATE_TRUNC(
+            'hour',
+            block_timestamp
+        ) = p.hour
+        LEFT JOIN {{ ref('silver__contracts') }} C
+        ON A.token_address = C.contract_address
 )
 SELECT
-    tx_hash,
-    block_number,
-    block_timestamp,
-    event_index,
-    origin_from_address,
-    origin_to_address,
-    origin_function_signature,
-    a.contract_address,
-    CASE
-      WHEN platform = 'Compound V3' THEN 'WithdrawCollateral'
-      WHEN platform = 'Lodestar' THEN 'Redeem'
-      ELSE 'Withdraw'
-    END AS event_name,
-    protocol_market,
-    depositor_address as depositor,
-    a.token_address,
-    a.token_symbol,
-    amount_unadj,
-    amount,
-    ROUND(amount * price,2) AS amount_usd,
-    platform,
-    blockchain,
-    a._log_id,
-    a._inserted_timestamp
+    *
 FROM
-    withdraws a
-LEFT JOIN {{ ref('price__ez_hourly_token_prices') }} p
-ON a.token_address = p.token_address
-AND DATE_TRUNC(
-    'hour',
-    block_timestamp
-) = p.hour
-LEFT JOIN {{ ref('silver__contracts') }} C
-ON a.token_address = C.contract_address
+    FINAL qualify(ROW_NUMBER() over(PARTITION BY _log_id
+ORDER BY
+    _inserted_timestamp DESC)) = 1
