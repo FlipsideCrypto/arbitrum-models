@@ -187,11 +187,9 @@ SELECT
     origin_to_address,
     origin_function_signature,
     a.contract_address,
-    CASE 
-      WHEN platform = 'Fraxlend' THEN 'RemoveCollateral'
+    CASE
       WHEN platform = 'Compound V3' THEN 'WithdrawCollateral'
-      WHEN platform = 'Compound V2' THEN 'Redeem'
-      WHEN platform = 'Aave V1' THEN 'RedeemUnderlying'
+      WHEN platform = 'Lodestar' THEN 'Redeem'
       ELSE 'Withdraw'
     END AS event_name,
     protocol_market,

@@ -178,12 +178,9 @@ SELECT
   origin_function_signature,
   A.contract_address,
   CASE
-    WHEN platform = 'Fraxlend' THEN 'AddCollateral'
+    WHEN platform = 'Lodestar' THEN 'Mint'
     WHEN platform = 'Compound V3' THEN 'SupplyCollateral'
-    WHEN platform IN (
-      'Spark',
-      'Aave V3'
-    ) THEN 'Supply'
+    WHEN platform = 'Aave V3' THEN 'Supply'
     ELSE 'Deposit'
   END AS event_name,
   protocol_market,

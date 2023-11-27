@@ -183,9 +183,8 @@ SELECT
   origin_function_signature,
   a.contract_address,
   CASE 
-    WHEN platform = 'Fraxlend' THEN 'RepayAsset'
     WHEN platform = 'Compound V3' THEN 'Supply'
-    WHEN platform = 'Compound V2' THEN 'RepayBorrow'
+    WHEN platform = 'Lodestar' THEN 'RepayBorrow'
     ELSE 'Repay'
   END AS event_name,
   protocol_market,
