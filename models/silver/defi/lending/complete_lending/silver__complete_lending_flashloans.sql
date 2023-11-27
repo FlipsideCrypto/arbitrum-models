@@ -56,7 +56,7 @@ SELECT
   flashloan_amount,
   initiator_address,
   target_address,
-  'Radiant' AS platform,
+  platform,
   symbol AS token_symbol,
   blockchain,
   _LOG_ID,

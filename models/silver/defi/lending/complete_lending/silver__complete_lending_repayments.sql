@@ -57,7 +57,7 @@ UNION ALL
     symbol AS token_symbol,
     payer AS payer_address,
     borrower,
-    'Radiant' AS platform,
+    platform,
     'arbitrum' AS blockchain,
     _LOG_ID,
     _INSERTED_TIMESTAMP

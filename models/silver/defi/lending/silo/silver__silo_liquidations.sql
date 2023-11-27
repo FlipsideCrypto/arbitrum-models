@@ -23,19 +23,23 @@ WITH liquidations AS(
         origin_from_address AS receiver_address,
         utils.udf_hex_to_int(
             segmented_data [0] :: STRING
-        ) :: INTEGER AS ShareAmountRepaid,
+        ) :: INTEGER AS shareamountrepaid,
         utils.udf_hex_to_int(
             segmented_data [1] :: STRING
         ) :: INTEGER AS amount,
-        p.token_address as silo_market,
+        p.token_address AS silo_market,
+        CASE
+            WHEN shareamountrepaid > 0 THEN 'debt_token_event'
+            ELSE 'collateral_token_event'
+        END AS liquidation_event_type, 
         l._log_id,
         l._inserted_timestamp
     FROM
-        {{ ref('silver__logs') }} l 
-    INNER JOIN
-        {{ ref('silver__silo_pools') }} p  
-    ON
-        l.contract_address = p.silo_address
+        {{ ref('silver__logs') }}
+        l
+        INNER JOIN {{ ref('silver__silo_pools') }}
+        p
+        ON l.contract_address = p.silo_address
     WHERE
         topics [0] :: STRING = '0xf3fa0eaee8f258c23b013654df25d1527f98a5c7ccd5e951dd77caca400ef972'
         AND tx_status = 'SUCCESS' --excludes failed txs
@@ -50,9 +54,40 @@ AND l._inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
+),
+contracts as (
+    SELECT 
+        *
+    FROM
+        {{ ref('silver__contracts') }}
+    WHERE 
+        contract_address IN (
+            SELECT
+                asset_address   
+            FROM
+                liquidations
+        )
+),
+debt_token_isolate AS (
+
+    SELECT
+        tx_hash,
+        asset_address,
+        c.token_symbol,
+        liquidation_event_type
+    FROM
+        liquidations d
+    LEFT JOIN 
+        contracts C
+    ON 
+        d.asset_address = C.contract_address 
+    WHERE 
+        liquidation_event_type = 'debt_token_event'
+
 )
+
 SELECT
-    tx_hash,
+    d.tx_hash,
     block_number,
     block_timestamp,
     event_index,
@@ -63,23 +98,27 @@ SELECT
     silo_market,
     depositor_address,
     receiver_address,
-    asset_address AS token_address,
-    c.token_symbol,
+    d.asset_address AS token_address,
+    C.token_symbol,
     token_decimals,
     amount AS amount_unadj,
     amount / pow(
-        10,
-        c.token_decimals
-    ) AS amount,
+            10,
+            C.token_decimals
+        ) AS amount,
+    i.asset_address as debt_asset,
+    i.token_symbol as debt_asset_symbol,
     'Silo' AS platform,
     'arbitrum' AS blockchain,
     d._log_id,
     d._inserted_timestamp
 FROM
     liquidations d
-LEFT JOIN
-    {{ ref('silver__contracts') }} c
-ON
-    d.asset_address = c.contract_address qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    LEFT JOIN contracts C
+    ON d.asset_address = C.contract_address 
+    LEFT JOIN debt_token_isolate i
+    ON d.tx_hash = i.tx_hash 
+WHERE 
+    d.liquidation_event_type = 'collateral_token_event' qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     d._inserted_timestamp DESC)) = 1

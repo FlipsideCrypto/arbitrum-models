@@ -137,12 +137,48 @@ SELECT
   collateral_token_symbol AS collateral_asset_symbol,
   debt_asset,
   debt_token_symbol AS debt_asset_symbol,
-  'Radiant' AS platform,
+  platform,
   'arbitrum' AS blockchain,
   _LOG_ID,
   _INSERTED_TIMESTAMP
 FROM
   {{ ref('silver__radiant_liquidations') }}
+
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
+    FROM
+      {{ this }}
+  )
+{% endif %}
+UNION ALL
+SELECT
+  tx_hash,
+  block_number,
+  block_timestamp,
+  event_index,
+  origin_from_address,
+  origin_to_address,
+  origin_function_signature,
+  contract_address,
+  receiver_address AS liquidator,
+  depositor_address AS borrower,
+  amount_unadj,
+  amount AS liquidated_amount,
+  NULL AS liquidated_amount_usd,
+  NULL AS protocol_collateral_asset,
+  token_address AS collateral_asset,
+  token_symbol AS collateral_asset_symbol,
+  debt_asset,
+  debt_asset_symbol,
+  platform,
+  'arbitrum' AS blockchain,
+  _LOG_ID,
+  _INSERTED_TIMESTAMP
+FROM
+  {{ ref('silver__silo_liquidations') }}
 
 {% if is_incremental() %}
 WHERE

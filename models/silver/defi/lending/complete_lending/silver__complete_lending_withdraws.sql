@@ -57,7 +57,7 @@ UNION ALL
     amount_unadj,
     withdrawn_tokens AS amount,
     depositor_address,
-    'Radiant' AS platform,
+    platform,
     'arbitrum' AS blockchain,
     _LOG_ID,
     _INSERTED_TIMESTAMP
