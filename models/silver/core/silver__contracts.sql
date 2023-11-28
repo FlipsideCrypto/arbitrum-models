@@ -84,7 +84,7 @@ token_names AS (
                 token_symbol,
                 _inserted_timestamp,
                 {{ dbt_utils.generate_surrogate_key(
-                    ['contract_address']
+                    ['c1.contract_address']
                 ) }} AS contracts_id,
                 SYSDATE() AS inserted_timestamp,
                 SYSDATE() AS modified_timestamp,
