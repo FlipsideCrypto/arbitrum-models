@@ -43,7 +43,7 @@ AND TO_TIMESTAMP_NTZ(_inserted_timestamp) >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) - interval '24 hours'
+        ) - INTERVAL '24 hours'
     FROM
         {{ this }}
 )
@@ -400,7 +400,7 @@ final_base AS (
         transfer_base
 
 {% if is_incremental() %}
-UNION all 
+UNION ALL
 SELECT
     block_number,
     block_timestamp,
@@ -445,6 +445,7 @@ SELECT
     block_timestamp,
     tx_hash,
     event_index,
+    intra_event_index,
     contract_address,
     project_name,
     from_address,
