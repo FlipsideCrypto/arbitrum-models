@@ -5,6 +5,7 @@
     cluster_by = ['block_timestamp::DATE'],
     tags = ['reorg','curated']
 ) }}
+
 WITH repay AS(
 
     SELECT
@@ -23,15 +24,14 @@ WITH repay AS(
         utils.udf_hex_to_int(
             segmented_data [0] :: STRING
         ) :: INTEGER AS repayed_amount,
-        _log_id,
-        _inserted_timestamp,
         origin_to_address AS lending_pool_contract,
-        origin_from_address AS repayer_address
+        origin_from_address AS repayer_address,
+        _log_id,
+        _inserted_timestamp
     FROM
         {{ ref('silver__logs') }}
     WHERE
         topics [0] :: STRING = '0x4cdde6e09bb755c9a5589ebaec640bbfedff1362d4b255ebf8339782b9942faa'
-
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -43,11 +43,10 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
-AND contract_address IN
-        (
-            lower('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F'),
-            LOWER('0xF4B1486DD74D07706052A33d31d7c0AAFD0659E1')
-        )
+AND contract_address IN (
+    LOWER('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F'),
+    LOWER('0xF4B1486DD74D07706052A33d31d7c0AAFD0659E1')
+)
 AND tx_status = 'SUCCESS' --excludes failed txs
 ),
 atoken_meta AS (
@@ -86,8 +85,8 @@ SELECT
     repayer_address AS payer,
     borrower_address AS borrower,
     lending_pool_contract,
-    CASE 
-        WHEN contract_address = lower('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F') THEN 'Radiant V1'
+    CASE
+        WHEN contract_address = LOWER('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F') THEN 'Radiant V1'
         WHEN contract_address = LOWER('0xF4B1486DD74D07706052A33d31d7c0AAFD0659E1') THEN 'Radiant V2'
     END AS platform,
     atoken_meta.underlying_symbol AS symbol,

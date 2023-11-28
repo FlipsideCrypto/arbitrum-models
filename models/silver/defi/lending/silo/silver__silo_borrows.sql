@@ -26,15 +26,15 @@ WITH borrows AS(
         utils.udf_hex_to_int(
             segmented_data [1] :: STRING
         ) :: INTEGER AS collateral_only,
-        p.token_address as silo_market,
+        p.token_address AS silo_market,
         l._log_id,
         l._inserted_timestamp
     FROM
-        {{ ref('silver__logs') }} l 
-    INNER JOIN
-        {{ ref('silver__silo_pools') }} p  
-    ON
-        l.contract_address = p.silo_address
+        {{ ref('silver__logs') }}
+        l
+        INNER JOIN {{ ref('silver__silo_pools') }}
+        p
+        ON l.contract_address = p.silo_address
     WHERE
         topics [0] :: STRING = '0x312a5e5e1079f5dda4e95dbbd0b908b291fd5b992ef22073643ab691572c5b52'
         AND tx_status = 'SUCCESS' --excludes failed txs
@@ -61,23 +61,21 @@ SELECT
     d.contract_address,
     silo_market,
     asset_address AS token_address,
-    c.token_symbol,
+    C.token_symbol,
     token_decimals,
     amount AS amount_unadj,
     amount / pow(
         10,
-        c.token_decimals
+        C.token_decimals
     ) AS amount,
-    borrow_address as borrower,
+    borrow_address AS borrower,
     'Silo' AS platform,
     'arbitrum' AS blockchain,
     d._log_id,
     d._inserted_timestamp
 FROM
     borrows d
-LEFT JOIN
-    {{ ref('silver__contracts') }} c
-ON
-    d.asset_address = c.contract_address qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    LEFT JOIN {{ ref('silver__contracts') }} C
+    ON d.asset_address = C.contract_address qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     d._inserted_timestamp DESC)) = 1

@@ -1,9 +1,9 @@
 {{ config(
-    materialized = 'incremental',
-    incremental_strategy = 'delete+insert',
-    unique_key = "block_number",
-    cluster_by = ['block_timestamp::DATE'],
-    tags = ['reorg','curated']
+  materialized = 'incremental',
+  incremental_strategy = 'delete+insert',
+  unique_key = "block_number",
+  cluster_by = ['block_timestamp::DATE'],
+  tags = ['reorg','curated']
 ) }}
 -- pull all itoken addresses and corresponding name
 WITH asset_details AS (
@@ -37,7 +37,7 @@ lodestar_repayments AS (
     utils.udf_hex_to_int(
       segmented_data [2] :: STRING
     ) :: INTEGER AS repayed_amount_raw,
-    'Lodestar' as platform,
+    'Lodestar' AS platform,
     _inserted_timestamp,
     _log_id
   FROM
@@ -114,5 +114,4 @@ SELECT
 FROM
   lodestar_combine qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
-    _inserted_timestamp DESC)) = 1
-
+  _inserted_timestamp DESC)) = 1

@@ -4,6 +4,7 @@
 ) }}
 
 WITH DECODE AS (
+
     SELECT
         block_number AS atoken_created_block,
         contract_address AS a_token_address,
@@ -44,7 +45,16 @@ AND _inserted_timestamp >= (
 ),
 a_token_step_1 AS (
     SELECT
-        *
+        atoken_created_block,
+        a_token_address,
+        segmented_data,
+        underlying_asset,
+        aave_version_pool,
+        atoken_decimals,
+        atoken_name,
+        atoken_symbol,
+        _inserted_timestamp,
+        _log_id
     FROM
         DECODE
     WHERE
@@ -74,11 +84,21 @@ debt_tokens AS (
 ),
 a_token_step_2 AS (
     SELECT
-        *,
+        atoken_created_block,
+        a_token_address,
+        segmented_data,
+        underlying_asset,
+        aave_version_pool,
+        atoken_decimals,
+        atoken_name,
+        atoken_symbol,
+        _inserted_timestamp,
+        _log_id,
         'Aave V3' AS protocol
     FROM
         a_token_step_1
-    where aave_version_pool = LOWER('0x794a61358D6845594F94dc1DB02A252b5b4814aD')
+    WHERE
+        aave_version_pool = LOWER('0x794a61358D6845594F94dc1DB02A252b5b4814aD')
 )
 SELECT
     A.atoken_created_block,

@@ -367,10 +367,9 @@ The amount of assets flash loaned, non-decimal adjusted.
 The flashloaned token address.  
 
 {% enddocs %}
+
 {% docs complete_lending_flashloan_token_symbol %}
 
 The flashloaned token symbol
 
 {% enddocs %}
-
-'{{ doc("complete_lending_market") }}'

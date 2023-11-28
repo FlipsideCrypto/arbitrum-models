@@ -20,7 +20,7 @@ WITH flashloan AS (
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS target_address,
         origin_to_address AS initiator_address,
-        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS asset_1,
+        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS aave_market,
         utils.udf_hex_to_int(
             segmented_data [1] :: STRING
         ) :: INTEGER AS flashloan_quantity,
@@ -30,8 +30,6 @@ WITH flashloan AS (
         utils.udf_hex_to_int(
             topics [3] :: STRING
         ) :: INTEGER AS refferalCode,
-        _log_id,
-        _inserted_timestamp,
         COALESCE(
             origin_to_address,
             contract_address
@@ -40,10 +38,8 @@ WITH flashloan AS (
             WHEN contract_address = LOWER('0x794a61358D6845594F94dc1DB02A252b5b4814aD') THEN 'Aave V3'
             ELSE 'ERROR'
         END AS aave_version,
-        CASE
-            WHEN asset_1 = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-            ELSE asset_1
-        END AS aave_market
+        _inserted_timestamp,
+        _log_id
     FROM
         {{ ref('silver__logs') }}
     WHERE

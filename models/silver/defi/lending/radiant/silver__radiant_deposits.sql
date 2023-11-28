@@ -25,9 +25,8 @@ WITH deposits AS(
         ) :: INTEGER AS refferal,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 42)) AS userAddress,
         utils.udf_hex_to_int(
-                segmented_data [1] :: STRING
-            ) :: INTEGER
-        AS deposit_quantity,
+            segmented_data [1] :: STRING
+        ) :: INTEGER AS deposit_quantity,
         origin_from_address AS depositor_address,
         COALESCE(
             origin_to_address,
@@ -50,12 +49,11 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
-AND contract_address IN
-        (
-            lower('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F'),
-            LOWER('0xF4B1486DD74D07706052A33d31d7c0AAFD0659E1')
-        )
-AND tx_status = 'SUCCESS' 
+AND contract_address IN (
+    LOWER('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F'),
+    LOWER('0xF4B1486DD74D07706052A33d31d7c0AAFD0659E1')
+)
+AND tx_status = 'SUCCESS'
 AND radiant_market <> LOWER('0xA130A97c841ffA12CFb5E3AEA503fD5825a39bA6') --weird one supply token deposit, just excluding as causing errors up in complete tables
 ),
 atoken_meta AS (
@@ -93,8 +91,8 @@ SELECT
     ) AS issued_tokens,
     depositor_address,
     lending_pool_contract,
-    CASE 
-        WHEN contract_address = lower('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F') THEN 'Radiant V1'
+    CASE
+        WHEN contract_address = LOWER('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F') THEN 'Radiant V1'
         WHEN contract_address = LOWER('0xF4B1486DD74D07706052A33d31d7c0AAFD0659E1') THEN 'Radiant V2'
     END AS platform,
     atoken_meta.underlying_symbol AS symbol,

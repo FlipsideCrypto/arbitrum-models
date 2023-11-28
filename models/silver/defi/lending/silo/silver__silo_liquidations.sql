@@ -28,11 +28,11 @@ WITH liquidations AS(
             segmented_data [1] :: STRING
         ) :: INTEGER AS amount,
         p.token_address AS silo_market,
-        P.protocol_collateral_token_address AS protocol_collateral_token,
+        p.protocol_collateral_token_address AS protocol_collateral_token,
         CASE
             WHEN shareamountrepaid > 0 THEN 'debt_token_event'
             ELSE 'collateral_token_event'
-        END AS liquidation_event_type, 
+        END AS liquidation_event_type,
         l._log_id,
         l._inserted_timestamp
     FROM
@@ -56,37 +56,32 @@ AND l._inserted_timestamp >= (
 )
 {% endif %}
 ),
-contracts as (
-    SELECT 
+contracts AS (
+    SELECT
         *
     FROM
         {{ ref('silver__contracts') }}
-    WHERE 
+    WHERE
         contract_address IN (
             SELECT
-                asset_address   
+                asset_address
             FROM
                 liquidations
         )
 ),
 debt_token_isolate AS (
-
     SELECT
         tx_hash,
         asset_address,
-        c.token_symbol,
+        C.token_symbol,
         liquidation_event_type
     FROM
         liquidations d
-    LEFT JOIN 
-        contracts C
-    ON 
-        d.asset_address = C.contract_address 
-    WHERE 
+        LEFT JOIN contracts C
+        ON d.asset_address = C.contract_address
+    WHERE
         liquidation_event_type = 'debt_token_event'
-
 )
-
 SELECT
     d.tx_hash,
     block_number,
@@ -105,11 +100,11 @@ SELECT
     token_decimals,
     amount AS amount_unadj,
     amount / pow(
-            10,
-            C.token_decimals
-        ) AS amount,
-    i.asset_address as debt_asset,
-    i.token_symbol as debt_asset_symbol,
+        10,
+        C.token_decimals
+    ) AS amount,
+    i.asset_address AS debt_asset,
+    i.token_symbol AS debt_asset_symbol,
     'Silo' AS platform,
     'arbitrum' AS blockchain,
     d._log_id,
@@ -117,10 +112,10 @@ SELECT
 FROM
     liquidations d
     LEFT JOIN contracts C
-    ON d.asset_address = C.contract_address 
+    ON d.asset_address = C.contract_address
     LEFT JOIN debt_token_isolate i
-    ON d.tx_hash = i.tx_hash 
-WHERE 
+    ON d.tx_hash = i.tx_hash
+WHERE
     d.liquidation_event_type = 'collateral_token_event' qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     d._inserted_timestamp DESC)) = 1

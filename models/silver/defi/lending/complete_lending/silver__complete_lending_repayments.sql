@@ -41,28 +41,28 @@ WHERE
   )
 {% endif %}
 UNION ALL
-  SELECT
-    tx_hash,
-    block_number,
-    block_timestamp,
-    event_index,
-    origin_from_address,
-    origin_to_address,
-    origin_function_signature,
-    contract_address,
-    radiant_market AS token_address,
-    radiant_token AS protocol_market,
-    amount_unadj,
-    repayed_tokens AS amount,
-    symbol AS token_symbol,
-    payer AS payer_address,
-    borrower,
-    platform,
-    'arbitrum' AS blockchain,
-    _LOG_ID,
-    _INSERTED_TIMESTAMP
-  FROM
-    {{ ref('silver__radiant_repayments') }}
+SELECT
+  tx_hash,
+  block_number,
+  block_timestamp,
+  event_index,
+  origin_from_address,
+  origin_to_address,
+  origin_function_signature,
+  contract_address,
+  radiant_market AS token_address,
+  radiant_token AS protocol_market,
+  amount_unadj,
+  repayed_tokens AS amount,
+  symbol AS token_symbol,
+  payer AS payer_address,
+  borrower,
+  platform,
+  'arbitrum' AS blockchain,
+  _LOG_ID,
+  _INSERTED_TIMESTAMP
+FROM
+  {{ ref('silver__radiant_repayments') }}
 
 {% if is_incremental() %}
 WHERE
@@ -74,28 +74,28 @@ WHERE
   )
 {% endif %}
 UNION ALL
-  SELECT
-    tx_hash,
-    block_number,
-    block_timestamp,
-    event_index,
-    origin_from_address,
-    origin_to_address,
-    origin_function_signature,
-    contract_address,
-    repay_contract_address AS token_address,
-    itoken AS protocol_market,
-    amount_unadj,
-    repayed_amount AS amount,
-    repay_contract_symbol AS token_symbol,
-    payer AS payer_address,
-    borrower,
-    platform,
-    'arbitrum' AS blockchain,
-    _LOG_ID,
-    _INSERTED_TIMESTAMP
-  FROM
-    {{ ref('silver__lodestar_repayments') }}
+SELECT
+  tx_hash,
+  block_number,
+  block_timestamp,
+  event_index,
+  origin_from_address,
+  origin_to_address,
+  origin_function_signature,
+  contract_address,
+  repay_contract_address AS token_address,
+  itoken AS protocol_market,
+  amount_unadj,
+  repayed_amount AS amount,
+  repay_contract_symbol AS token_symbol,
+  payer AS payer_address,
+  borrower,
+  platform,
+  'arbitrum' AS blockchain,
+  _LOG_ID,
+  _INSERTED_TIMESTAMP
+FROM
+  {{ ref('silver__lodestar_repayments') }}
 
 {% if is_incremental() %}
 WHERE
@@ -154,8 +154,8 @@ SELECT
   amount_unadj,
   amount,
   token_symbol,
-  NULL as payer_address,
-  depositor_address as borrower,
+  NULL AS payer_address,
+  depositor_address AS borrower,
   platform,
   'arbitrum' AS blockchain,
   _LOG_ID,
@@ -182,34 +182,38 @@ FINAL AS (
     origin_from_address,
     origin_to_address,
     origin_function_signature,
-    a.contract_address,
-    CASE 
+    A.contract_address,
+    CASE
       WHEN platform = 'Compound V3' THEN 'Supply'
       WHEN platform = 'Lodestar' THEN 'RepayBorrow'
       ELSE 'Repay'
     END AS event_name,
     protocol_market,
-    payer_address as payer,
+    payer_address AS payer,
     borrower,
-    a.token_address,
-    a.token_symbol,
+    A.token_address,
+    A.token_symbol,
     amount_unadj,
     amount,
-    ROUND(amount * price,2) AS amount_usd,
+    ROUND(
+      amount * price,
+      2
+    ) AS amount_usd,
     platform,
     blockchain,
-    a._LOG_ID,
-    a._INSERTED_TIMESTAMP
+    A._LOG_ID,
+    A._INSERTED_TIMESTAMP
   FROM
-    repayments a
-  LEFT JOIN {{ ref('price__ez_hourly_token_prices') }} p
-  ON a.token_address = p.token_address
-  AND DATE_TRUNC(
+    repayments A
+    LEFT JOIN {{ ref('price__ez_hourly_token_prices') }}
+    p
+    ON A.token_address = p.token_address
+    AND DATE_TRUNC(
       'hour',
       block_timestamp
-  ) = p.hour
-  LEFT JOIN {{ ref('silver__contracts') }} C
-  ON a.token_address = C.contract_address
+    ) = p.hour
+    LEFT JOIN {{ ref('silver__contracts') }} C
+    ON A.token_address = C.contract_address
 )
 SELECT
   *

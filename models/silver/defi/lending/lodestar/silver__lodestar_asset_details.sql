@@ -51,8 +51,8 @@ underlying_address_map AS(
 )
 SELECT
     created_block,
-    block_timestamp as create_timestamp,
-    tx_hash as create_hash,
+    block_timestamp AS create_timestamp,
+    tx_hash AS create_hash,
     itoken_name,
     itoken_symbol,
     itoken_decimals,

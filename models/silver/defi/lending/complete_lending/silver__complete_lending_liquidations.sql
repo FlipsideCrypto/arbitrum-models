@@ -8,32 +8,32 @@
 
 WITH liquidation_union AS (
 
-SELECT
-  tx_hash,
-  block_number,
-  block_timestamp,
-  event_index,
-  origin_from_address,
-  origin_to_address,
-  origin_function_signature,
-  contract_address,
-  liquidator,
-  borrower,
-  amount_unadj,
-  liquidation_amount AS liquidated_amount,
-  NULL AS liquidated_amount_usd,
-  itoken AS protocol_collateral_asset,
-  liquidation_contract_address AS collateral_asset,
-  liquidation_contract_symbol AS collateral_asset_symbol,
-  collateral_token AS debt_asset,
-  collateral_symbol AS debt_asset_symbol,
-  platform,
-  'arbitrum' AS blockchain,
-  l._LOG_ID,
-  l._INSERTED_TIMESTAMP
-FROM
-  {{ ref('silver__lodestar_liquidations') }}
-  l
+  SELECT
+    tx_hash,
+    block_number,
+    block_timestamp,
+    event_index,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    contract_address,
+    liquidator,
+    borrower,
+    amount_unadj,
+    liquidation_amount AS liquidated_amount,
+    NULL AS liquidated_amount_usd,
+    itoken AS protocol_collateral_asset,
+    liquidation_contract_address AS collateral_asset,
+    liquidation_contract_symbol AS collateral_asset_symbol,
+    collateral_token AS debt_asset,
+    collateral_symbol AS debt_asset_symbol,
+    platform,
+    'arbitrum' AS blockchain,
+    l._LOG_ID,
+    l._INSERTED_TIMESTAMP
+  FROM
+    {{ ref('silver__lodestar_liquidations') }}
+    l
 
 {% if is_incremental() %}
 WHERE
@@ -153,32 +153,32 @@ WHERE
   )
 {% endif %}
 UNION ALL
-  SELECT
-    tx_hash,
-    block_number,
-    block_timestamp,
-    event_index,
-    origin_from_address,
-    origin_to_address,
-    origin_function_signature,
-    contract_address,
-    absorber AS liquidator,
-    borrower,
-    amount_unadj,
-    amount AS liquidated_amount,
-    amount_usd AS liquidated_amount_usd,
-    compound_market AS protocol_collateral_asset,
-    token_address AS collateral_asset,
-    token_symbol AS collateral_asset_symbol,
-    debt_asset,
-    debt_asset_symbol,
-    l.compound_version AS platform,
-    'arbitrum' AS blockchain,
-    l._LOG_ID,
-    l._INSERTED_TIMESTAMP
-  FROM
-    {{ ref('silver__comp_liquidations') }}
-    l
+SELECT
+  tx_hash,
+  block_number,
+  block_timestamp,
+  event_index,
+  origin_from_address,
+  origin_to_address,
+  origin_function_signature,
+  contract_address,
+  absorber AS liquidator,
+  borrower,
+  amount_unadj,
+  amount AS liquidated_amount,
+  amount_usd AS liquidated_amount_usd,
+  compound_market AS protocol_collateral_asset,
+  token_address AS collateral_asset,
+  token_symbol AS collateral_asset_symbol,
+  debt_asset,
+  debt_asset_symbol,
+  l.compound_version AS platform,
+  'arbitrum' AS blockchain,
+  l._LOG_ID,
+  l._INSERTED_TIMESTAMP
+FROM
+  {{ ref('silver__comp_liquidations') }}
+  l
 
 {% if is_incremental() %}
 WHERE
@@ -273,7 +273,6 @@ FINAL AS (
     LEFT JOIN contracts C
     ON collateral_asset = C.contract_address
 )
-
 SELECT
   *
 FROM

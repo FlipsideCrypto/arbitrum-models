@@ -97,7 +97,7 @@ silo_debt_token AS (
 )
 SELECT
     silo_create_block,
-    l.tx_hash as creation_hash,
+    l.tx_hash AS creation_hash,
     factory_address,
     silo_address,
     l.token_address,
@@ -120,7 +120,8 @@ FROM
     LEFT JOIN silo_collateral_token ct
     ON ct.tx_hash = l.tx_hash
     LEFT JOIN silo_debt_token dt
-    ON dt.tx_hash = l.tx_hash 
-WHERE silo_address IS NOT NULL qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    ON dt.tx_hash = l.tx_hash
+WHERE
+    silo_address IS NOT NULL qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     l._inserted_timestamp DESC)) = 1

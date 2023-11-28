@@ -28,19 +28,18 @@ WITH flashloan AS (
             segmented_data [3] :: STRING
         ) :: INTEGER AS premium_quantity,
         utils.udf_hex_to_int(
-            segmented_data[3] :: STRING
+            segmented_data [3] :: STRING
         ) :: INTEGER AS refferalCode,
-        _log_id,
-        _inserted_timestamp,
         COALESCE(
             origin_to_address,
             contract_address
-        ) AS lending_pool_contract
+        ) AS lending_pool_contract,
+        _log_id,
+        _inserted_timestamp
     FROM
         {{ ref('silver__logs') }}
     WHERE
         topics [0] :: STRING = '0x631042c832b07452973831137f2d73e395028b44b250dedc5abb0ee766e168ac'
-
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -52,9 +51,8 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
-AND contract_address IN
-(
-    lower('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F'),
+AND contract_address IN (
+    LOWER('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F'),
     LOWER('0xF4B1486DD74D07706052A33d31d7c0AAFD0659E1')
 )
 AND tx_status = 'SUCCESS' --excludes failed txs
@@ -98,8 +96,8 @@ SELECT
     ) AS premium_amount,
     initiator_address AS initiator_address,
     target_address AS target_address,
-    CASE 
-        WHEN contract_address = lower('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F') THEN 'Radiant V1'
+    CASE
+        WHEN contract_address = LOWER('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F') THEN 'Radiant V1'
         WHEN contract_address = LOWER('0xF4B1486DD74D07706052A33d31d7c0AAFD0659E1') THEN 'Radiant V2'
     END AS platform,
     atoken_meta.underlying_symbol AS symbol,

@@ -17,24 +17,20 @@ WITH withdraw AS(
         origin_function_signature,
         contract_address,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
-        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS reserve_1,
+        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS aave_market,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS useraddress,
         CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) AS depositor,
         utils.udf_hex_to_int(
             segmented_data [0] :: STRING
         ) :: INTEGER AS withdraw_amount,
-        _inserted_timestamp,
-        _log_id,
         tx_hash,
         CASE
             WHEN contract_address = LOWER('0x794a61358D6845594F94dc1DB02A252b5b4814aD') THEN 'Aave V3'
             ELSE 'ERROR'
         END AS aave_version,
         origin_to_address AS lending_pool_contract,
-        CASE
-            WHEN reserve_1 = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-            ELSE reserve_1
-        END AS aave_market
+        _inserted_timestamp,
+        _log_id
     FROM
         {{ ref('silver__logs') }}
     WHERE

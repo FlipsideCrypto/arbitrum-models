@@ -1,9 +1,9 @@
 {{ config(
-    materialized = 'incremental',
-    incremental_strategy = 'delete+insert',
-    unique_key = "block_number",
-    cluster_by = ['block_timestamp::DATE'],
-    tags = ['reorg','curated']
+  materialized = 'incremental',
+  incremental_strategy = 'delete+insert',
+  unique_key = "block_number",
+  cluster_by = ['block_timestamp::DATE'],
+  tags = ['reorg','curated']
 ) }}
 -- pull all itoken addresses and corresponding name
 WITH asset_details AS (
@@ -81,7 +81,7 @@ lodestar_combine AS (
     C.underlying_symbol AS supplied_symbol,
     itoken,
     C.itoken_symbol,
-    c.itoken_decimals,
+    C.itoken_decimals,
     C.underlying_decimals,
     b.platform,
     b._log_id,
@@ -120,5 +120,4 @@ SELECT
 FROM
   lodestar_combine qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
-    _inserted_timestamp DESC)) = 1
-
+  _inserted_timestamp DESC)) = 1

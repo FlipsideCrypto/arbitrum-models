@@ -67,7 +67,7 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 ),
-liquidation_union as (
+liquidation_union AS (
   SELECT
     block_number,
     block_timestamp,
@@ -112,5 +112,4 @@ SELECT
 FROM
   liquidation_union qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
-    _inserted_timestamp DESC)) = 1
-
+  _inserted_timestamp DESC)) = 1

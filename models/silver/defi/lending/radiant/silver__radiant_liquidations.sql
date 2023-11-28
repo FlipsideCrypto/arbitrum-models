@@ -5,6 +5,7 @@
     cluster_by = ['block_timestamp::DATE'],
     tags = ['reorg','curated']
 ) }}
+
 WITH liquidation AS(
 
     SELECT
@@ -27,12 +28,12 @@ WITH liquidation AS(
             segmented_data [1] :: STRING
         ) :: INTEGER AS liquidated_amount,
         CONCAT('0x', SUBSTR(segmented_data [2] :: STRING, 25, 40)) AS liquidator_address,
-        _log_id,
-        _inserted_timestamp,
         COALESCE(
             origin_to_address,
             contract_address
-        ) AS lending_pool_contract
+        ) AS lending_pool_contract,
+        _log_id,
+        _inserted_timestamp
     FROM
         {{ ref('silver__logs') }}
     WHERE
@@ -48,11 +49,10 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
-AND contract_address IN
-        (
-            lower('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F'),
-            LOWER('0xF4B1486DD74D07706052A33d31d7c0AAFD0659E1')
-        )
+AND contract_address IN (
+    LOWER('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F'),
+    LOWER('0xF4B1486DD74D07706052A33d31d7c0AAFD0659E1')
+)
 AND tx_status = 'SUCCESS' --excludes failed txs
 ),
 atoken_meta AS (
@@ -92,8 +92,8 @@ SELECT
     amd.atoken_address AS debt_radiant_token,
     liquidator_address AS liquidator,
     borrower_address AS borrower,
-    CASE 
-        WHEN contract_address = lower('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F') THEN 'Radiant V1'
+    CASE
+        WHEN contract_address = LOWER('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F') THEN 'Radiant V1'
         WHEN contract_address = LOWER('0xF4B1486DD74D07706052A33d31d7c0AAFD0659E1') THEN 'Radiant V2'
     END AS platform,
     amc.underlying_symbol AS collateral_token_symbol,

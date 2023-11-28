@@ -5,6 +5,7 @@
     cluster_by = ['block_timestamp::DATE'],
     tags = ['reorg','curated']
 ) }}
+
 WITH --borrows from radiant LendingPool contracts
 borrow AS (
 
@@ -21,36 +22,31 @@ borrow AS (
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS radiant_market,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS onBehalfOf,
         utils.udf_hex_to_int(
-                topics [3] :: STRING
-            ) :: INTEGER
-        AS refferal,
+            topics [3] :: STRING
+        ) :: INTEGER AS refferal,
         CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40)) AS userAddress,
         utils.udf_hex_to_int(
-                segmented_data [1] :: STRING
-            ) :: INTEGER
-        AS borrow_quantity,
+            segmented_data [1] :: STRING
+        ) :: INTEGER AS borrow_quantity,
         utils.udf_hex_to_int(
-                segmented_data [2] :: STRING
-            ) :: INTEGER
-        AS borrow_rate_mode,
+            segmented_data [2] :: STRING
+        ) :: INTEGER AS borrow_rate_mode,
         utils.udf_hex_to_int(
-                segmented_data [3] :: STRING
-            ) :: INTEGER
-        AS borrowrate,
-        _inserted_timestamp,
-        _log_id,
+            segmented_data [3] :: STRING
+        ) :: INTEGER AS borrowrate,
         origin_from_address AS borrower_address,
         COALESCE(
             origin_to_address,
             contract_address
-        ) AS lending_pool_contract
+        ) AS lending_pool_contract,
+        _inserted_timestamp,
+        _log_id
     FROM
         {{ ref('silver__logs') }}
     WHERE
         topics [0] :: STRING = '0xc6a898309e823ee50bac64e45ca8adba6690e99e7841c45d754e2a38e9019d9b'
-    AND contract_address IN
-        (
-            lower('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F'),
+        AND contract_address IN (
+            LOWER('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F'),
             LOWER('0xF4B1486DD74D07706052A33d31d7c0AAFD0659E1')
         )
         AND tx_status = 'SUCCESS' --excludes failed txs
@@ -107,8 +103,8 @@ SELECT
     lending_pool_contract,
     atoken_meta.underlying_symbol AS symbol,
     atoken_meta.underlying_decimals AS underlying_decimals,
-    CASE 
-        WHEN contract_address = lower('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F') THEN 'Radiant V1'
+    CASE
+        WHEN contract_address = LOWER('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F') THEN 'Radiant V1'
         WHEN contract_address = LOWER('0xF4B1486DD74D07706052A33d31d7c0AAFD0659E1') THEN 'Radiant V2'
     END AS platform,
     'arbitrum' AS blockchain,

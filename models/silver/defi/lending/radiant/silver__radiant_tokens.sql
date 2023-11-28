@@ -4,6 +4,7 @@
 ) }}
 
 WITH DECODE AS (
+
     SELECT
         block_number AS atoken_created_block,
         contract_address AS a_token_address,
@@ -44,7 +45,16 @@ AND _inserted_timestamp >= (
 ),
 a_token_step_1 AS (
     SELECT
-        *
+        atoken_created_block,
+        a_token_address,
+        segmented_data,
+        underlying_asset,
+        radiant_version_pool,
+        atoken_decimals,
+        atoken_name,
+        atoken_symbol,
+        _inserted_timestamp,
+        _log_id
     FROM
         DECODE
     WHERE
@@ -74,13 +84,22 @@ debt_tokens AS (
 ),
 a_token_step_2 AS (
     SELECT
-        *,
+        atoken_created_block,
+        a_token_address,
+        segmented_data,
+        underlying_asset,
+        radiant_version_pool,
+        atoken_decimals,
+        atoken_name,
+        atoken_symbol,
+        _inserted_timestamp,
+        _log_id,
         'Radiant' AS protocol
     FROM
         a_token_step_1
-    where radiant_version_pool IN
-        (
-            lower('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F'),
+    WHERE
+        radiant_version_pool IN (
+            LOWER('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F'),
             LOWER('0xF4B1486DD74D07706052A33d31d7c0AAFD0659E1')
         )
 )
