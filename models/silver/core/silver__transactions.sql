@@ -149,9 +149,9 @@ new_records AS (
         tx_status,
         cumulative_gas_used,
         utils.udf_decimal_adjust(
-            r.effective_gas_price, 
+            r.effective_gas_price,
             9
-        ) AS effective_gas_price
+        ) AS effective_gas_price,
         utils.udf_decimal_adjust(
             r.effective_gas_price * r.gas_used,
             18
@@ -216,7 +216,7 @@ missing_data AS (
         r.tx_status,
         r.cumulative_gas_used,
         utils.udf_decimal_adjust(
-            r.effective_gas_price, 
+            r.effective_gas_price,
             9
         ) AS effective_gas_price,
         utils.udf_decimal_adjust(
