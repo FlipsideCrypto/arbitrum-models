@@ -120,6 +120,40 @@ SELECT
     origin_function_signature,
     contract_address,
     borrower,
+    token_address AS protocol_market,
+    borrows_contract_address AS token_address,
+    borrows_contract_symbol AS token_symbol,
+    amount_unadj,
+    amount,
+    platform,
+    'arbitrum' AS blockchain,
+    A._LOG_ID,
+    A._INSERTED_TIMESTAMP
+FROM
+    {{ ref('silver__dforce_borrows') }} A
+
+{% if is_incremental() %}
+WHERE
+    A._inserted_timestamp >= (
+        SELECT
+            MAX(
+                _inserted_timestamp
+            ) - INTERVAL '36 hours'
+        FROM
+            {{ this }}
+    )
+{% endif %}
+UNION ALL
+SELECT
+    tx_hash,
+    block_number,
+    block_timestamp,
+    event_index,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    contract_address,
+    borrower,
     compound_market AS protocol_market,
     token_address,
     token_symbol,

@@ -26,10 +26,10 @@ models:
       - name: BORROWS_CONTRACT_SYMBOL
         tests:
           - not_null
-      - name: itoken
+      - name: ITOKEN
         tests:
           - not_null
-      - name: itoken_SYMBOL
+      - name: ITOKEN_SYMBOL
         tests:
           - not_null
       - name: LOAN_AMOUNT

@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver__lodestar_deposits
+  - name: silver__dforce_liquidations
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -14,42 +14,50 @@ models:
           - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
-              interval: 3
-      - name: ITOKEN
+              interval: 14
+      - name: BORROWER
         tests:
           - not_null
-      - name: ITOKEN_SYMBOL
+      - name: TOKEN
         tests:
           - not_null
-      - name: ISSUED_ITOKENS
+      - name: TOKEN_SYMBOL
+        tests:
+          - not_null
+      - name: LIQUIDATOR
+        tests:
+          - not_null
+      - name: TOKENS_SEIZED
         tests:
         - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float  
-      - name: SUPPLIED_BASE_ASSET
+      - name: LIQUIDATION_AMOUNT
         tests:
         - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float    
-      - name: SUPPLIED_BASE_ASSET_USD
+      - name: LIQUIDATION_AMOUNT_USD
         tests: 
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float
-      - name: SUPPLIED_CONTRACT_ADDR
-        tests:
-          - not_null:
-              where: SUPPLIED_SYMBOL <> 'ETH'
-      - name: SUPPLIED_SYMBOL
+      - name: LIQUIDATION_CONTRACT_ADDRESS
         tests:
           - not_null
-      - name: SUPPLIER
-        tests: 
+      - name: LIQUIDATION_CONTRACT_SYMBOL
+        tests:
           - not_null
       - name: TX_HASH
+        tests: 
+          - not_null
+      - name: COLLATERAL_TOKEN
+        tests: 
+          - not_null
+      - name: COLLATERAL_SYMBOL
         tests: 
           - not_null
       - name: EVENT_INDEX

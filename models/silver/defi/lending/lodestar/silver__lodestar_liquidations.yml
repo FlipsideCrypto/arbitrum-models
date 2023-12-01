@@ -18,16 +18,16 @@ models:
       - name: BORROWER
         tests:
           - not_null
-      - name: itoken
+      - name: ITOKEN
         tests:
           - not_null
-      - name: itoken_SYMBOL
+      - name: ITOKEN_SYMBOL
         tests:
           - not_null
       - name: LIQUIDATOR
         tests:
           - not_null
-      - name: itokenS_SEIZED
+      - name: ITOKENS_SEIZED
         tests:
         - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:

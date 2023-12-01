@@ -1,6 +1,7 @@
 version: 2
 models:
-  - name: silver__lodestar_deposits
+  - name: silver__dforce_borrows
+
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -15,40 +16,34 @@ models:
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
               interval: 3
-      - name: ITOKEN
+      - name: BORROWER
         tests:
           - not_null
-      - name: ITOKEN_SYMBOL
+      - name: BORROWS_CONTRACT_ADDRESS
+        tests:
+          - not_null:
+              where: BORROWS_CONTRACT_SYMBOL <> 'ETH'
+      - name: BORROWS_CONTRACT_SYMBOL
         tests:
           - not_null
-      - name: ISSUED_ITOKENS
+      - name: TOKEN
         tests:
-        - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float  
-      - name: SUPPLIED_BASE_ASSET
+          - not_null
+      - name: TOKEN_SYMBOL
+        tests:
+          - not_null
+      - name: LOAN_AMOUNT
         tests:
         - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float    
-      - name: SUPPLIED_BASE_ASSET_USD
+      - name: LOAN_AMOUNT_USD
         tests: 
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float
-      - name: SUPPLIED_CONTRACT_ADDR
-        tests:
-          - not_null:
-              where: SUPPLIED_SYMBOL <> 'ETH'
-      - name: SUPPLIED_SYMBOL
-        tests:
-          - not_null
-      - name: SUPPLIER
-        tests: 
-          - not_null
       - name: TX_HASH
         tests: 
           - not_null

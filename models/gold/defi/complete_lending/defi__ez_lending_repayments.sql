@@ -5,7 +5,7 @@
     meta={
         'database_tags':{
             'table': {
-                'PROTOCOL': 'COMPOUND, LODESTAR, AAVE, RADIANT, SILO',
+                'PROTOCOL': 'COMPOUND, LODESTAR, AAVE, RADIANT, SILO, DFORCE',
                 'PURPOSE': 'LENDING, REPAYMENTS'
             }
         }

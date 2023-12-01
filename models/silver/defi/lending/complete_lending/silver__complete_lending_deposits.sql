@@ -145,6 +145,38 @@ SELECT
   origin_to_address,
   origin_function_signature,
   contract_address,
+  supplier AS depositor_address,
+  token_address AS protocol_market,
+  supplied_contract_addr AS token_address,
+  supplied_symbol AS token_symbol,
+  amount_unadj,
+  amount,
+  platform,
+  'arbitrum' AS blockchain,
+  _LOG_ID,
+  _INSERTED_TIMESTAMP
+FROM
+  {{ ref('silver__dforce_deposits') }}
+
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
+    FROM
+      {{ this }}
+  )
+{% endif %}
+UNION ALL
+SELECT
+  tx_hash,
+  block_number,
+  block_timestamp,
+  event_index,
+  origin_from_address,
+  origin_to_address,
+  origin_function_signature,
+  contract_address,
   depositor_address,
   silo_market AS protocol_market,
   token_address,
