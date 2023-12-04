@@ -43,7 +43,7 @@ SELECT
     COALESCE(
         inserted_timestamp,
         '2000-01-01'
-    ),
+    ) AS inserted_timestamp,
     COALESCE(
         modified_timestamp,
         '2000-01-01'
