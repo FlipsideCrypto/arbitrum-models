@@ -80,7 +80,7 @@ SELECT
     withdraw_amount / pow(
         10,
         atoken_meta.underlying_decimals
-    ) AS withdrawn_tokens,
+    ) AS amount,
     depositor AS depositor_address,
     CASE
         WHEN contract_address = LOWER('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F') THEN 'Radiant V1'

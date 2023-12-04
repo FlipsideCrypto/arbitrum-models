@@ -86,15 +86,11 @@ SELECT
     contract_address,
     aave_market,
     atoken_meta.atoken_address AS aave_token,
-    flashloan_quantity AS amount_unadj,
+    flashloan_quantity AS flashloan_amount_unadj,
     flashloan_quantity / pow(
         10,
         atoken_meta.underlying_decimals
     ) AS flashloan_amount,
-    premium_quantity / pow(
-        10,
-        atoken_meta.underlying_decimals
-    ) AS premium_amount,
     initiator_address AS initiator_address,
     target_address AS target_address,
     aave_version AS platform,

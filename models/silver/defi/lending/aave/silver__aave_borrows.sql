@@ -95,7 +95,7 @@ SELECT
     borrow_quantity / pow(
         10,
         atoken_meta.underlying_decimals
-    ) AS borrowed_tokens,
+    ) AS amount,
     borrower_address,
     CASE
         WHEN borrow_rate_mode = 2 THEN 'Variable Rate'
