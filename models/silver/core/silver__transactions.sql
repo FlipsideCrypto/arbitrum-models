@@ -320,6 +320,7 @@ SELECT
     to_address,
     POSITION,
     TYPE,
+    v,
     value_precise_raw,
     value_precise,
     VALUE,
