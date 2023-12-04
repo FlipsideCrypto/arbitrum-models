@@ -3,7 +3,9 @@
     materialized = 'incremental',
     unique_key = "block_number",
     cluster_by = "block_timestamp::date",
-    tags = ['core','non_realtime']
+    tags = ['core','non_realtime'],
+    merge_exclude_columns = ["inserted_timestamp"],
+    full_refresh = false
 ) }}
 
 SELECT
@@ -49,7 +51,13 @@ SELECT
     ) :: INT AS total_difficulty,
     DATA :transactionsRoot :: STRING AS transactions_root,
     DATA :uncles AS uncles,
-    _inserted_timestamp
+    _inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['block_number']
+    ) }} AS blocks_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
 
 {% if is_incremental() %}

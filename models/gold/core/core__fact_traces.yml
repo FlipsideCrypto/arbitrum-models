@@ -15,10 +15,16 @@ models:
       - name: TO_ADDRESS
         description: '{{ doc("arb_traces_to") }}'
       - name: ETH_VALUE
-        description: '{{ doc("arb_traces_value") }}'
+        description: '{{ doc("amount_deprecation") }}'
       - name: ETH_VALUE_PRECISE_RAW
-        description: '{{ doc("precise_amount_unadjusted") }}'
+        description: '{{ doc("amount_deprecation") }}'
       - name: ETH_VALUE_PRECISE
+        description: '{{ doc("amount_deprecation") }}'
+      - name: VALUE
+        description: '{{ doc("arb_traces_value") }}'
+      - name: VALUE_PRECISE_RAW
+        description: '{{ doc("precise_amount_unadjusted") }}'
+      - name: VALUE_PRECISE
         description: '{{ doc("precise_amount_adjusted") }}'
       - name: GAS
         description: '{{ doc("arb_traces_gas") }}'
@@ -48,7 +54,9 @@ models:
         description: The state of all ETH transfers to be executed for a given transaction.
       - name: AFTER_EVM_TRANSFERS
         description: The state of all ETH transfers executed for a given transaction.
-
-
-
-        
+      - name: FACT_TRACES_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}'

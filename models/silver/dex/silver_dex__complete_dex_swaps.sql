@@ -1994,7 +1994,13 @@ SELECT
   symbol_in,
   symbol_out,
   f._log_id,
-  f._inserted_timestamp
+  f._inserted_timestamp,
+  {{ dbt_utils.generate_surrogate_key(
+    ['f.tx_hash','f.event_index']
+  ) }} AS complete_dex_swaps_id,
+  SYSDATE() AS inserted_timestamp,
+  SYSDATE() AS modified_timestamp,
+  '{{ invocation_id }}' AS _invocation_id
 FROM
   FINAL f
 LEFT JOIN {{ ref('silver_dex__complete_dex_liquidity_pools') }} p
