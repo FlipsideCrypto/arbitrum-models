@@ -31,10 +31,16 @@ models:
       - name: TOKEN_ADDRESS
         description: '{{ doc("complete_lending_token_address") }}'
       - name: TOKEN_SYMBOL
-        description: '{{ doc("complete_lending_token_symbol") }}'
+        description: '{{ doc("arb_symbol") }}'
       - name: AMOUNT_UNADJ 
         description: '{{ doc("complete_lending_amount_unadj") }}'
       - name: AMOUNT 
         description: '{{ doc("complete_lending_amount") }}'
       - name: AMOUNT_USD
         description: '{{ doc("complete_lending_amount_usd") }}'
+      - name: EZ_LENDING_BORROWS_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
