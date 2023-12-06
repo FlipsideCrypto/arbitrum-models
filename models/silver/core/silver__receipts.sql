@@ -5,7 +5,6 @@
     unique_key = "block_number",
     cluster_by = "ROUND(block_number, -3)",
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(tx_hash)",
-    full_refresh = false,
     tags = ['core','non_realtime']
 ) }}
 
@@ -46,10 +45,7 @@ FINAL AS (
         ) :: INT AS cumulative_gas_used,
         utils.udf_hex_to_int(
             DATA :effectiveGasPrice :: STRING
-        ) :: INT / pow(
-            10,
-            9
-        ) AS effective_gas_price,
+        ) :: bigint AS effective_gas_price,
         DATA :from :: STRING AS from_address,
         utils.udf_hex_to_int(
             DATA :gasUsed :: STRING
