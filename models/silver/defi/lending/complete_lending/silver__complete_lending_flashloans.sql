@@ -21,6 +21,8 @@ WITH flashloans AS (
     aave_token AS protocol_token,
     flashloan_amount_unadj,
     flashloan_amount,
+    premium_amount_unadj,
+    premium_amount,
     initiator_address,
     target_address,
     'Aave V3' AS platform,
@@ -54,6 +56,8 @@ SELECT
   radiant_token AS protocol_token,
   flashloan_amount_unadj,
   flashloan_amount,
+  premium_amount_unadj,
+  premium_amount,
   initiator_address,
   target_address,
   platform,
@@ -96,6 +100,12 @@ FINAL AS (
       flashloan_amount * price,
       2
     ) AS flashloan_amount_usd,
+    premium_amount_unadj,
+    premium_amount,
+    ROUND(
+      premium_amount * price,
+      2
+    ) AS premium_amount_usd,
     platform,
     blockchain,
     f._LOG_ID,
@@ -124,4 +134,3 @@ FROM
   FINAL qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
   _inserted_timestamp DESC)) = 1
-

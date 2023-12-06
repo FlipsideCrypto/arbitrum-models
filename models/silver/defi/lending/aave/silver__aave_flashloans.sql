@@ -91,6 +91,11 @@ SELECT
         10,
         atoken_meta.underlying_decimals
     ) AS flashloan_amount,
+    premium_quantity AS premium_amount_unadj,
+    premium_quantity / pow(
+        10,
+        atoken_meta.underlying_decimals
+    ) AS premium_amount,
     initiator_address AS initiator_address,
     target_address AS target_address,
     aave_version AS platform,
