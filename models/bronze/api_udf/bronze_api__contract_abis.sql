@@ -5,8 +5,8 @@
     tags = ['curated']
 ) }}
 
+WITH base AS (
 
-with base AS (
     SELECT
         contract_address
     FROM
@@ -46,9 +46,7 @@ row_nos AS (
 ),
 batched AS ({% for item in range(101) %}
 SELECT
-    rn.contract_address, 
-    live.udf_api('GET', CONCAT('https://api.arbiscan.io/api?module=contract&action=getabi&address=', rn.contract_address, '&apikey={arb_key}'),{ 'User-Agent': 'FlipsideStreamline' },{}) AS abi_data, 
-    SYSDATE() AS _inserted_timestamp
+    rn.contract_address, live.udf_api('GET', CONCAT('https://api.arbiscan.io/api?module=contract&action=getabi&address=', rn.contract_address, '&apikey={arb_key}'),{ 'User-Agent': 'FlipsideStreamline' },{}) AS abi_data, SYSDATE() AS _inserted_timestamp
 FROM
     row_nos rn
 WHERE
