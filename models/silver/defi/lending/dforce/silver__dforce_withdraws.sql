@@ -39,7 +39,7 @@ dforce_redemptions AS (
             segmented_data [2] :: STRING
         ) :: INTEGER AS redeemed_token_raw,
         CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40)) AS redeemer,
-        'dforce' AS platform,
+        'dForce' AS platform,
         _inserted_timestamp,
         _log_id
     FROM
