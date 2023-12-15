@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
-    unique_key = 'block_number',
+    unique_key = 'pool_address',
     tags = ['curated']
 ) }}
 
@@ -45,7 +45,6 @@ qualify(ROW_NUMBER() over(PARTITION BY to_address
 ORDER BY
     block_timestamp ASC)) = 1
 )
-
 SELECT
     tx_hash,
     block_number,
@@ -54,4 +53,5 @@ SELECT
     contract_address AS pool_address,
     _call_id,
     _inserted_timestamp
-FROM contract_deployments
+FROM
+    contract_deployments
