@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
-    unique_key = 'block_number',
+    unique_key = 'pool_address',
     tags = ['curated']
 ) }}
 
@@ -34,7 +34,6 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 )
-
 SELECT
     block_number,
     block_timestamp,
@@ -47,4 +46,6 @@ SELECT
     _log_id AS _id,
     _inserted_timestamp
 FROM
-    pool_events
+    pool_events qualify(ROW_NUMBER() over (PARTITION BY pool_address
+ORDER BY
+    _inserted_timestamp DESC)) = 1
