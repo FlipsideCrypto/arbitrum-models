@@ -60,12 +60,75 @@ WITH token_transfers AS (
         AND tr.tx_hash = tx.tx_hash
     WHERE
         tr.from_address <> '0x0000000000000000000000000000000000000000'
-        AND tr.to_address = '0x1d68124e65fafc907325e3edbf8c4d84499daa8b'
+        AND tr.to_address = '0x0b2402144bb366a632d14b83f244d2e0e21bd39c'
         AND tr.origin_function_signature = '0x0f5287b0' -- tokenTransfer
         AND destination_chain_id <> 0
 
 {% if is_incremental() %}
 AND tr._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
+    FROM
+        {{ this }}
+)
+{% endif %}
+),
+native_transfers AS (
+    SELECT
+        et.block_number,
+        et.block_timestamp,
+        et.tx_hash,
+        tx.from_address AS origin_from_address,
+        tx.to_address AS origin_to_address,
+        tx.origin_function_signature,
+        et.from_address,
+        et.to_address,
+        eth_value,
+        identifier,
+        input,
+        regexp_substr_all(SUBSTR(input_data, 11, len(input_data)), '.{64}') AS segmented_data,
+        TRY_TO_NUMBER(
+            utils.udf_hex_to_int(
+                segmented_data [0] :: STRING
+            )
+        ) AS destination_chain_id,
+        CONCAT(
+            '0x',
+            segmented_data [1] :: STRING
+        ) AS recipient1,
+        CONCAT('0x', SUBSTR(segmented_data [1] :: STRING, 25, 40)) AS recipient2,
+        LENGTH(
+            REGEXP_SUBSTR(
+                segmented_data [1] :: STRING,
+                '^(0*)'
+            )
+        ) AS len,
+        CASE
+            WHEN len >= 24 THEN recipient2
+            ELSE recipient1
+        END AS destination_recipient_address,
+        utils.udf_hex_to_int(
+            segmented_data [2] :: STRING
+        ) AS arbiterFee,
+        utils.udf_hex_to_int(
+            segmented_data [3] :: STRING
+        ) AS nonce,
+        _call_id,
+        et._inserted_timestamp
+    FROM
+        {{ ref('silver__eth_transfers') }}
+        et
+        INNER JOIN {{ ref('silver__transactions') }}
+        tx
+        ON et.block_number = tx.block_number
+        AND et.tx_hash = tx.tx_hash
+    WHERE
+        et.to_address = '0x0b2402144bb366a632d14b83f244d2e0e21bd39c'
+        AND tx.origin_function_signature = '0x9981509f' -- wrapAndTransfer
+        AND destination_chain_id <> 0
+
+{% if is_incremental() %}
+AND et._inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
@@ -96,6 +159,32 @@ all_transfers AS (
         _inserted_timestamp
     FROM
         token_transfers
+    UNION ALL
+    SELECT
+        block_number,
+        block_timestamp,
+        origin_from_address,
+        origin_to_address,
+        origin_function_signature,
+        tx_hash,
+        NULL AS event_index,
+        NULL AS event_name,
+        to_address AS bridge_address,
+        from_address AS sender,
+        to_address AS receiver,
+        eth_value * pow(
+            10,
+            18
+        ) AS amount_unadj,
+        destination_chain_id,
+        '0x82af49447d8a07e3bd95bd0d56f35241523fbab1' AS token_address,
+        destination_recipient_address,
+        {{ dbt_utils.generate_surrogate_key(
+            ['_call_id']
+        ) }} AS _id,
+        _inserted_timestamp
+    FROM
+        native_transfers
 ),
 base_near AS (
     SELECT
@@ -103,7 +192,7 @@ base_near AS (
         addr_encoded
     FROM
         {{ source(
-            'silver_crosschain',
+            'crosschain_silver',
             'near_address_encoded'
         ) }}
 )

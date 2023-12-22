@@ -41,10 +41,7 @@ WITH base_evt AS (
         {{ ref('silver__decoded_logs') }}
     WHERE
         topics [0] :: STRING = '0x7e50569d26be643bda7757722291ec66b1be66d8283474ae3fab5a98f878a7a2'
-        AND contract_address IN (
-            '0xe19bb3b98f7727c520c757b8a00753eb47358b14',
-            '0xe432150cce91c13a887f7d836923d5597add8e31'
-        )
+        AND contract_address = '0xe432150cce91c13a887f7d836923d5597add8e31'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -114,10 +111,7 @@ transfers AS (
         {{ ref('silver__transfers') }}
     WHERE
         from_address = '0xce16f69375520ab01377ce7b88f5ba8c48f8d666'
-        AND to_address IN (
-            '0xe19bb3b98f7727c520c757b8a00753eb47358b14',
-            '0xe432150cce91c13a887f7d836923d5597add8e31'
-        )
+        AND to_address = '0xe432150cce91c13a887f7d836923d5597add8e31'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

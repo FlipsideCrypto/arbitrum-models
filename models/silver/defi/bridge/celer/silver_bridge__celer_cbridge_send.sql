@@ -45,7 +45,10 @@ WITH base_evt AS (
         {{ ref('silver__decoded_logs') }}
     WHERE
         topics [0] :: STRING = '0x89d8051e597ab4178a863a5190407b98abfeff406aa8db90c59af76612e58f01'
-        AND contract_address = '0x9d39fc627a6d9d9f8c831c16995b209548cc3401'
+        AND contract_address IN (
+            '0xdd90e5e87a2081dcf0391920868ebc2ffb81a1af',
+            '0x1619de6b6b20ed217a58d00f37b9d47c7663feca'
+        )
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

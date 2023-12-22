@@ -73,7 +73,7 @@ contract_reads AS (
             'node_mapping'
         ) }}
         ON 1 = 1
-        AND chain = 'optimism'
+        AND chain = 'arbitrum'
 ),
 reads_flat AS (
     SELECT
@@ -107,7 +107,7 @@ SELECT
     contract_address,
     amm_wrapper_address,
     CASE
-        WHEN contract_address = '0x03d7f750777ec48d39d080b020d83eb2cb4e3547' THEN '0xc5102fe9359fd9a28f877a67e36b0f050d81a3cc'
+        WHEN contract_address = '0x25fb92e505f752f730cad0bd4fa17ece4a384266' THEN '0xc5102fe9359fd9a28f877a67e36b0f050d81a3cc'
         ELSE CONCAT('0x', SUBSTR(read_result, 27, 40))
     END AS token_address,
     _inserted_timestamp
