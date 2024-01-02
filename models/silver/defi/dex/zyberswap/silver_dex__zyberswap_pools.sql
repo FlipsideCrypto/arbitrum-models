@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
-    unique_key = 'block_number',
+    unique_key = 'pool_address',
     tags = ['curated']
 ) }}
 
@@ -27,19 +27,16 @@ WITH pool_creation AS (
             --v2
             '0x9c2abd632771b433e5e7507bcaa41ca3b25d8544'
         ) --v3
-        AND topics [0] :: STRING IN ('0x0d3648bd0f6ba80134a33ba9275ac585d9d315f0ad8355cddefde31afa28d0e9', --PairCreated v2
-        '0x91ccaa7a278130b65168c3a0c8d3bcae84cf5e43704342bd3ec0b59e59c036db') --v3
+        AND topics [0] :: STRING IN (
+            '0x0d3648bd0f6ba80134a33ba9275ac585d9d315f0ad8355cddefde31afa28d0e9',
+            --PairCreated v2
+            '0x91ccaa7a278130b65168c3a0c8d3bcae84cf5e43704342bd3ec0b59e59c036db'
+        ) --v3
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
-    FROM
-        {{ this }}
-)
-AND pool_address NOT IN (
-    SELECT
-        DISTINCT pool_address
     FROM
         {{ this }}
 )
@@ -57,4 +54,6 @@ SELECT
     _log_id,
     _inserted_timestamp
 FROM
-    pool_creation
+    pool_creation qualify(ROW_NUMBER() over (PARTITION BY pool_address
+ORDER BY
+    _inserted_timestamp DESC)) = 1
