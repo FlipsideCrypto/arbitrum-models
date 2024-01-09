@@ -50,7 +50,7 @@ contract_deployments AS (
         LEFT JOIN {{ ref('silver__contracts') }} C
         ON pool_address = c.contract_address
     WHERE
-        c.contract_address = '0xde828fdc3f497f16416d1bb645261c7c6a62dab5'
+        l.contract_address = '0xde828fdc3f497f16416d1bb645261c7c6a62dab5'
 )
 SELECT
     tx_hash,

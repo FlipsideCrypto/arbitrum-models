@@ -47,7 +47,7 @@ swaps AS (
         _log_id,
         _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('silver__logs') }}
         l
         INNER JOIN pools p
         ON l.contract_address = p.pool_address
@@ -146,11 +146,11 @@ SELECT
     trader_address AS tx_to,
     txid,
     CASE
-        WHEN tokenIn = '0x0000000000000000000000000000000000000000' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+        WHEN tokenIn = '0x0000000000000000000000000000000000000000' THEN '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'
         ELSE tokenIn
     END AS token_in,
     CASE
-        WHEN tokenOut = '0x0000000000000000000000000000000000000000' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+        WHEN tokenOut = '0x0000000000000000000000000000000000000000' THEN '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'
         ELSE tokenOut
     END AS token_out,
     amountIn AS amount_in_unadj,
@@ -176,11 +176,11 @@ SELECT
     tx_to,
     txid,
     CASE
-        WHEN tokenIn = '0x0000000000000000000000000000000000000000' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+        WHEN tokenIn = '0x0000000000000000000000000000000000000000' THEN '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'
         ELSE tokenIn
     END AS token_in,
     CASE
-        WHEN tokenOut = '0x0000000000000000000000000000000000000000' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+        WHEN tokenOut = '0x0000000000000000000000000000000000000000' THEN '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'
         ELSE tokenOut
     END AS token_out,
     amountIn AS amount_in_unadj,
