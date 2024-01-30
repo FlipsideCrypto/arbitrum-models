@@ -1,8 +1,8 @@
 {{ config(
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
-    unique_key = "create_block",
-    cluster_by = ['create_timestamp::DATE'],
+    unique_key = "block_number",
+    cluster_by = ['block_timestamp::DATE'],
     tags = ['reorg','curated']
 ) }}
 -- Pulls contract details for relevant c assets.  The case when handles cETH.
@@ -90,9 +90,9 @@ contract_pull AS (
         block_timestamp ASC)) = 1
 )
 SELECT
-    l.block_number AS create_block,
-    l.block_timestamp as create_timestamp,
-    l.tx_hash AS create_hash,
+    l.block_number,
+    l.block_timestamp,
+    l.tx_hash,
     l.token_name AS itoken_name,
     l.token_symbol AS itoken_symbol,
     l.token_decimals AS itoken_decimals,
