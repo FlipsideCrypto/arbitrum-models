@@ -89,7 +89,7 @@ lodestar_combine AS (
     b._inserted_timestamp
   FROM
     lodestar_borrows b
-    LEFT JOIN {{ ref('silver__lodestar_asset_details') }} C
+    LEFT JOIN asset_details C
     ON b.itoken = C.itoken_address
 )
 SELECT
