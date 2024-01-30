@@ -39,6 +39,7 @@ sources:
       - name: token_prices_all_providers_hourly
       - name: asset_metadata_all_providers
       - name: near_address_encoded
+      - name: labels_combined
   - name: crosschain_public
     database: crosschain
     schema: bronze_public
