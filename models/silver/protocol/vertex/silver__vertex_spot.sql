@@ -23,6 +23,7 @@ WITH order_fill_decode AS (
             topics [2] :: STRING,
             42
         ) AS trader,
+        topics [2] :: STRING AS subaccount,
         utils.udf_hex_to_int(
             segmented_data [0] :: STRING
         ) :: INT AS pricex18,
@@ -86,6 +87,7 @@ order_fill_format AS (
         symbol,
         digest,
         trader,
+        subaccount,
         pricex18 AS price_amount_unadj,
         pricex18 / pow(
             10,
@@ -103,11 +105,11 @@ order_fill_format AS (
         TRY_TO_TIMESTAMP(expiration) AS experation,
         nonce,
         isTaker,
-        feeAmount AS fee_ammount_unadj,
+        feeAmount AS fee_amount_unadj,
         feeAmount / pow(
             10,
             18
-        ) AS fee_ammount,
+        ) AS fee_amount,
         baseDelta AS base_delta_unadj,
         baseDelta / pow(
             10,
@@ -133,6 +135,7 @@ SELECT
     symbol,
     digest,
     trader,
+    subaccount,
     CASE
         WHEN amount < 0 THEN 'sell/short'
         WHEN amount > 0 THEN 'buy/long'
@@ -156,8 +159,8 @@ SELECT
         WHEN isTaker = 1 THEN TRUE
         WHEN isTaker = 0 THEN FALSE
     END AS isTaker,
-    fee_ammount_unadj,
-    fee_ammount,
+    fee_amount_unadj,
+    fee_amount,
     base_delta_unadj,
     base_delta,
     quote_delta_unadj,
