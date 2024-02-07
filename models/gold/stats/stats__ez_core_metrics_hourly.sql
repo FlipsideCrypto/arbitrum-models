@@ -24,6 +24,6 @@ SELECT
 FROM
     {{ ref('silver_stats__core_metrics_hourly') }}
     s
-    LEFT JOIN {{ ref('price__ez_hourly_token_prices') }}
+    LEFT JOIN {{ ref('silver__hourly_prices_priority_eth') }}
     p
     ON s.block_timestamp_hour = p.hour
