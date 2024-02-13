@@ -52,7 +52,7 @@ read_result as (
             read_id,
             '-'
         ) AS read_id_object,
-        regexp_substr_all(SUBSTR(read_result, 3, len(read_result)), '.{64}') AS segmented_data, --26 per line product
+        regexp_substr_all(SUBSTR(read_result, 3, len(read_result)), '.{64}') AS segmented_data,
         function_sig,
         function_name,
         function_input,

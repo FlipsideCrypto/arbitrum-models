@@ -12,9 +12,12 @@ WITH order_fill_decode AS (
         block_number,
         block_timestamp,
         tx_hash,
-        event_index,
         l.contract_address,
         'FillOrder' AS event_name,
+        event_index,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
         symbol,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         topics [1] :: STRING AS digest,
@@ -81,9 +84,12 @@ order_fill_format AS (
         block_number,
         block_timestamp,
         tx_hash,
-        event_index,
         contract_address,
         event_name,
+        event_index,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
         symbol,
         digest,
         trader,
@@ -101,8 +107,8 @@ order_fill_format AS (
         CAST(
             amount * price_amount AS FLOAT
         ) AS amount_usd,
-        expiration AS experation_raw,
-        TRY_TO_TIMESTAMP(expiration) AS experation,
+        expiration AS expiration_raw,
+        TRY_TO_TIMESTAMP(expiration) AS expiration,
         nonce,
         isTaker,
         feeAmount AS fee_amount_unadj,
@@ -129,9 +135,12 @@ SELECT
     block_number,
     block_timestamp,
     tx_hash,
-    event_index,
     contract_address,
     event_name,
+    event_index,
+    origin_function_signature,
+    origin_from_address,
+    origin_to_address,
     symbol,
     digest,
     trader,
@@ -140,25 +149,25 @@ SELECT
         WHEN amount < 0 THEN 'sell/short'
         WHEN amount > 0 THEN 'buy/long'
     END AS trade_type,
+    expiration_raw,
+    expiration,
+    nonce,
+    CASE
+        WHEN isTaker = 1 THEN TRUE
+        WHEN isTaker = 0 THEN FALSE
+    END AS isTaker,
     price_amount_unadj,
     price_amount,
     amount_unadj,
     amount,
     CASE
         WHEN trade_type = 'sell/short' THEN CAST(
-            amount * price_amount AS FLOAT
+            base_delta * price_amount AS FLOAT
         ) * -1
         WHEN trade_type = 'buy/long' THEN CAST(
-            amount * price_amount AS FLOAT
+            base_delta * price_amount AS FLOAT
         )
     END AS amount_usd,
-    experation_raw,
-    experation,
-    nonce,
-    CASE
-        WHEN isTaker = 1 THEN TRUE
-        WHEN isTaker = 0 THEN FALSE
-    END AS isTaker,
     fee_amount_unadj,
     fee_amount,
     base_delta_unadj,
