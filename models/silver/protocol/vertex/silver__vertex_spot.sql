@@ -130,51 +130,65 @@ order_fill_format AS (
         _inserted_timestamp
     FROM
         order_fill_decode
+),
+FINAL as (
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        contract_address,
+        event_name,
+        event_index,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
+        symbol,
+        digest,
+        trader,
+        subaccount,
+        CASE
+            WHEN amount < 0 THEN 'sell/short'
+            WHEN amount > 0 THEN 'buy/long'
+        END AS trade_type,
+        expiration_raw,
+        expiration,
+        nonce,
+        CASE
+            WHEN isTaker = 1 THEN TRUE
+            WHEN isTaker = 0 THEN FALSE
+        END AS isTaker,
+        price_amount_unadj,
+        price_amount,
+        amount_unadj,
+        amount,
+        CASE
+            WHEN trade_type = 'sell/short' THEN CAST(
+                base_delta * price_amount AS FLOAT
+            ) * -1
+            WHEN trade_type = 'buy/long' THEN CAST(
+                base_delta * price_amount AS FLOAT
+            )
+        END AS amount_usd,
+        fee_amount_unadj,
+        fee_amount,
+        base_delta_unadj,
+        base_delta,
+        quote_delta_unadj,
+        quote_delta,
+        _log_id,
+        _inserted_timestamp
+    FROM
+        order_fill_format
 )
 SELECT
-    block_number,
-    block_timestamp,
-    tx_hash,
-    contract_address,
-    event_name,
-    event_index,
-    origin_function_signature,
-    origin_from_address,
-    origin_to_address,
-    symbol,
-    digest,
-    trader,
-    subaccount,
-    CASE
-        WHEN amount < 0 THEN 'sell/short'
-        WHEN amount > 0 THEN 'buy/long'
-    END AS trade_type,
-    expiration_raw,
-    expiration,
-    nonce,
-    CASE
-        WHEN isTaker = 1 THEN TRUE
-        WHEN isTaker = 0 THEN FALSE
-    END AS isTaker,
-    price_amount_unadj,
-    price_amount,
-    amount_unadj,
-    amount,
-    CASE
-        WHEN trade_type = 'sell/short' THEN CAST(
-            base_delta * price_amount AS FLOAT
-        ) * -1
-        WHEN trade_type = 'buy/long' THEN CAST(
-            base_delta * price_amount AS FLOAT
-        )
-    END AS amount_usd,
-    fee_amount_unadj,
-    fee_amount,
-    base_delta_unadj,
-    base_delta,
-    quote_delta_unadj,
-    quote_delta,
-    _log_id,
-    _inserted_timestamp
+    *,
+    {{ dbt_utils.generate_surrogate_key(
+        ['tx_hash','event_index']
+    ) }} AS vertex_spot_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
-    order_fill_format
+    FINAL qualify(ROW_NUMBER() over(PARTITION BY _log_id
+ORDER BY
+    _inserted_timestamp DESC)) = 1
