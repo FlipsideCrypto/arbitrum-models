@@ -71,6 +71,33 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
+),
+api_pull AS (
+    SELECT
+        PARSE_JSON(
+            live.udf_api(
+                'https://gateway.sepolia-test.vertexprotocol.com/api/v2/assets'
+            )
+        ) :data AS response
+),
+api_lateral_flatten AS (
+    SELECT
+        r.value
+    FROM
+        api_pull,
+        LATERAL FLATTEN (response) AS r
+), 
+product_metadata AS (
+    SELECT
+        VALUE :product_id AS product_id,
+        VALUE :ticker_id AS ticker_id,
+        VALUE :symbol AS symbol,
+        VALUE :name AS NAME,
+        VALUE :market_type AS market_type,
+        VALUE :taker_fee AS taker_fee,
+        VALUE :maker_fee AS maker_fee
+    FROM
+        api_lateral_flatten
 )
 SELECT
     l.product_id,
@@ -78,6 +105,9 @@ SELECT
         WHEN product_id % 2 = 0 THEN 'perp'
         ELSE 'spot'
     END AS product_type,
+    p.ticker_id,
+    p.symbol,
+    p.name,
     l.tx_hash,
     l.block_number,
     l.block_timestamp,
@@ -89,6 +119,8 @@ FROM
     new_prod l
     LEFT JOIN book_address_pull C
     ON l.tx_hash = C.tx_hash
+    LEFT JOIN product_metadata p
+    ON l.product_id = p.product_id
 WHERE
     product_id > 0
 ORDER BY
