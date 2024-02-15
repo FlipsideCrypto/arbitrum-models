@@ -9,9 +9,9 @@
 WITH order_fill_decode AS (
 
     SELECT
-        block_number,
-        block_timestamp,
-        tx_hash,
+        l.block_number,
+        l.block_timestamp,
+        l.tx_hash,
         l.contract_address,
         'FillOrder' AS event_name,
         event_index,
@@ -56,17 +56,17 @@ WITH order_fill_decode AS (
             's2c',
             segmented_data [7] :: STRING
         ) :: INT AS quoteDelta,
-        _log_id,
-        _inserted_timestamp
+        l._log_id,
+        l._inserted_timestamp
     FROM
         {{ ref('silver__logs') }}
         l
-        INNER JOIN {{ ref('silver__vertex_product_contract_id_seed') }}
+        INNER JOIN {{ ref('silver__vertex_dim_products') }}
         s
-        ON s.contract_address = l.contract_address
+        ON s.book_address = l.contract_address
     WHERE
         topics [0] :: STRING = '0x224253ad5cda2459ff587f559a41374ab9243acbd2daff8c13f05473db79d14c'
-        AND s.type = 'spot'
+        AND s.product_type = 'spot'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
