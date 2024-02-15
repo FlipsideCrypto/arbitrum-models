@@ -102,7 +102,7 @@ product_metadata AS (
 SELECT
     l.product_id,
     CASE
-        WHEN product_id % 2 = 0 THEN 'perp'
+        WHEN l.product_id % 2 = 0 THEN 'perp'
         ELSE 'spot'
     END AS product_type,
     p.ticker_id,
@@ -121,7 +121,3 @@ FROM
     ON l.tx_hash = C.tx_hash
     LEFT JOIN product_metadata p
     ON l.product_id = p.product_id
-WHERE
-    product_id > 0
-ORDER BY
-    product_id
