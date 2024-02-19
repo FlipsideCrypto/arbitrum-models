@@ -19,6 +19,7 @@ WITH order_fill_decode AS (
         origin_from_address,
         origin_to_address,
         symbol,
+        s.product_id,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         topics [1] :: STRING AS digest,
         --unique hash of the order
@@ -91,6 +92,7 @@ order_fill_format AS (
         origin_from_address,
         origin_to_address,
         symbol,
+        product_id,
         digest,
         trader,
         subaccount,
@@ -141,6 +143,7 @@ FINAL AS  (
         origin_from_address,
         origin_to_address,
         symbol,
+        product_id,
         digest,
         trader,
         subaccount,
