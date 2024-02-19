@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
-    unique_key = 'block_number',
+    unique_key = 'digest',
     cluster_by = ['block_timestamp::DATE'],
     tags = ['curated','reorg']
 ) }}
@@ -66,10 +66,10 @@ WITH order_fill_decode AS (
         ON s.book_address = l.contract_address
     WHERE
         topics [0] :: STRING = '0x224253ad5cda2459ff587f559a41374ab9243acbd2daff8c13f05473db79d14c'
-        AND s.product_type = 'perps'
+        AND s.product_type = 'perp'
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND l._inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp

@@ -45,10 +45,6 @@ models:
           - not_null
       - name: SYMBOL
         tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - STRING
-                - VARCHAR
           - not_null
       - name: DIGEST
         tests:

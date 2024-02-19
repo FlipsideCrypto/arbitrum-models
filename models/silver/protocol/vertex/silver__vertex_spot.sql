@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
-    unique_key = 'block_number',
+    unique_key = 'digest',
     cluster_by = ['block_timestamp::DATE'],
     tags = ['curated','reorg']
 ) }}
@@ -69,7 +69,7 @@ WITH order_fill_decode AS (
         AND s.product_type = 'spot'
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND l._inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
