@@ -121,9 +121,10 @@ SELECT
     C.token_name AS underlying_name,
     A._inserted_timestamp,
     A._log_id
-FROM
-    a_token_step_2 A
+FROM a_token_step_2 A
     INNER JOIN debt_tokens b
     ON A.a_token_address = b.atoken_address
     INNER JOIN {{ ref('silver__contracts') }} C
-    ON contract_address = A.underlying_asset
+    ON contract_address = A.underlying_asset qualify(ROW_NUMBER() over(PARTITION BY atoken_address
+ORDER BY
+    a.atoken_created_block DESC)) = 1
