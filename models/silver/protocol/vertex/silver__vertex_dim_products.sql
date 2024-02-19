@@ -132,7 +132,6 @@ SELECT
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
 FROM
-    FINAL 
-where product_id > 0 qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    FINAL qualify(ROW_NUMBER() over(PARTITION BY product_id
 ORDER BY
     _inserted_timestamp DESC)) = 1

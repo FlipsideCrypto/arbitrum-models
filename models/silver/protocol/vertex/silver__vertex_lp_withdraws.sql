@@ -6,59 +6,34 @@
     tags = ['curated','reorg']
 ) }}
 
-WITH queued_deposits AS (
+WITH deposits AS (
 
     SELECT
         block_number,
         block_timestamp,
         tx_hash,
         contract_address,
-        'Queued' AS event_name,
+        'Deposit' AS event_name,
         event_index,
         origin_function_signature,
         origin_from_address,
         origin_to_address,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
-        --unique hash of the order
+        CONCAT('0x', SUBSTR(topics [1], 27, 40)) :: STRING AS user,
+        CONCAT('0x', SUBSTR(topics [2], 27, 40)) :: STRING AS router,
         utils.udf_hex_to_int(
-            segmented_data [0] :: STRING
-        ) :: INT AS spot,
-        utils.udf_hex_to_int(
-            's2c',
-            segmented_data [1] :: STRING
+            topics [3] :: STRING
         ) :: INT AS amount,
         utils.udf_hex_to_int(
-            segmented_data [2] :: STRING
-        ) AS expiration,
-        utils.udf_hex_to_int(
-            segmented_data [3] :: STRING
-        ) :: INT AS nonce,
-        utils.udf_hex_to_int(
-            's2c',
-            segmented_data [4] :: STRING
-        ) :: INT AS isTaker,
-        utils.udf_hex_to_int(
-            's2c',
-            segmented_data [5] :: STRING
-        ) :: INT AS feeAmount,
-        utils.udf_hex_to_int(
-            's2c',
-            segmented_data [6] :: STRING
-        ) :: INT AS baseDelta,
-        utils.udf_hex_to_int(
-            's2c',
-            segmented_data [7] :: STRING
-        ) :: INT AS quoteDelta,
-        l._log_id,
-        l._inserted_timestamp
+            segmented_data [0] :: STRING
+        ) :: INT AS product_id,
         _log_id,
         _inserted_timestamp
     FROM
         {{ ref('silver__logs') }}
     WHERE
-        topics [0] = '0x5a595dfbcf52edc2be4703ae288841f3b01e1c4a8bf9a45b09914abd29b8d009'
-    AND
-        contract_address = '0x052ab3fd33cadf9d9f227254252da3f996431f75' --elixir vertex manager
+        topics [0] = '0x152b0f83f26618f90328232c38f988e482231db56330dd49c342695cd6964ffb'
+        AND contract_address = '0x052ab3fd33cadf9d9f227254252da3f996431f75' --elixir vertex manager
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -73,17 +48,20 @@ AND _inserted_timestamp >= (
 ),
 token_join AS (
     SELECT
-        block_number,
-        block_timestamp,
-        tx_hash,
+        d.block_number,
+        d.block_timestamp,
+        d.tx_hash,
         d.contract_address,
         event_name,
         event_index,
         origin_function_signature,
         origin_from_address,
         origin_to_address,
-        caller,
+        router,
         reciever,
+        d.product_id,
+        A.symbol AS pool_symbol,
+        caller,
         token AS token_address,
         token_symbol,
         amount AS amount_unadj,
@@ -110,6 +88,8 @@ token_join AS (
         ) = p.hour
         LEFT JOIN {{ ref('silver__contracts') }} C
         ON d.token = C.contract_address
+        LEFT JOIN {{ ref('silver__vertex_dim_products') }} A
+        ON d.product_id = A.product_id
 )
 SELECT
     *,
