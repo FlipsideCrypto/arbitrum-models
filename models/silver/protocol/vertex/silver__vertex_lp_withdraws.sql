@@ -6,14 +6,14 @@
     tags = ['curated','reorg']
 ) }}
 
-WITH deposits AS (
+WITH withdraws AS (
 
     SELECT
         block_number,
         block_timestamp,
         tx_hash,
         contract_address,
-        'Deposit' AS event_name,
+        'Withdraw' AS event_name,
         event_index,
         origin_function_signature,
         origin_from_address,
@@ -32,7 +32,8 @@ WITH deposits AS (
     FROM
         {{ ref('silver__logs') }}
     WHERE
-        topics [0] = '0x152b0f83f26618f90328232c38f988e482231db56330dd49c342695cd6964ffb'
+        topics[0] :: string ='0x5a595dfbcf52edc2be4703ae288841f3b01e1c4a8bf9a45b09914abd29b8d009'
+        AND origin_function_signature in ('0x0428d084','0x245f4575')
         AND contract_address = '0x052ab3fd33cadf9d9f227254252da3f996431f75' --elixir vertex manager
 
 {% if is_incremental() %}
@@ -57,37 +58,21 @@ token_join AS (
         origin_function_signature,
         origin_from_address,
         origin_to_address,
+        user,
         router,
-        reciever,
         d.product_id,
         A.symbol AS pool_symbol,
-        caller,
-        token AS token_address,
-        token_symbol,
         amount AS amount_unadj,
         amount / pow(
             10,
-            C.token_decimals
-        ) AS amount,
-        (
-            amount / pow(
-                10,
-                C.token_decimals
-            ) * p.price
-        ) :: FLOAT AS amount_usd,
+            18
+        ) :: FLOAT AS amount,
         d._log_id,
         d._inserted_timestamp
     FROM
-        deposits d
-        LEFT JOIN {{ ref('price__ez_hourly_token_prices') }}
-        p
-        ON d.token = p.token_address
-        AND DATE_TRUNC(
-            'hour',
-            block_timestamp
-        ) = p.hour
-        LEFT JOIN {{ ref('silver__contracts') }} C
-        ON d.token = C.contract_address
+        withdraws d
+        {# LEFT JOIN {{ ref('silver__contracts') }} C
+        ON d.token = C.contract_address #}
         LEFT JOIN {{ ref('silver__vertex_dim_products') }} A
         ON d.product_id = A.product_id
 )
