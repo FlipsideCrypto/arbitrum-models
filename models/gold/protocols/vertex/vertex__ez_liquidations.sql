@@ -48,13 +48,7 @@ SELECT
             ['tx_hash', 'event_index']
         ) }}
     ) AS ez_vertex_perps_id,
-    COALESCE(
-        inserted_timestamp,
-        '2000-01-01'
-    ) AS inserted_timestamp,
-    COALESCE(
-        modified_timestamp,
-        '2000-01-01'
-    ) AS modified_timestamp
+    inserted_timestamp,
+    modified_timestamp
 FROM
     {{ ref('silver__vertex_spot') }}
