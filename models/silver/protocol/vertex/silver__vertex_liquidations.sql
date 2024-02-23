@@ -60,39 +60,52 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
+),
+FINAL AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        contract_address,
+        event_name,
+        event_index,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
+        digest,
+        trader,
+        subaccount,
+        MODE,
+        health_group,
+        amount AS amount_unadj,
+        amount / pow(
+            10,
+            18
+        ) AS amount,
+        amount_quote AS amount_quote_unadj,
+        amount_quote / pow(
+            10,
+            18
+        ) AS amount_quote,
+        insurance_cover AS insurance_cover_unadj,
+        insurance_cover / pow(
+            10,
+            18
+        ) AS insurance_cover,
+        _log_id,
+        _inserted_timestamp
+    FROM
+        logs_pull
 )
 SELECT
-    block_number,
-    block_timestamp,
-    tx_hash,
-    contract_address,
-    event_name,
-    event_index,
-    origin_function_signature,
-    origin_from_address,
-    origin_to_address,
-    digest,
-    trader,
-    subaccount,
-    MODE,
-    health_group,
-    amount AS amount_unadj,
-    amount / pow(
-        10,
-        18
-    ) AS amount,
-    amount_quote AS amount_quote_unadj,
-    amount_quote / pow(
-        10,
-        18
-    ) AS amount_quote,
-    insurance_cover AS insurance_cover_unadj,
-    insurance_cover / pow(
-        10,
-        18
-    ) AS insurance_cover,
-    _log_id,
-    _inserted_timestamp
+    *,
+    {{ dbt_utils.generate_surrogate_key(
+        ['tx_hash','event_index']
+    ) }} AS vertex_liquidation_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
-    logs_pull
-
+    FINAL qualify(ROW_NUMBER() over(PARTITION BY _log_id
+ORDER BY
+    _inserted_timestamp DESC)) = 1

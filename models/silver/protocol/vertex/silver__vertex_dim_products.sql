@@ -76,7 +76,7 @@ api_pull AS (
     SELECT
         PARSE_JSON(
             live.udf_api(
-                'https://gateway.sepolia-test.vertexprotocol.com/api/v2/assets'
+                'https://gateway.prod.vertexprotocol.com/api/v2/assets'
             )
         ) :data AS response
 ),
@@ -86,7 +86,7 @@ api_lateral_flatten AS (
     FROM
         api_pull,
         LATERAL FLATTEN (response) AS r
-), 
+),
 product_metadata AS (
     SELECT
         VALUE :product_id AS product_id,
@@ -99,8 +99,11 @@ product_metadata AS (
     FROM
         api_lateral_flatten
 ),
-final as (
+FINAL AS (
     SELECT
+        l.block_number,
+        l.block_timestamp,
+        l.tx_hash,
         l.product_id,
         CASE
             WHEN l.product_id % 2 = 0 THEN 'perp'
@@ -109,9 +112,6 @@ final as (
         p.ticker_id,
         p.symbol,
         p.name,
-        l.tx_hash,
-        l.block_number,
-        l.block_timestamp,
         C.book_address,
         C.version,
         _inserted_timestamp,
@@ -122,6 +122,8 @@ final as (
         ON l.tx_hash = C.tx_hash
         LEFT JOIN product_metadata p
         ON l.product_id = p.product_id
+    WHERE
+        p.ticker_id IS NOT NULL
 )
 SELECT
     *,

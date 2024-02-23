@@ -1,7 +1,7 @@
 version: 2
 models:
-  - name: vertex__ez_perps
-    description: 'Vertex perpetuals are derivative contracts on an underlying spot asset. On Vertex, all perpetual contracts trade against USDC.'
+  - name: vertex__fact_spot
+    description: 'Vertex’s spot markets allow you to buy or sell listed crypto assets paired with USD-denominated stablecoins.'
 
     columns:
       - name: BLOCK_NUMBER
@@ -52,14 +52,14 @@ models:
         description: '{{ doc("vertex_fee_amount_unadj") }}'
       - name: FEE_AMOUNT
         description: '{{ doc("vertex_fee_amount") }}'
-      - name: BASE_DELTA_UNADJ
-        description: '{{ doc("vertex_base_delta_unadj") }}'
-      - name: BASE_DELTA_UNADJ
-        description: '{{ doc("vertex_base_delta_unadj") }}'
-      - name: QUOTE_DELTA_UNADJ
-        description: '{{ doc("vertex_quote_delta_unadj") }}'
-      - name: QUOTE_DELTA
-        description: '{{ doc("vertex_quote_delta") }}'
+      - name: BASE_DELTA_AMOUNT_UNADJ
+        description: '{{ doc("vertex_base_delta_amount_unadj") }}'
+      - name: BASE_DELTA_AMOUNT
+        description: '{{ doc("vertex_base_delta_amount") }}'
+      - name: QUOTE_DELTA_AMOUNT_UNADJ
+        description: '{{ doc("vertex_quote_delta_amount_unadj") }}'
+      - name: QUOTE_DELTA_AMOUNT
+        description: '{{ doc("vertex_quote_delta_amount") }}'
       - name: INSERTED_TIMESTAMP
         description: '{{ doc("inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP

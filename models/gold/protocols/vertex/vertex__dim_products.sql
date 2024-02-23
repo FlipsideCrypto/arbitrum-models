@@ -6,25 +6,25 @@
         'database_tags':{
             'table': {
                 'PROTOCOL': 'VERTEX',
-                'PURPOSE': 'DEX, SPOT'
+                'PURPOSE': 'DEX, PRODUCTS'
             }
         }
     }
 ) }}
 
 SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
     product_id,
+    book_address,
     product_type,
     ticker_id,
     symbol,
     name,
-    tx_hash,
-    block_number,
-    block_timestamp,
-    book_address,
     version,
     _inserted_timestamp,
-    _log_id
+    _log_id,
     inserted_timestamp,
     modified_timestamp
 FROM

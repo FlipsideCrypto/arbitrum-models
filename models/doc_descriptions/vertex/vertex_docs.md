@@ -100,14 +100,86 @@ The net change in the total quantity of orders at a particular price level, deci
 
 {% enddocs %}
 
-{% docs vertex_base_quote_delta_amount_unadj %}
+{% docs vertex_quote_delta_amount_unadj %}
 
 A positive value is an increase in spread and a negative value is a decrease in spread.
 
 {% enddocs %}
 
-{% docs vertex_base_quote_delta_amount %}
+{% docs vertex_quote_delta_amount %}
 
 The net change in the best bid and best ask prices in the order book,, decimal adjusted. All amounts and prices are adjusted 18 decimals points regardless of underlying asset contract. A positive value is an increase in spread and a negative value is a decrease in spread.
+
+{% enddocs %}
+
+{% docs vertex_mode %}
+
+The type of liquidation, 0 being a LP position, 1 being a balance - ie a Borrow, and 2 being a perp position.
+
+{% enddocs %}
+
+{% docs vertex_health_group %}
+
+The spot / perp product pair of health group i where health_groups[i][0] is the spot product_id and health_groups[i][1] is the perp product_id. Additionally, it is possible for a health group to only have either a spot or perp product, in which case, the product that doesn’t exist is set to 0.
+
+{% enddocs %}
+
+{% docs vertex_amount_quote_unadj %}
+
+To liquidate a position, there must be a payment (transfer) between the liquidator and the position holder. This done in the quote currency, USDC. Payments are signed as positive, meaning you received the USDC, or negative, meaning you paid. For perpetual liquidations, users should expect to see a (+) USDC payment. They will see a (-) USDC payment for borrowers since they need to pay the user for buying their borrow.
+
+{% enddocs %}
+
+{% docs vertex_amount_quote %}
+
+To liquidate a position, there must be a payment (transfer) between the liquidator and the position holder. This done in the quote currency, USDC. Payments are signed as positive, meaning you received the USDC, or negative, meaning you paid. For perpetual liquidations, users should expect to see a (+) USDC payment. They will see a (-) USDC payment for borrowers since they need to pay the user for buying their borrow. All amounts and prices are adjusted 18 decimals points regardless of underlying asset contract.
+
+{% enddocs %}
+
+{% docs vertex_insurance_cover_unadj %}
+
+USDC from the insurance fund pulled into the insolvent account and used to pay liquidators to take on the underwater positions.
+
+{% enddocs %}
+
+{% docs vertex_insurance_cover %}
+
+USDC from the insurance fund pulled into the insolvent account and used to pay liquidators to take on the underwater positions, decimal adjusted. All amounts and prices are adjusted 18 decimals points regardless of underlying asset contract.
+
+{% enddocs %}
+
+{% docs vertex_book_address %}
+
+The contract address associated with each product, this is where all fill orders are published to the chain.
+
+{% enddocs %}
+
+{% docs vertex_product_type %}
+
+The type of product, either spot or perpetual futures.
+
+{% enddocs %}
+
+{% docs vertex_product_id %}
+
+The unique id of each product. Evens are perp products and odds are spot products.
+
+{% enddocs %}
+
+{% docs vertex_ticker_id %}
+
+Identifier of a ticker with delimiter to separate base/target.
+
+{% enddocs %}
+
+{% docs vertex_name %}
+
+The name of the product
+
+{% enddocs %}
+
+{% docs vertex_version %}
+
+The product version.
 
 {% enddocs %}

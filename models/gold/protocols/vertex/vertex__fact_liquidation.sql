@@ -6,7 +6,7 @@
         'database_tags':{
             'table': {
                 'PROTOCOL': 'VERTEX',
-                'PURPOSE': 'DEX, SPOT'
+                'PURPOSE': 'DEX, LIQUIDATION'
             }
         }
     }
@@ -22,28 +22,21 @@ SELECT
     origin_function_signature,
     origin_from_address,
     origin_to_address,
-    symbol,
     digest,
     trader,
     subaccount,
-    trade_type,
-    expiration_raw,
-    expiration,
-    nonce,
-    isTaker,
-    price_amount_unadj,
-    price_amount,
+    MODE,
+    health_group,
     amount_unadj,
     amount,
-    amount_usd,
-    fee_amount_unadj,
-    fee_amount,
-    base_delta_unadj,
-    base_delta,
-    quote_delta_unadj,
-    quote_delta,
+    amount_quote_unadj,
+    amount_quote,
+    insurance_cover_unadj,
+    insurance_cover,
+    _log_id,
+    _inserted_timestamp,
     COALESCE (
-        vertex_spot_id,
+        vertex_liquidation_id,
         {{ dbt_utils.generate_surrogate_key(
             ['tx_hash', 'event_index']
         ) }}
@@ -51,4 +44,4 @@ SELECT
     inserted_timestamp,
     modified_timestamp
 FROM
-    {{ ref('silver__vertex_spot') }}
+    {{ ref('silver__vertex_liquidations') }}

@@ -64,6 +64,7 @@ product_id_join as (
         CASE
             WHEN amount < 0 THEN 'withdraw'
             WHEN amount > 0 THEN 'deposit'
+            WHEN amount = 0 THEN 'no-change'
         END AS modification_type,
         trader,
         subaccount,
@@ -71,8 +72,8 @@ product_id_join as (
         p.symbol,
         CASE 
             WHEN p.symbol = 'USDC' THEN '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8'
-            WHEN p.symbol = 'ETH' THEN '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'
-            WHEN p.symbol = 'BTC' THEN '0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f'
+            WHEN p.symbol = 'WETH' THEN '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'
+            WHEN p.symbol = 'WBTC' THEN '0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f'
             WHEN p.symbol = 'ARB' THEN '0x912ce59144191c1204e64559fe8253a0e49e6548'
             WHEN p.symbol = 'USDT' THEN '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9'
             WHEN p.symbol = 'VRTX' THEN '0x95146881b86b3ee99e63705ec87afe29fcc044d9'
@@ -135,7 +136,7 @@ SELECT
     *,
     {{ dbt_utils.generate_surrogate_key(
         ['tx_hash','event_index']
-    ) }} AS vertex_deposit_id,
+    ) }} AS vertex_collateral_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
