@@ -23,8 +23,6 @@ SELECT
     symbol,
     name,
     version,
-    _inserted_timestamp,
-    _log_id,
     inserted_timestamp,
     modified_timestamp
 FROM

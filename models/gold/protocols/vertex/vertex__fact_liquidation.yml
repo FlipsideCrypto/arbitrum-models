@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: vertex__fact_liquidation
-    description: 'All Vertex liquidations. Once an account’s maintenance margin reaches $0, the account is eligible for liquidation. Liquidation events happen one by one, with the riskiest positions being liquidated first. Liquidations are based on the oracle price.'
+    description: '{{ doc("vertex_fact_liquidation") }}'
 
     columns:
       - name: BLOCK_NUMBER

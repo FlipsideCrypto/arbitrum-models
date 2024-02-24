@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: vertex__fact_spot
-    description: 'Vertex’s spot markets allow you to buy or sell listed crypto assets paired with USD-denominated stablecoins.'
+    description: '{{ doc("vertex_fact_spot") }}'
 
     columns:
       - name: BLOCK_NUMBER

@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: vertex__fact_perp
-    description: 'Vertex perpetuals are derivative contracts on an underlying spot asset. On Vertex, all perpetual contracts trade against USDC.'
+    description: '{{ doc("vertex_fact_perp") }}'
 
     columns:
       - name: BLOCK_NUMBER

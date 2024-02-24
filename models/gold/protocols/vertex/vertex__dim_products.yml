@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: vertex__dim_products
-    description: 'All available Vertex products.'
+    description: '{{ doc("vertex_dim_products") }}'
 
     columns:
       - name: BLOCK_NUMBER
@@ -12,6 +12,8 @@ models:
         description: '{{ doc("arb_logs_tx_hash") }}'
       - name: BOOK_ADDRESS
         description: '{{ doc("vertex_book_address") }}'
+      - name: PRODUCT_ID
+        description: '{{ doc("vertex_product_id") }}'
       - name: PRODUCT_TYPE
         description: '{{ doc("vertex_product_type") }}'
       - name: TICKER_ID

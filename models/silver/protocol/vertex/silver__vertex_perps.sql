@@ -172,10 +172,10 @@ FINAL AS  (
         END AS amount_usd,
         fee_amount_unadj,
         fee_amount,
-        base_delta_unadj,
-        base_delta,
-        quote_delta_unadj,
-        quote_delta,
+        base_delta_unadj as base_delta_amount_unadj,
+        base_delta as base_delta_amount,
+        quote_delta_unadj as quote_delta_amount_unadj,
+        quote_delta as quote_delta_amount,
         _log_id,
         _inserted_timestamp
     FROM

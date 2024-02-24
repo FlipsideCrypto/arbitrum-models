@@ -27,7 +27,6 @@ SELECT
     trader,
     subaccount,
     trade_type,
-    expiration_raw,
     expiration,
     nonce,
     isTaker,
@@ -38,10 +37,10 @@ SELECT
     amount_usd,
     fee_amount_unadj,
     fee_amount,
-    base_delta_unadj,
-    base_delta,
-    quote_delta_unadj,
-    quote_delta,
+    base_delta_amount_unadj,
+    base_delta_amount,
+    quote_delta_amount_unadj,
+    quote_delta_amount,
     COALESCE (
         vertex_perps_id,
         {{ dbt_utils.generate_surrogate_key(

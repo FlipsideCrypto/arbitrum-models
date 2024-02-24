@@ -33,8 +33,6 @@ SELECT
     amount_quote,
     insurance_cover_unadj,
     insurance_cover,
-    _log_id,
-    _inserted_timestamp,
     COALESCE (
         vertex_liquidation_id,
         {{ dbt_utils.generate_surrogate_key(
