@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: vertex__fact_spot
+  - name: vertex__fact_spot_trades
     description: '{{ doc("vertex_fact_spot") }}'
 
     columns:
