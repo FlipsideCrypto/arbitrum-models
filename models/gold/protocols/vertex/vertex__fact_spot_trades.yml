@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: vertex__fact_spot_trades
-    description: '{{ doc("vertex_fact_spot") }}'
+    description: '{{ doc("vertex_fact_spot_trades") }}'
 
     columns:
       - name: BLOCK_NUMBER

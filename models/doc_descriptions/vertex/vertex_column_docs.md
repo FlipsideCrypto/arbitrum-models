@@ -72,7 +72,7 @@ The total size of the trade in units of the asset being traded across one digest
 
 {% docs vertex_amount_usd %}
 
-The size of the trade in USD. Base Delta multiplied by the price amount. 
+The size of the trade in USD. Base Delta multiplied by the price amount.
 
 {% enddocs %}
 
@@ -187,5 +187,11 @@ The product version.
 {% docs vertex_token_address %}
 
 The underlying asset token address deposited or withdrawn from the clearinghouse contract.
+
+{% enddocs %}
+
+{% docs vertex_amount_usd_ch %}
+
+The size of deposit or withdraw in USD.
 
 {% enddocs %}

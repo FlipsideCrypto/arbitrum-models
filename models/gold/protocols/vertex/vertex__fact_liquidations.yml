@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: vertex__fact_liquidations
-    description: '{{ doc("vertex_fact_liquidation") }}'
+    description: '{{ doc("vertex_fact_liquidations") }}'
 
     columns:
       - name: BLOCK_NUMBER
@@ -22,8 +22,6 @@ models:
         description: '{{ doc("arb_origin_from") }}'
       - name: ORIGIN_TO_ADDRESS
         description: '{{ doc("arb_origin_to") }}'
-      - name: SYMBOL
-        description: '{{ doc("vertex_symbol") }}'
       - name: DIGEST
         description: '{{ doc("vertex_digest") }}'
       - name: TRADER

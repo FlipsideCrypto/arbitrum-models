@@ -1,7 +1,7 @@
 version: 2
 models:
-  - name: vertex__fact_perp_trades
-    description: '{{ doc("vertex_fact_perp_trades") }}'
+  - name: vertex__fact_clearing_house_events
+    description: '{{ doc("vertex_fact_clearing_house_events") }}'
 
     columns:
       - name: BLOCK_NUMBER
@@ -30,36 +30,14 @@ models:
         description: '{{ doc("vertex_trader") }}'
       - name: SUBACCOUNT
         description: '{{ doc("vertex_subaccount") }}'
-      - name: TRADE_TYPE
-        description: '{{ doc("vertex_trade_type") }}'
-      - name: EXPIRATION
-        description: '{{ doc("vertex_expiration") }}'
-      - name: NONCE 
-        description: '{{ doc("vertex_nonce") }}'
-      - name: ISTAKER
-        description: '{{ doc("vertex_istaker") }}'
-      - name: PRICE_AMOUNT_UNADJ
-        description: '{{ doc("vertex_price_amount_unadj") }}'
-      - name: PRICE_AMOUNT
-        description: '{{ doc("vertex_price_amount") }}'
+      - name: TOKEN_ADDRESS
+        description: '{{ doc("vertex_token_address") }}'
       - name: AMOUNT_UNADJ
         description: '{{ doc("vertex_amount_unadj") }}'
       - name: AMOUNT
         description: '{{ doc("vertex_amount") }}'
       - name: AMOUNT_USD
-        description: '{{ doc("vertex_amount_usd") }}'
-      - name: FEE_AMOUNT_UNADJ
-        description: '{{ doc("vertex_fee_amount_unadj") }}'
-      - name: FEE_AMOUNT
-        description: '{{ doc("vertex_fee_amount") }}'
-      - name: BASE_DELTA_AMOUNT_UNADJ
-        description: '{{ doc("vertex_base_delta_amount_unadj") }}'
-      - name: BASE_DELTA_AMOUNT
-        description: '{{ doc("vertex_base_delta_amount") }}'
-      - name: QUOTE_DELTA_AMOUNT_UNADJ
-        description: '{{ doc("vertex_quote_delta_amount_unadj") }}'
-      - name: QUOTE_DELTA_AMOUNT
-        description: '{{ doc("vertex_quote_delta_amount") }}'
+        description: '{{ doc("vertex_amount_usd_ch") }}'
       - name: INSERTED_TIMESTAMP
         description: '{{ doc("inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP

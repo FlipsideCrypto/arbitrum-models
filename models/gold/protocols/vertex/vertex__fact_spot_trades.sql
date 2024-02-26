@@ -47,7 +47,7 @@ SELECT
         {{ dbt_utils.generate_surrogate_key(
             ['tx_hash', 'event_index']
         ) }}
-    ) AS ez_vertex_perps_id,
+    ) AS vertex_fact_spot_trades_id,
     inserted_timestamp,
     modified_timestamp
 FROM

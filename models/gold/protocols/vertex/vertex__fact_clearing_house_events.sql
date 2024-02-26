@@ -6,7 +6,7 @@
         'database_tags':{
             'table': {
                 'PROTOCOL': 'VERTEX',
-                'PURPOSE': 'CLOB, DEX, PERPS'
+                'PURPOSE': 'CLOB, DEX, CLEARINGHOUSE'
             }
         }
     }
@@ -22,32 +22,21 @@ SELECT
     origin_function_signature,
     origin_from_address,
     origin_to_address,
+    modification_type,
     symbol,
-    digest,
     trader,
     subaccount,
-    trade_type,
-    expiration,
-    nonce,
-    isTaker,
-    price_amount_unadj,
-    price_amount,
+    token_address,
     amount_unadj,
     amount,
     amount_usd,
-    fee_amount_unadj,
-    fee_amount,
-    base_delta_amount_unadj,
-    base_delta_amount,
-    quote_delta_amount_unadj,
-    quote_delta_amount,
     COALESCE (
-        vertex_perps_id,
+        vertex_collateral_id,
         {{ dbt_utils.generate_surrogate_key(
             ['tx_hash', 'event_index']
         ) }}
-    ) AS vertex_fact_perp_trades_id,
+    ) AS vertex_fact_collateral_events_id,
     inserted_timestamp,
     modified_timestamp
 FROM
-    {{ ref('silver__vertex_perps') }}
+    {{ ref('silver__vertex_liquidations') }}
