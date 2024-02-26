@@ -6,7 +6,7 @@ The specific Vertex product symbol, if it is a futures product it will have a -P
 
 {% docs vertex_digest %}
 
-The identifier for a specific trade, this can be split across two or more base deltas in order to fill the entire amount fo the trade.
+The identifier for a specific trade, this can be split across two or more base deltas in order to fill the entire amount of the trade.
 
 {% enddocs %}
 
@@ -30,13 +30,13 @@ They type of trade taken, long/short for perps or buy/sell for spot.
 
 {% docs vertex_expiration %}
 
-Time after which the order should automatically be cancelled, as a timestamp in seconds after the unix epoch, sent as a string.
+Time after which the order should automatically be cancelled, as a timestamp in seconds after the unix epoch, converted to datetime.
 
 {% enddocs %}
 
 {% docs vertex_nonce %}
 
-Number used to differentiate between the same order multiple times, and a user trying to place an order with the same parameters twice. Sent as a a string.
+Number used to differentiate between the same order multiple times, and a user trying to place an order with the same parameters twice. Represented as a string.
 
 {% enddocs %}
 
@@ -90,25 +90,25 @@ The fees on the trade, decimal adjusted. All amounts and prices are adjusted 18 
 
 {% docs vertex_base_delta_amount_unadj %}
 
-The net change in the total quantity of orders at a particular price level, the sum of these across the same digest is equal to the amount.
+Represents the net change in the total quantity of orders at a particular price level, the sum of these across the same digest is equal to the amount. This is the first currency listed in the pair and acts as the reference point for the exchange rate, in this case the crypto asset trading against USDC.
 
 {% enddocs %}
 
 {% docs vertex_base_delta_amount %}
 
-The net change in the total quantity of orders at a particular price level, decimal adjusted. All amounts and prices are adjusted 18 decimals points regardless of underlying asset contract. The sum of these across the same digest is equal to the amount.
+Represents the net change in the total quantity of orders at a particular price level, decimal adjusted. All amounts and prices are adjusted 18 decimals points regardless of underlying asset contract. The sum of these across the same digest is equal to the amount. This is the first currency listed in the pair and acts as the reference point for the exchange rate, in this case the crypto asset trading against USDC.
 
 {% enddocs %}
 
 {% docs vertex_quote_delta_amount_unadj %}
 
-A positive value is an increase in spread and a negative value is a decrease in spread.
+A positive value is an increase in spread and a negative value is a decrease in spread. Quote is currency used to express the value of the base currency. It's often the more well-known or stable currency in the pair. In this case, USDC.
 
 {% enddocs %}
 
 {% docs vertex_quote_delta_amount %}
 
-The net change in the best bid and best ask prices in the order book,, decimal adjusted. All amounts and prices are adjusted 18 decimals points regardless of underlying asset contract. A positive value is an increase in spread and a negative value is a decrease in spread.
+The net change in the best bid and best ask prices in the order book, decimal adjusted. All amounts and prices are adjusted 18 decimals points regardless of underlying asset contract. A positive value is an increase in spread and a negative value is a decrease in spread. Quote is currency used to express the value of the base currency. It's often the more well-known or stable currency in the pair. In this case, USDC.
 
 {% enddocs %}
 

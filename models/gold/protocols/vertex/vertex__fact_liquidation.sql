@@ -6,7 +6,7 @@
         'database_tags':{
             'table': {
                 'PROTOCOL': 'VERTEX',
-                'PURPOSE': 'DEX, LIQUIDATION'
+                'PURPOSE': 'CLOB, DEX, LIQUIDATION'
             }
         }
     }
