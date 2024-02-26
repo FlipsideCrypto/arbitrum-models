@@ -183,3 +183,9 @@ The name of the product
 The product version.
 
 {% enddocs %}
+
+{% docs vertex_token_address %}
+
+The underlying asset token address deposited or withdrawn from the clearinghouse contract.
+
+{% enddocs %}
