@@ -218,26 +218,51 @@ build_rpc_requests AS (
         all_inputs
         LEFT JOIN contract_deployments USING(contract_address)
 ),
-pool_token_reads AS ({% for item in range(60) %}
+pool_token_reads AS (
+
+{% if is_incremental() %}
+{% for item in range(6) %}
     (
-SELECT
-    live.udf_api('POST', CONCAT('{service}', '/', '{Authentication}'),{}, batch_rpc_request, 'Vault/prod/arbitrum/quicknode/mainnet') AS read_output, SYSDATE() AS _inserted_timestamp
-FROM
-    (
-SELECT
-    ARRAY_AGG(rpc_request) batch_rpc_request
-FROM
-    build_rpc_requests
-WHERE
-    batch_no = {{ item }} + 1
-    AND batch_no IN (
-SELECT
-    DISTINCT batch_no
-FROM
-    build_rpc_requests))) {% if not loop.last %}
-    UNION ALL
-    {% endif %}
-{% endfor %}),
+    SELECT
+        live.udf_api('POST', CONCAT('{service}', '/', '{Authentication}'),{}, batch_rpc_request, 'Vault/prod/arbitrum/quicknode/mainnet') AS read_output, SYSDATE() AS _inserted_timestamp
+    FROM
+        (
+    SELECT
+        ARRAY_AGG(rpc_request) batch_rpc_request
+    FROM
+        build_rpc_requests
+    WHERE
+        batch_no = {{ item }} + 1
+        AND batch_no IN (
+    SELECT
+        DISTINCT batch_no
+    FROM
+        build_rpc_requests))) {% if not loop.last %}
+        UNION ALL
+        {% endif %}
+    {% endfor %}
+{% else %}
+    {% for item in range(60) %}
+        (
+    SELECT
+        live.udf_api('POST', CONCAT('{service}', '/', '{Authentication}'),{}, batch_rpc_request, 'Vault/prod/arbitrum/quicknode/mainnet') AS read_output, SYSDATE() AS _inserted_timestamp
+    FROM
+        (
+    SELECT
+        ARRAY_AGG(rpc_request) batch_rpc_request
+    FROM
+        build_rpc_requests
+    WHERE
+        batch_no = {{ item }} + 1
+        AND batch_no IN (
+    SELECT
+        DISTINCT batch_no
+    FROM
+        build_rpc_requests))) {% if not loop.last %}
+        UNION ALL
+        {% endif %}
+    {% endfor %}
+{% endif %}),
 reads_adjusted AS (
     SELECT
         VALUE :id :: STRING AS read_id,
