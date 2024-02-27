@@ -27,7 +27,6 @@ SELECT
     trader,
     subaccount,
     trade_type,
-    expiration,
     nonce,
     isTaker,
     price_amount_unadj,

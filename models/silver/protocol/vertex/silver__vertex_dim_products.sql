@@ -113,6 +113,15 @@ FINAL AS (
         p.symbol,
         p.name,
         C.book_address,
+        CASE
+            WHEN l.product_id = 0 THEN NULL
+            ELSE FLOOR((l.product_id - 1) / 2)
+        END AS health_group,
+        CASE 
+            WHEN SPLIT(p.symbol,'-')[0] ='WBTC' THEN 'BTC'
+            WHEN SPLIT(p.symbol,'-')[0] ='WETH' THEN 'ETH'
+            ELSE SPLIT(p.symbol,'-')[0] 
+        END AS health_group_symbol,
         C.version,
         _inserted_timestamp,
         _log_id

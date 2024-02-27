@@ -124,6 +124,12 @@ The spot / perp product pair of health group i where health_groups[i][0] is the 
 
 {% enddocs %}
 
+{% docs vertex_health_group_symbol %}
+
+The token symbol represented by the specific health group. For example WBTC and BTC-PERP is BTC.
+
+{% enddocs %}
+
 {% docs vertex_amount_quote_unadj %}
 
 To liquidate a position, there must be a payment (transfer) between the liquidator and the position holder. This done in the quote currency, USDC. Payments are signed as positive, meaning you received the USDC, or negative, meaning you paid. For perpetual liquidations, users should expect to see a (+) USDC payment. They will see a (-) USDC payment for borrowers since they need to pay the user for buying their borrow.

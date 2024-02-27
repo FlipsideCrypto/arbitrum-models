@@ -32,8 +32,6 @@ models:
         description: '{{ doc("vertex_subaccount") }}'
       - name: TRADE_TYPE
         description: '{{ doc("vertex_trade_type") }}'
-      - name: EXPIRATION
-        description: '{{ doc("vertex_expiration") }}'
       - name: NONCE 
         description: '{{ doc("vertex_nonce") }}'
       - name: ISTAKER

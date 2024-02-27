@@ -32,6 +32,8 @@ models:
         description: '{{ doc("vertex_mode") }}'
       - name: HEALTH_GROUP  
         description: '{{ doc("vertex_health_group") }}'
+      - name: HEALTH_GROUP_SYMBOL
+        description: '{{ doc("vertex_health_group_SYMBOL") }}'
       - name: AMOUNT_UNADJ
         description: '{{ doc("vertex_amount_unadj") }}'
       - name: AMOUNT

@@ -27,6 +27,7 @@ SELECT
     subaccount,
     MODE,
     health_group,
+    health_group_symbol,
     amount_unadj,
     amount,
     amount_quote_unadj,

@@ -61,6 +61,14 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 ),
+health_groups as (
+    SELECT
+        health_group,
+        health_group_symbol
+    FROM
+        {{ ref('silver__vertex_dim_products') }}
+    GROUP BY ALL    
+),
 FINAL AS (
     SELECT
         block_number,
@@ -76,7 +84,8 @@ FINAL AS (
         trader,
         subaccount,
         MODE,
-        health_group,
+        l.health_group,
+        p.health_group_symbol,
         amount AS amount_unadj,
         amount / pow(
             10,
@@ -95,7 +104,11 @@ FINAL AS (
         _log_id,
         _inserted_timestamp
     FROM
-        logs_pull
+        logs_pull l
+    LEFT JOIN
+        health_groups p 
+    ON
+        l.health_group = p.health_group
 )
 SELECT
     *,
