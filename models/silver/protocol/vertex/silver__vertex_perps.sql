@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
-    unique_key = 'digest',
+    unique_key = '_log_id',
     cluster_by = ['block_timestamp::DATE'],
     tags = ['curated','reorg']
 ) }}
@@ -97,7 +97,15 @@ order_fill_format AS (
         trader,
         subaccount,
         expiration AS expiration_raw,
-        TRY_TO_TIMESTAMP(expiration) AS expiration,
+        arbitrum_dev.utils.udf_int_to_binary(TRY_TO_NUMBER(expiration)) AS exp_binary,
+        arbitrum_dev.utils.udf_binary_to_int(SUBSTR(exp_binary, 1, 2)) AS order_type,
+        arbitrum_dev.utils.udf_binary_to_int(SUBSTR(exp_binary, 3, 1)) AS market_reduce_flag,
+        CASE
+            WHEN len(expiration) < 11 THEN TRY_TO_TIMESTAMP(arbitrum_dev.utils.udf_binary_to_int(exp_binary) :: STRING)
+            ELSE TRY_TO_TIMESTAMP(
+                arbitrum_dev.utils.udf_binary_to_int(SUBSTR(exp_binary, 24)) :: STRING
+            )
+        END AS expiration,
         nonce,
         isTaker,
         feeAmount AS fee_amount_unadj,
@@ -130,8 +138,7 @@ order_fill_format AS (
     FROM
         order_fill_decode
 ),
-
-FINAL AS  (
+FINAL AS (
     SELECT
         block_number,
         block_timestamp,
@@ -152,6 +159,9 @@ FINAL AS  (
             WHEN amount > 0 THEN 'buy/long'
         END AS trade_type,
         expiration_raw,
+        exp_binary,
+        order_type,
+        market_reduce_flag,
         expiration,
         nonce,
         CASE
@@ -172,10 +182,10 @@ FINAL AS  (
         END AS amount_usd,
         fee_amount_unadj,
         fee_amount,
-        base_delta_unadj as base_delta_amount_unadj,
-        base_delta as base_delta_amount,
-        quote_delta_unadj as quote_delta_amount_unadj,
-        quote_delta as quote_delta_amount,
+        base_delta_unadj AS base_delta_amount_unadj,
+        base_delta AS base_delta_amount,
+        quote_delta_unadj AS quote_delta_amount_unadj,
+        quote_delta AS quote_delta_amount,
         _log_id,
         _inserted_timestamp
     FROM
