@@ -38,6 +38,8 @@ models:
         description: '{{ doc("vertex_amount") }}'
       - name: AMOUNT_USD
         description: '{{ doc("vertex_amount_usd_ch") }}'
+      - name: EZ_COLLATERAL_EVENTS_ID
+        description: '{{ doc("pk") }}'   
       - name: INSERTED_TIMESTAMP
         description: '{{ doc("inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP

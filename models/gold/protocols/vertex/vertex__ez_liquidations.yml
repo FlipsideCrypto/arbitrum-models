@@ -46,6 +46,8 @@ models:
         description: '{{ doc("vertex_insurance_cover_unadj") }}'
       - name: INSURANCE_COVER
         description: '{{ doc("vertex_insurance_cover") }}'
+      - name: EZ_LIQUIDATIONS_ID
+        description: '{{ doc("pk") }}'
       - name: INSERTED_TIMESTAMP
         description: '{{ doc("inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP

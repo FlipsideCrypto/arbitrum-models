@@ -22,7 +22,7 @@ models:
         description: '{{ doc("vertex_symbol") }}'
       - name: NAME
         description: '{{ doc("vertex_name") }}'
-      - name: version
+      - name: VERSION
         description: '{{ doc("vertex_version") }}'
       - name: INSERTED_TIMESTAMP
         description: '{{ doc("inserted_timestamp") }}'   

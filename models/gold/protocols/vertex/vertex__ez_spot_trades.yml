@@ -64,6 +64,8 @@ models:
         description: '{{ doc("vertex_quote_delta_amount_unadj") }}'
       - name: QUOTE_DELTA_AMOUNT
         description: '{{ doc("vertex_quote_delta_amount") }}'
+      - name: EZ_SPOT_TRADES_ID
+        description: '{{ doc("pk") }}'
       - name: INSERTED_TIMESTAMP
         description: '{{ doc("inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP
