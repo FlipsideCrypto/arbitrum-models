@@ -24,6 +24,8 @@ models:
         description: '{{ doc("vertex_name") }}'
       - name: VERSION
         description: '{{ doc("vertex_version") }}'
+      - name: DIM_PRODUCTS_ID
+        description: '{{ doc("pk") }}' 
       - name: INSERTED_TIMESTAMP
         description: '{{ doc("inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP
