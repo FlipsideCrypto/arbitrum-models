@@ -43,7 +43,7 @@ SELECT
     base_delta_amount,
     quote_delta_amount_unadj,
     quote_delta_amount,
-    vertex_perps_id AS ez_spot_trades_id,
+    vertex_spot_id AS ez_spot_trades_id,
     inserted_timestamp,
     modified_timestamp
 FROM
