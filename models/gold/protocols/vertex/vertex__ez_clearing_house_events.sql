@@ -35,7 +35,7 @@ SELECT
         {{ dbt_utils.generate_surrogate_key(
             ['tx_hash', 'event_index']
         ) }}
-    ) AS vertex_ez_collateral_events_id,
+    ) AS ez_collateral_events_id,
     inserted_timestamp,
     modified_timestamp
 FROM
