@@ -173,7 +173,7 @@ FINAL AS (
         CASE
             WHEN isTaker = 1 THEN TRUE
             WHEN isTaker = 0 THEN FALSE
-        END AS isTaker,
+        END AS is_taker,
         price_amount_unadj,
         price_amount,
         amount_unadj,

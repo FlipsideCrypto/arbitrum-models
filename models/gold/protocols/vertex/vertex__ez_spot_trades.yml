@@ -1,7 +1,7 @@
 version: 2
 models:
-  - name: vertex__fact_clearing_house_events
-    description: '{{ doc("vertex_fact_clearing_house_events") }}'
+  - name: vertex__ez_spot_trades
+    description: '{{ doc("vertex_ez_spot_trades") }}'
 
     columns:
       - name: BLOCK_NUMBER
@@ -30,14 +30,40 @@ models:
         description: '{{ doc("vertex_trader") }}'
       - name: SUBACCOUNT
         description: '{{ doc("vertex_subaccount") }}'
-      - name: TOKEN_ADDRESS
-        description: '{{ doc("vertex_token_address") }}'
+      - name: TRADE_TYPE
+        description: '{{ doc("vertex_trade_type") }}'
+      - name: ORDER_TYPE
+        description: '{{ doc("vertex_order_type") }}'
+      - name: MARKET_REDUCE_FLAG
+        description: '{{ doc("vertex_market_reduce_flag") }}'
+      - name: EXPIRATION
+        description: '{{ doc("vertex_expiration") }}'
+      - name: NONCE 
+        description: '{{ doc("vertex_nonce") }}'
+      - name: ISTAKER
+        description: '{{ doc("vertex_istaker") }}'
+      - name: PRICE_AMOUNT_UNADJ
+        description: '{{ doc("vertex_price_amount_unadj") }}'
+      - name: PRICE_AMOUNT
+        description: '{{ doc("vertex_price_amount") }}'
       - name: AMOUNT_UNADJ
         description: '{{ doc("vertex_amount_unadj") }}'
       - name: AMOUNT
         description: '{{ doc("vertex_amount") }}'
       - name: AMOUNT_USD
-        description: '{{ doc("vertex_amount_usd_ch") }}'
+        description: '{{ doc("vertex_amount_usd") }}'
+      - name: FEE_AMOUNT_UNADJ
+        description: '{{ doc("vertex_fee_amount_unadj") }}'
+      - name: FEE_AMOUNT
+        description: '{{ doc("vertex_fee_amount") }}'
+      - name: BASE_DELTA_AMOUNT_UNADJ
+        description: '{{ doc("vertex_base_delta_amount_unadj") }}'
+      - name: BASE_DELTA_AMOUNT
+        description: '{{ doc("vertex_base_delta_amount") }}'
+      - name: QUOTE_DELTA_AMOUNT_UNADJ
+        description: '{{ doc("vertex_quote_delta_amount_unadj") }}'
+      - name: QUOTE_DELTA_AMOUNT
+        description: '{{ doc("vertex_quote_delta_amount") }}'
       - name: INSERTED_TIMESTAMP
         description: '{{ doc("inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP

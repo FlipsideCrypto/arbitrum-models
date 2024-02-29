@@ -163,7 +163,7 @@ FINAL AS (
         END AS trade_type,
         expiration_raw,
         exp_binary,
-        order_type as order_type_raw,
+        order_type AS order_type_raw,
         CASE
             WHEN order_type = 0 THEN 'default'
             WHEN order_type = 1 THEN 'immediate-or-cancel'
@@ -176,7 +176,7 @@ FINAL AS (
         CASE
             WHEN isTaker = 1 THEN TRUE
             WHEN isTaker = 0 THEN FALSE
-        END AS isTaker,
+        END AS is_taker,
         price_amount_unadj,
         price_amount,
         amount_unadj,

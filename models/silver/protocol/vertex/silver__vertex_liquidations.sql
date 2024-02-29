@@ -61,13 +61,14 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 ),
-health_groups as (
+health_groups AS (
     SELECT
         health_group,
         health_group_symbol
     FROM
         {{ ref('silver__vertex_dim_products') }}
-    GROUP BY ALL    
+    GROUP BY
+        ALL
 ),
 FINAL AS (
     SELECT
@@ -105,10 +106,8 @@ FINAL AS (
         _inserted_timestamp
     FROM
         logs_pull l
-    LEFT JOIN
-        health_groups p 
-    ON
-        l.health_group = p.health_group
+        LEFT JOIN health_groups p
+        ON l.health_group = p.health_group
 )
 SELECT
     *,

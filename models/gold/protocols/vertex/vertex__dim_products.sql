@@ -27,3 +27,4 @@ SELECT
     modified_timestamp
 FROM
     {{ ref('silver__vertex_dim_products') }}
+ORDER BY product_id

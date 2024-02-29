@@ -50,7 +50,7 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 ),
-product_id_join as (
+product_id_join AS (
     SELECT
         l.block_number,
         l.block_timestamp,
@@ -70,7 +70,7 @@ product_id_join as (
         subaccount,
         l.product_id,
         p.symbol,
-        CASE 
+        CASE
             WHEN p.symbol = 'USDC' THEN '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8'
             WHEN p.symbol = 'WETH' THEN '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'
             WHEN p.symbol = 'WBTC' THEN '0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f'
@@ -83,17 +83,16 @@ product_id_join as (
         l._inserted_timestamp
     FROM
         logs_pull l
-    LEFT JOIN 
-        {{ ref('silver__vertex_dim_products') }} p 
-    ON
-        l.product_id = p.product_id
+        LEFT JOIN {{ ref('silver__vertex_dim_products') }}
+        p
+        ON l.product_id = p.product_id
 ),
-final as (
+FINAL AS (
     SELECT
         block_number,
         block_timestamp,
         tx_hash,
-        a.contract_address,
+        A.contract_address,
         event_name,
         event_index,
         origin_function_signature,
@@ -103,34 +102,32 @@ final as (
         trader,
         subaccount,
         product_id,
-        a.symbol,
-        a.token_address,
-        amount as amount_unadj,
+        A.symbol,
+        A.token_address,
+        amount AS amount_unadj,
         amount / pow(
             10,
             18
         ) AS amount,
         (
-        amount / pow(
-            10,
-            18
-        ) * p.price
+            amount / pow(
+                10,
+                18
+            ) * p.price
         ) :: FLOAT AS amount_usd,
-        a._log_id,
-        a._inserted_timestamp
+        A._log_id,
+        A._inserted_timestamp
     FROM
-        product_id_join a
+        product_id_join A
         LEFT JOIN {{ ref('price__ez_hourly_token_prices') }}
         p
-        ON a.token_address = p.token_address
+        ON A.token_address = p.token_address
         AND DATE_TRUNC(
             'hour',
             block_timestamp
         ) = p.hour
-        LEFT JOIN 
-            {{ ref('silver__contracts') }} c
-        ON
-            a.token_address = c.contract_address
+        LEFT JOIN {{ ref('silver__contracts') }} C
+        ON A.token_address = C.contract_address
 )
 SELECT
     *,
@@ -141,6 +138,6 @@ SELECT
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
 FROM
-    final qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    FINAL qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1

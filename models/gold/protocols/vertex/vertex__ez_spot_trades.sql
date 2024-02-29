@@ -31,7 +31,7 @@ SELECT
     market_reduce_flag,
     expiration,
     nonce,
-    isTaker,
+    is_taker,
     price_amount_unadj,
     price_amount,
     amount_unadj,
