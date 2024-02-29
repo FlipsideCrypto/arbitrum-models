@@ -56,7 +56,7 @@ Number used to differentiate between the same order multiple times, and a user t
 
 {% enddocs %}
 
-{% docs vertex_istaker %}
+{% docs vertex_is_taker %}
 
 Boolean representing if the trader was the taker or maker.
 

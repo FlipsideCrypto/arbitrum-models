@@ -40,8 +40,8 @@ models:
         description: '{{ doc("vertex_expiration") }}'
       - name: NONCE 
         description: '{{ doc("vertex_nonce") }}'
-      - name: ISTAKER
-        description: '{{ doc("vertex_istaker") }}'
+      - name: IS_TAKER
+        description: '{{ doc("vertex_is_taker") }}'
       - name: PRICE_AMOUNT_UNADJ
         description: '{{ doc("vertex_price_amount_unadj") }}'
       - name: PRICE_AMOUNT
