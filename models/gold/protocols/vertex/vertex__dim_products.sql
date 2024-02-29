@@ -23,12 +23,7 @@ SELECT
     symbol,
     name,
     version,
-    COALESCE (
-        vertex_products_id,
-        {{ dbt_utils.generate_surrogate_key(
-            ['tx_hash', 'product_id']
-        ) }}
-    ) AS dim_products_id,
+    vertex_products_id AS dim_products_id,
     inserted_timestamp,
     modified_timestamp
 FROM

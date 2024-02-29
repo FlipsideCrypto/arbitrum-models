@@ -34,12 +34,7 @@ SELECT
     amount_quote,
     insurance_cover_unadj,
     insurance_cover,
-    COALESCE (
-        vertex_liquidation_id,
-        {{ dbt_utils.generate_surrogate_key(
-            ['tx_hash', 'event_index']
-        ) }}
-    ) AS ez_liquidations_id,
+    vertex_liquidation_id AS ez_liquidations_id,
     inserted_timestamp,
     modified_timestamp
 FROM

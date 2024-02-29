@@ -43,12 +43,7 @@ SELECT
     base_delta_amount,
     quote_delta_amount_unadj,
     quote_delta_amount,
-    COALESCE (
-        vertex_perps_id,
-        {{ dbt_utils.generate_surrogate_key(
-            ['tx_hash', 'event_index']
-        ) }}
-    ) AS ez_perp_trades_id,
+    vertex_perps_id AS ez_perp_trades_id,
     inserted_timestamp,
     modified_timestamp
 FROM

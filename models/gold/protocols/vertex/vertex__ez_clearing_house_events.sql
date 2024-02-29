@@ -30,12 +30,7 @@ SELECT
     amount_unadj,
     amount,
     amount_usd,
-    COALESCE (
-        vertex_collateral_id,
-        {{ dbt_utils.generate_surrogate_key(
-            ['tx_hash', 'event_index']
-        ) }}
-    ) AS ez_clearing_house_events_id,
+    vertex_collateral_id AS ez_clearing_house_events_id,
     inserted_timestamp,
     modified_timestamp
 FROM
