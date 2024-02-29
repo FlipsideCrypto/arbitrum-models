@@ -26,7 +26,7 @@ SELECT
     COALESCE (
         vertex_products_id,
         {{ dbt_utils.generate_surrogate_key(
-            ['tx_hash', 'event_index']
+            ['tx_hash', 'product_id']
         ) }}
     ) AS dim_products_id,
     inserted_timestamp,
