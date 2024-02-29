@@ -23,16 +23,10 @@ sources:
       - name: debug_traceBlockByNumber
       - name: decoded_logs
       - name: confirm_blocks
-  - name: streamline_crosschain
-    database: streamline
-    schema: crosschain
-    tables:
-      - name: node_mapping
   - name: crosschain_silver
     database: crosschain
     schema: silver
     tables:
-      - name: apis_keys
       - name: address_labels
       - name: token_prices_priority_hourly
       - name: asset_metadata_priority

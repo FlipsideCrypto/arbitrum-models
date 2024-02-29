@@ -41,6 +41,12 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
+AND contract_address NOT IN (
+    SELECT
+        atoken_address
+    FROM
+        {{ this }}
+)
 {% endif %}
 ),
 a_token_step_1 AS (
@@ -123,4 +129,6 @@ FROM
     INNER JOIN debt_tokens b
     ON A.a_token_address = b.atoken_address
     INNER JOIN {{ ref('silver__contracts') }} C
-    ON contract_address = A.underlying_asset
+    ON contract_address = A.underlying_asset qualify(ROW_NUMBER() over(PARTITION BY atoken_address
+ORDER BY
+    a.atoken_created_block DESC)) = 1
