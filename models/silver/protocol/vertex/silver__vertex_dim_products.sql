@@ -104,7 +104,10 @@ FINAL AS (
             WHEN l.product_id % 2 = 0 THEN 'perp'
             ELSE 'spot'
         END AS product_type,
-        p.ticker_id :: STRING AS ticker_id,
+        CASE
+            WHEN l.product_id = 0 THEN 'USDC'
+            ELSE p.ticker_id :: STRING 
+        END AS ticker_id,
         p.symbol :: STRING AS symbol,
         p.name :: STRING AS NAME,
         C.book_address,
@@ -137,7 +140,6 @@ FINAL AS (
         ON l.product_id = p.product_id
     WHERE
         p.ticker_id IS NOT NULL
-        AND l.product_id > 0
 )
 SELECT
     *,
