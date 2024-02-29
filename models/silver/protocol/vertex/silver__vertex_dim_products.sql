@@ -66,17 +66,6 @@ book_address_pull AS (
         logs_pull
     WHERE
         topics [0] :: STRING = '0x7f26b83ff96e1f2b6a682f133852f6798a09c465da95921460cefb3847402498'
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) - INTERVAL '12 hours'
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 api_pull AS (
     SELECT
