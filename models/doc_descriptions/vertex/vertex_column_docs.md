@@ -34,6 +34,22 @@ Time after which the order should automatically be cancelled, as a timestamp in 
 
 {% enddocs %}
 
+{% docs vertex_order_type %}
+
+Decode from raw expiration number to binary then converted back to int from the most significant two bits: 
+0 ⇒ Default order, where it will attempt to take from the book and then become a resting limit order if there is quantity remaining
+1 ⇒ Immediate-or-cancel order, which is the same as a default order except it doesn’t become a resting limit order
+2 ⇒ Fill-or-kill order, which is the same as an IOC order except either the entire order has to be filled or none of it.
+3 ⇒ Post-only order, where the order is not allowed to take from the book. An error is returned if the order would cross the bid ask spread.
+
+{% enddocs %}
+
+{% docs vertex_market_reduce_flag %}
+
+A reduce-only is an order that will either close or reduce your position. The reduce-only flag can only be set on IOC or FOK order types. Send a reduce-only order by setting the 3rd most significant bit on the expiration field.
+
+{% enddocs %}
+
 {% docs vertex_nonce %}
 
 Number used to differentiate between the same order multiple times, and a user trying to place an order with the same parameters twice. Represented as a string.

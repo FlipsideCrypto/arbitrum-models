@@ -39,4 +39,4 @@ SELECT
     inserted_timestamp,
     modified_timestamp
 FROM
-    {{ ref('silver__vertex_liquidations') }}
+    {{ ref('silver__vertex_collateral') }}

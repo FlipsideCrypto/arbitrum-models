@@ -97,13 +97,13 @@ order_fill_format AS (
         trader,
         subaccount,
         expiration AS expiration_raw,
-        arbitrum_dev.utils.udf_int_to_binary(TRY_TO_NUMBER(expiration)) AS exp_binary,
-        arbitrum_dev.utils.udf_binary_to_int(SUBSTR(exp_binary, 1, 2)) AS order_type,
-        arbitrum_dev.utils.udf_binary_to_int(SUBSTR(exp_binary, 3, 1)) AS market_reduce_flag,
+        utils.udf_int_to_binary(TRY_TO_NUMBER(expiration)) AS exp_binary,
+        utils.udf_binary_to_int(SUBSTR(exp_binary, -2)) AS order_type,
+        utils.udf_binary_to_int(SUBSTR(exp_binary, -3, 1)) AS market_reduce_flag,
         CASE
-            WHEN len(expiration) < 11 THEN TRY_TO_TIMESTAMP(arbitrum_dev.utils.udf_binary_to_int(exp_binary) :: STRING)
+            WHEN len(expiration) < 11 THEN TRY_TO_TIMESTAMP(utils.udf_binary_to_int(exp_binary) :: STRING)
             ELSE TRY_TO_TIMESTAMP(
-                arbitrum_dev.utils.udf_binary_to_int(SUBSTR(exp_binary, 24)) :: STRING
+                utils.udf_binary_to_int(SUBSTR(exp_binary, 24)) :: STRING
             )
         END AS expiration,
         nonce,
@@ -160,7 +160,13 @@ FINAL AS (
         END AS trade_type,
         expiration_raw,
         exp_binary,
-        order_type,
+        order_type AS order_type_raw,
+        CASE
+            WHEN order_type = 0 THEN 'default'
+            WHEN order_type = 1 THEN 'immediate-or-cancel'
+            WHEN order_type = 2 THEN 'fill-or-kill'
+            WHEN order_type = 3 THEN 'post-only'
+        END AS order_type,
         market_reduce_flag,
         expiration,
         nonce,
