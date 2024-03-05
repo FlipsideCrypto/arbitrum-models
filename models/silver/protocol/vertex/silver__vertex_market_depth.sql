@@ -1,46 +1,11 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = ['ticker_id','hour'],
-    cluster_by = ['HOUR::DATE']
+    incremental_strategy = 'delete+insert',
+    unique_key = 'product_id',
+    cluster_by = ['timestamp::DATE']
 ) }}
 
-WITH api_pull AS (
-
-    SELECT
-        PARSE_JSON(
-            live.udf_api(
-                'https://archive.prod.vertexprotocol.com/v2/contracts'
-            )
-        ) :data AS response
-),
-market_stats as (
-    SELECT
-        DATE_TRUNC('hour', SYSDATE()) AS HOUR,
-        f.value :base_currency :: STRING AS base_currency,
-        f.value :base_volume :: FLOAT AS base_volume,
-        f.value :contract_price :: FLOAT AS contract_price,
-        f.value :contract_price_currency :: STRING AS contract_price_currency,
-        f.value :funding_rate :: FLOAT AS funding_rate,
-        f.value :index_price :: FLOAT AS index_price,
-        f.value :last_price :: FLOAT AS last_price,
-        f.value :mark_price :: FLOAT AS mark_price,
-        TRY_TO_TIMESTAMP(
-            f.value :next_funding_rate_timestamp :: STRING
-        ) AS next_funding_rate_timestamp,
-        f.value :open_interest :: FLOAT AS open_interest,
-        f.value :open_interest_usd :: FLOAT AS open_interest_usd,
-        f.value :price_change_percent_24h :: FLOAT AS price_change_percent_24h,
-        f.value :product_type :: STRING AS product_type,
-        f.value :quote_currency :: STRING AS quote_currency,
-        f.value :quote_volume :: FLOAT AS quote_volume,
-        f.key AS ticker_id,
-        SYSDATE() AS _inserted_timestamp
-    FROM
-        api_pull A,
-        LATERAL FLATTEN(
-            input => response
-        ) AS f
-),
+WITH 
 market_depth as (
 {% for item in range(75) %}
     select 
@@ -142,50 +107,3 @@ market_depth_format as (
         market_depth
     GROUP BY 1,2,3,4,10
 ),
-FINAL AS (
-    SELECT
-        s.HOUR,
-        s.base_currency,
-        s.base_volume,
-        s.contract_price,
-        s.contract_price_currency,
-        s.funding_rate,
-        s.index_price,
-        s.last_price,
-        s.mark_price,
-        s.next_funding_rate_timestamp,
-        s.open_interest,
-        s.open_interest_usd,
-        s.price_change_percent_24h,
-        s.product_type,
-        s.quote_currency,
-        s.quote_volume,
-        s.ticker_id,
-        d.product_id,
-        d.orderbook_side,
-        d.min_price,
-        d.max_price,
-        d.median_price,
-        d.avg_price,
-        d.volume
-    FROM
-        market_stats s
-    LEFT JOIN
-        market_depth_format d
-    ON
-        s.ticker_id = d.ticker_id
-    AND
-        s.hour = d.hour
-)
-SELECT
-    *,
-    {{ dbt_utils.generate_surrogate_key(
-        ['ticker_id','hour']
-    ) }} AS vertex_market_stats_id,
-    SYSDATE() AS inserted_timestamp,
-    SYSDATE() AS modified_timestamp,
-    '{{ invocation_id }}' AS _invocation_id
-FROM
-    FINAL qualify(ROW_NUMBER() over(PARTITION BY ticker_id
-ORDER BY
-    HOUR DESC)) = 1
