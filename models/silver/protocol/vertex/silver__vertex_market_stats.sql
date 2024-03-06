@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = ['ticker_id','hour'],
+    unique_key = ['ticker_id','inserted_timestamp'],
     cluster_by = ['HOUR::DATE']
 ) }}
 
@@ -13,7 +13,7 @@ WITH api_pull AS (
             )
         ) :data AS response
 ),
-market_stats as (
+market_stats AS (
     SELECT
         DATE_TRUNC('hour', SYSDATE()) AS HOUR,
         f.value :base_currency :: STRING AS base_currency,
@@ -41,110 +41,109 @@ market_stats as (
             input => response
         ) AS f
 ),
-market_depth as (
-{% for item in range(75) %}
+perp_liquidation_snapshot as (
     select 
-        t.ticker_id,
-        t.product_id,
-        date_trunc('hour',
-            try_to_timestamp(t.timestamp)
-        ) as timestamp,
-        'asks' as orderbook_side,
-        a.value[0]::FLOAT as price,
-        a.value[1]::FLOAT as volume,
-        SYSDATE() AS _inserted_timestamp
-    from (select
-        response:ticker_id as ticker_id, 
-        response:timestamp::STRING as timestamp,
-        response:asks as asks,
-        response:bids as bids,
-        product_id
-    from     
-    (SELECT
-        PARSE_JSON(
-            live.udf_api(
-                CONCAT('https://gateway.prod.vertexprotocol.com/v2/orderbook?ticker_id=',ticker_id,'&depth=1000000')
-            )
-        ) :data AS response,
-        product_id
-        FROM 
-        (select
-            ROW_NUMBER() OVER (ORDER BY product_id) AS row_num,
-            product_id,
-            ticker_id
-        from
-            {{ ref('silver__vertex_dim_products') }}
-        where 
-            product_id > 0
-        order by 
-            product_id
-        )
-        WHERE row_num = {{ item + 1 }})) t,
-    LATERAL FLATTEN(input => t.asks) a
-    UNION ALL
-    select 
-        t.ticker_id,
-        t.product_id,
-        date_trunc('hour',
-            try_to_timestamp(t.timestamp)
-        ) as timestamp,
-        'bids' as orderbook_side,
-        a.value[0]::FLOAT as price,
-        a.value[1]::FLOAT as volume,
-        SYSDATE() AS _inserted_timestamp
-    from (select
-        response:ticker_id as ticker_id, 
-        response:timestamp::STRING as timestamp,
-        response:asks as asks,
-        response:bids as bids,
-        product_id
-    from     
-    (SELECT
-        PARSE_JSON(
-            live.udf_api(
-                CONCAT('https://gateway.prod.vertexprotocol.com/v2/orderbook?ticker_id=',ticker_id,'&depth=1000000')
-            )
-        ) :data AS response,
-        product_id
-        FROM 
-        (select
-            ROW_NUMBER() OVER (ORDER BY product_id) AS row_num,
-            product_id,
-            ticker_id
-        from
-            {{ ref('silver__vertex_dim_products') }}
-        where 
-            product_id > 0
-        order by 
-            product_id
-        )
-        WHERE row_num = {{ item + 1 }})) t,
-    LATERAL FLATTEN(input => t.bids) a
-
-{% if not loop.last %}
-UNION ALL
-{% endif %}
-{% endfor %}
+        concat(health_group_symbol,'-PERP_USDC') as ticker_id,
+        count(*) as liquidation_count,
+        sum(abs(amount)) as liquidation_amount,
+        sum(abs(amount_quote)) as liquidation_amount_usd
+    from 
+        arbitrum.vertex.ez_liquidations
+    where 
+        mode = 2
+        AND inserted_timestamp >  sysdate() - INTERVAL '1 hours'
+    GROUP BY 1
 ),
-market_depth_format as (
-    SELECT
-        timestamp as hour,
-        ticker_id,
+spot_liquidation_snapshot as (
+    select 
+        CASE 
+            WHEN health_group_symbol IN ('ETH','BTC') THEN concat('W',health_group_symbol,'_USDC')
+            ELSE concat(health_group_symbol,'_USDC') 
+        END as ticker_id,
+        count(*) as liquidation_count,
+        sum(abs(amount)) as liquidation_amount,
+        sum(abs(amount_quote)) as liquidation_amount_usd
+    from 
+        arbitrum.vertex.ez_liquidations
+    where 
+        mode = 1
+        AND inserted_timestamp >  sysdate() - INTERVAL '1 hours'
+    GROUP BY 1
+),
+trade_snapshot as (
+    
+    select
+        DATE_TRUNC('hour', SYSDATE()) AS HOUR,
+        concat(symbol,'_USDC') as ticker_id,
+        symbol,
         product_id,
-        orderbook_side,
-        min(price) as min_price,
-        max(price) as max_price,
-        median(price) as median_price,
-        avg(price) as avg_price,
-        sum(volume) as volume,
-        _inserted_timestamp
+        count(distinct(tx_hash)) as distinct_sequencer_batches, --may need to change this or just delete
+        count(distinct(trader)) as distinct_trader_count,
+        count(distinct(subaccount)) as distinct_subaccount_count,
+        count(*) as trade_count,
+        sum(amount_usd) as amount_usd,
+        sum(fee_amount) as fee_amount,
+        sum(base_delta_amount) as base_delta_amount,
+        sum(quote_delta_amount) as quote_delta_amount,
+        sum(l.liquidation_count) AS liquidation_count,
+        sum(l.liquidation_amount) AS liquidation_amount,
+        sum(l.liquidation_amount_usd) AS liquidation_amount_usd
     from
-        market_depth
-    GROUP BY 1,2,3,4,10
+        arbitrum.silver.vertex_perps p 
+    LEFT JOIN
+        perp_liquidation_snapshot l
+    ON
+        concat(symbol,'_USDC') = l.ticker_id
+    where 
+        inserted_timestamp >  sysdate() - INTERVAL '1 hours'
+    group by 
+        1,2,3,4
+UNION ALL
+    select
+        DATE_TRUNC('hour', SYSDATE()) AS HOUR,
+        concat(symbol,'_USDC') as ticker_id,
+        symbol,
+        product_id,
+        count(distinct(tx_hash)) as distinct_sequencer_batches,
+        count(distinct(trader)) as distinct_trader_count,
+        count(distinct(subaccount)) as distinct_subaccount_count,
+        count(*) as trade_count,
+        sum(amount_usd) as amount_usd,
+        sum(fee_amount) as fee_amount,
+        sum(base_delta_amount) as base_delta_amount,
+        sum(quote_delta_amount) as quote_delta_amount,
+        sum(l.liquidation_count) AS liquidation_count,
+        sum(l.liquidation_amount) AS liquidation_amount,
+        sum(l.liquidation_amount_usd) AS liquidation_amount_usd
+    from
+        arbitrum.silver.vertex_spot
+    LEFT JOIN
+        spot_liquidation_snapshot l
+    ON
+        concat(symbol,'_USDC') = l.ticker_id
+    where 
+        inserted_timestamp >  sysdate() - INTERVAL '1 hours'
+    group by 
+        1,2,3,4
+ 
 ),
 FINAL AS (
     SELECT
-        s.HOUR,
+        s.hour,
+        s.ticker_id,
+        t.symbol,
+        t.product_id,
+        t.distinct_sequencer_batches,
+        t.distinct_trader_count,
+        t.distinct_subaccount_count,
+        t.trade_count,
+        t.amount_usd,
+        t.liquidation_count,
+        t.liquidation_amount,
+        t.liquidation_amount_usd,
+        t.fee_amount,
+        t.base_delta_amount,
+        t.quote_delta_amount,
         s.base_currency,
         s.base_volume,
         s.contract_price,
@@ -160,30 +159,20 @@ FINAL AS (
         s.product_type,
         s.quote_currency,
         s.quote_volume,
-        s.ticker_id,
-        d.product_id,
-        d.orderbook_side,
-        d.min_price,
-        d.max_price,
-        d.median_price,
-        d.avg_price,
-        d.volume
+        SYSDATE() AS inserted_timestamp,
+        SYSDATE() AS modified_timestamp
     FROM
         market_stats s
     LEFT JOIN
-        market_depth_format d
+        trade_snapshot t
     ON
-        s.ticker_id = d.ticker_id
-    AND
-        s.hour = d.hour
+        t.ticker_id = s.ticker_id
 )
 SELECT
     *,
     {{ dbt_utils.generate_surrogate_key(
-        ['ticker_id','hour']
+        ['ticker_id','inserted_timestamp']
     ) }} AS vertex_market_stats_id,
-    SYSDATE() AS inserted_timestamp,
-    SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
 FROM
     FINAL qualify(ROW_NUMBER() over(PARTITION BY ticker_id
