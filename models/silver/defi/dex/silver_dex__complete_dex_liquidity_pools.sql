@@ -478,7 +478,7 @@ all_pools_standard AS (
     FROM sushi
     UNION ALL
     SELECT *
-    FROM univ2
+    FROM uni_v2
     UNION ALL
     SELECT *
     FROM trader_joe_v1
