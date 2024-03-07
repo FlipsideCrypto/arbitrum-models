@@ -22,7 +22,7 @@ SELECT
     FROM
         (
             VALUES
-                ('0x1e0e556b7f310c320ba22b5dec0a0755c1c9854b', 'element', 'router', '2024-03-06')
+                ('0x1e0e556b7f310c320ba22b5dec0a0755c1c9854b', 'element', 'router', '2024-03-07')
 
         ) t (aggregator_identifier, aggregator, aggregator_type, _inserted_timestamp)
 ),
