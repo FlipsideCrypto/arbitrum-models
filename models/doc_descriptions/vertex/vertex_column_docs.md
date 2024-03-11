@@ -208,7 +208,7 @@ The name of the product
 
 {% docs vertex_version %}
 
-The product version.
+The version of Vertex wiht version 2 of Vertex launching March 8th 2024.
 
 {% enddocs %}
 
@@ -245,8 +245,6 @@ Only available in V2 Vertex liquidations, which went live March 8th 2024.
 
 {% docs vertex_decoded_spread_product_ids %}
 
-Array of product_ids that have been decoded from binary. Only available when is_encode_spread is true.
-
-Only available in V2 Vertex liquidations, which went live March 8th 2024. 
+Array of product_ids that have been decoded from binary. Only available when is_encode_spread is true and the liquidation occurs on V2 Vertex, which went live March 8th 2024. 
 
 {% enddocs %}

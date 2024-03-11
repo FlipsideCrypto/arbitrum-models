@@ -123,7 +123,7 @@ order_fill_decode_v2 AS (
         utils.udf_hex_to_int(
             topics [1] :: STRING
         )  AS product_id,
-        s.symbol,
+        --s.symbol,
         topics [2] :: STRING AS digest,
         --unique hash of the order
         LEFT(
@@ -165,15 +165,45 @@ order_fill_decode_v2 AS (
     FROM
         logs
         l
-        INNER JOIN vertex_products
-        s
-        ON s.product_id = utils.udf_hex_to_int(
-            topics [1] :: STRING
-        )
     WHERE
         topics [0] :: STRING = '0x7c57459d6f4f0fb2fc5b1e298c8c0eb238422944964aa1e249eaa78747f0cca9'
         AND
             contract_address = lower('0xa4369d8e3dc847aedf17f4125f1abb1bc18fc060')
+
+),
+order_fill_decode_v2_join AS (
+
+    SELECT
+        l.block_number,
+        l.block_timestamp,
+        l.tx_hash,
+        l.contract_address,
+        event_name,
+        event_index,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
+        l.product_id,
+        s.symbol,
+        digest,
+        trader,
+        subaccount,
+        pricex18,
+        amount,
+        expiration,
+        nonce,
+        isTaker,
+        feeAmount,
+        baseDelta,
+        quoteDelta,
+        l._log_id,
+        l._inserted_timestamp
+    FROM
+        order_fill_decode_v2
+        l
+        INNER JOIN vertex_products
+        s
+        ON s.product_id = l.product_id
 
 ),
 order_fill_format AS (
@@ -192,6 +222,7 @@ order_fill_format AS (
         digest,
         trader,
         subaccount,
+        'v1' as version,
         expiration AS expiration_raw,
         utils.udf_int_to_binary(TRY_TO_NUMBER(expiration)) AS exp_binary,
         utils.udf_binary_to_int(SUBSTR(exp_binary, -2)) AS order_type,
@@ -249,6 +280,7 @@ UNION ALL
         digest,
         trader,
         subaccount,
+        'v2' as version,
         expiration AS expiration_raw,
         utils.udf_int_to_binary(TRY_TO_NUMBER(expiration)) AS exp_binary,
         utils.udf_binary_to_int(SUBSTR(exp_binary, -2)) AS order_type,
@@ -289,7 +321,7 @@ UNION ALL
         _log_id,
         _inserted_timestamp
     FROM
-        order_fill_decode_v2 
+        order_fill_decode_v2_join 
 ),
 FINAL AS (
     SELECT

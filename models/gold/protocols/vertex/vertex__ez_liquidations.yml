@@ -28,6 +28,8 @@ models:
         description: '{{ doc("vertex_trader") }}'
       - name: SUBACCOUNT
         description: '{{ doc("vertex_subaccount") }}'
+      - name: VERSION
+        description: '{{ doc("vertex_version") }}'
       - name: MODE
         description: '{{ doc("vertex_mode") }}'
       - name: PRODUCT_ID
@@ -48,8 +50,10 @@ models:
         description: '{{ doc("vertex_insurance_cover_unadj") }}'
       - name: INSURANCE_COVER
         description: '{{ doc("vertex_insurance_cover") }}'
-      - name: INSURANCE_COVER
+      - name: IS_ENCODE_SPREAD
         description: '{{ doc("vertex_is_encode_spread") }}'
+      - name: SPREAD_PRODUCT_IDS
+        description: '{{ doc("vertex_decoded_spread_product_ids") }}'
       - name: EZ_LIQUIDATIONS_ID
         description: '{{ doc("pk") }}'
       - name: INSERTED_TIMESTAMP

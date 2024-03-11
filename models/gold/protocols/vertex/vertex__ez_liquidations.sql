@@ -25,6 +25,7 @@ SELECT
     digest,
     trader,
     subaccount,
+    version,
     MODE,
     product_id,
     health_group,
@@ -36,6 +37,7 @@ SELECT
     insurance_cover_unadj,
     insurance_cover,
     is_encoded_spread,
+    spread_product_ids,
     vertex_liquidation_id AS ez_liquidations_id,
     inserted_timestamp,
     modified_timestamp

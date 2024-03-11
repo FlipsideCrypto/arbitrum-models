@@ -153,10 +153,10 @@ v2_vertex_decode as (
             WHEN is_encoded_spread = 1 THEN 
             ARRAY_CONSTRUCT(
                 utils.udf_binary_to_int(
-                SUBSTR(bin_product_ids, -16)), -- Extract rightmost 16 digits
+                SUBSTR(bin_product_ids, -16)),
                 utils.udf_binary_to_int(
                 SUBSTR(bin_product_ids, 1, GREATEST(LEN(bin_product_ids) - 16, 1))
-                ) -- Extract remaining digits
+                )
             ) 
             ELSE NULL 
         END AS decoded_spread_product_ids,
@@ -183,6 +183,7 @@ FINAL AS (
         digest,
         trader,
         subaccount,
+        'v1' as version,
         MODE,
         NULL AS product_id,
         l.health_group,
@@ -203,7 +204,7 @@ FINAL AS (
             18
         ) AS insurance_cover,
         is_encoded_spread,
-        ARRAY_CONSTRUCT(NULL,NULL) AS decoded_spread_product_ids,
+        ARRAY_CONSTRUCT(NULL,NULL) AS spread_product_ids,
         _log_id,
         _inserted_timestamp
     FROM
@@ -224,6 +225,7 @@ UNION ALL
         digest,
         trader,
         subaccount,
+        'v2' as version,
         MODE,
         l.product_id,
         p.health_group,
@@ -241,10 +243,10 @@ UNION ALL
         NULL AS insurance_cover_unadj,
         insurance_cover,
         CASE 
-            WHEN is_encoded_spread = 0 THEN FALSE
             WHEN is_encoded_spread = 1 THEN TRUE
+            ELSE FALSE
         END AS is_encoded_spread,
-        decoded_spread_product_ids,
+        decoded_spread_product_ids AS spread_product_ids,
         _log_id,
         _inserted_timestamp
     FROM
