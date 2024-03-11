@@ -208,7 +208,7 @@ The name of the product
 
 {% docs vertex_version %}
 
-The version of Vertex wiht version 2 of Vertex launching March 8th 2024.
+The version of Vertex with version 2 on or after March 8th 2024.
 
 {% enddocs %}
 
@@ -231,7 +231,9 @@ Perp Liquidation: Any valid perp product_id with is_encode_spread set to false.
 Spot Liquidation: Any valid spot product_id with is_encode_spread set to false. 
 Spread Liquidation: If there are perp and spot positions in different directions, liquidate both at the same time. is_encode_spread must be set to true.
 
-Only available in V2 Vertex liquidations, which went live March 7th 2024. 
+If it is a spread liquidation this column will show the perp product_id, for both ids refer to the spread_product_ids array.
+
+Only available in V2 Vertex liquidations, which went live March 8th 2024. 
 
 {% enddocs %}
 
