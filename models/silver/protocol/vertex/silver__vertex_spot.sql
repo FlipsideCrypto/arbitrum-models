@@ -6,33 +6,42 @@
     tags = ['curated','reorg']
 ) }}
 
-WITH vertex_products as (
-   
+WITH vertex_products AS (
+
     SELECT
         block_number,
         block_timestamp,
         tx_hash,
-        product_id,
+        product_id :: STRING AS product_id,
         book_address,
         product_type,
         ticker_id,
         symbol,
-        name,
+        NAME,
         version
     FROM
         {{ ref('silver__vertex_dim_products') }}
     WHERE
         product_type = 'spot'
 ),
-logs as (
+logs AS (
     SELECT
         *
     FROM
         {{ ref('silver__logs') }}
     WHERE
-        (contract_address IN (SELECT book_address FROM vertex_products where product_type = 'spot')
-    or
-        contract_address = lower('0xa4369d8e3dc847aedf17f4125f1abb1bc18fc060'))
+        (
+            contract_address IN (
+                SELECT
+                    book_address
+                FROM
+                    vertex_products
+                WHERE
+                    product_type = 'spot'
+            )
+            OR contract_address = LOWER('0xa4369d8e3dc847aedf17f4125f1abb1bc18fc060')
+        )
+
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
@@ -45,7 +54,6 @@ AND _inserted_timestamp >= (
 {% endif %}
 ),
 order_fill_decode AS (
-
     SELECT
         l.block_number,
         l.block_timestamp,
@@ -98,16 +106,13 @@ order_fill_decode AS (
         l._log_id,
         l._inserted_timestamp
     FROM
-        logs
-        l
-        INNER JOIN vertex_products
-        s
+        logs l
+        INNER JOIN vertex_products s
         ON s.book_address = l.contract_address
     WHERE
         topics [0] :: STRING = '0x224253ad5cda2459ff587f559a41374ab9243acbd2daff8c13f05473db79d14c'
 ),
 order_fill_decode_v2 AS (
-
     SELECT
         l.block_number,
         l.block_timestamp,
@@ -121,7 +126,7 @@ order_fill_decode_v2 AS (
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         utils.udf_hex_to_int(
             topics [1] :: STRING
-        )  AS product_id,
+        ) AS product_id,
         s.symbol,
         topics [2] :: STRING AS digest,
         --unique hash of the order
@@ -162,18 +167,14 @@ order_fill_decode_v2 AS (
         l._log_id,
         l._inserted_timestamp
     FROM
-        logs
-        l
-        INNER JOIN vertex_products
-        s
+        logs l
+        INNER JOIN vertex_products s
         ON s.product_id = utils.udf_hex_to_int(
             topics [1] :: STRING
         )
     WHERE
         topics [0] :: STRING = '0x7c57459d6f4f0fb2fc5b1e298c8c0eb238422944964aa1e249eaa78747f0cca9'
-        AND
-            contract_address = lower('0xa4369d8e3dc847aedf17f4125f1abb1bc18fc060')
-
+        AND contract_address = LOWER('0xa4369d8e3dc847aedf17f4125f1abb1bc18fc060')
 ),
 order_fill_format AS (
     SELECT
@@ -191,7 +192,7 @@ order_fill_format AS (
         digest,
         trader,
         subaccount,
-        'v1' as version,
+        'v1' AS version,
         expiration AS expiration_raw,
         utils.udf_int_to_binary(TRY_TO_NUMBER(expiration)) AS exp_binary,
         utils.udf_binary_to_int(SUBSTR(exp_binary, -2)) AS order_type,
@@ -233,7 +234,7 @@ order_fill_format AS (
         _inserted_timestamp
     FROM
         order_fill_decode
-UNION ALL
+    UNION ALL
     SELECT
         block_number,
         block_timestamp,
@@ -249,7 +250,7 @@ UNION ALL
         digest,
         trader,
         subaccount,
-        'v2' as version,
+        'v2' AS version,
         expiration AS expiration_raw,
         utils.udf_int_to_binary(TRY_TO_NUMBER(expiration)) AS exp_binary,
         utils.udf_binary_to_int(SUBSTR(exp_binary, -2)) AS order_type,
@@ -290,7 +291,7 @@ UNION ALL
         _log_id,
         _inserted_timestamp
     FROM
-        order_fill_decode_v2 
+        order_fill_decode_v2
 ),
 FINAL AS (
     SELECT
@@ -308,6 +309,7 @@ FINAL AS (
         digest,
         trader,
         subaccount,
+        version,
         CASE
             WHEN amount < 0 THEN 'sell/short'
             WHEN amount > 0 THEN 'buy/long'
