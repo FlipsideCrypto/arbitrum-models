@@ -132,6 +132,8 @@ The net change in the best bid and best ask prices in the order book, decimal ad
 
 The type of liquidation, 0 being a LP position, 1 being a balance - ie a Borrow, and 2 being a perp position.
 
+Only available in Vertex V1, live until March 8th 2024.
+
 {% enddocs %}
 
 {% docs vertex_health_group %}
@@ -162,11 +164,15 @@ To liquidate a position, there must be a payment (transfer) between the liquidat
 
 USDC from the insurance fund pulled into the insolvent account and used to pay liquidators to take on the underwater positions.
 
+Only available in Vertex V1, live until March 8th 2024.
+
 {% enddocs %}
 
 {% docs vertex_insurance_cover %}
 
 USDC from the insurance fund pulled into the insolvent account and used to pay liquidators to take on the underwater positions, decimal adjusted. All amounts and prices are adjusted 18 decimals points regardless of underlying asset contract.
+
+Only available in Vertex V1, live until March 8th 2024.
 
 {% enddocs %}
 
@@ -202,7 +208,7 @@ The name of the product
 
 {% docs vertex_version %}
 
-The product version.
+The version of Vertex with version 2 on or after March 8th 2024.
 
 {% enddocs %}
 
@@ -215,5 +221,32 @@ The underlying asset token address deposited or withdrawn from the clearinghouse
 {% docs vertex_amount_usd_ch %}
 
 The size of deposit or withdraw in USD.
+
+{% enddocs %}
+
+{% docs vertex_product_id_liq %}
+
+The product to liquidate as well as the liquidation mode:
+Perp Liquidation: Any valid perp product_id with is_encode_spread set to false. 
+Spot Liquidation: Any valid spot product_id with is_encode_spread set to false. 
+Spread Liquidation: If there are perp and spot positions in different directions, liquidate both at the same time. is_encode_spread must be set to true.
+
+If it is a spread liquidation this column will show the perp product_id, for both ids refer to the spread_product_ids array.
+
+Only available in V2 Vertex liquidations, which went live March 8th 2024. 
+
+{% enddocs %}
+
+{% docs vertex_is_encode_spread %}
+
+Indicates whether product_id encodes both a spot and perp product_id for spread_liquidation.
+
+Only available in V2 Vertex liquidations, which went live March 8th 2024. 
+
+{% enddocs %}
+
+{% docs vertex_decoded_spread_product_ids %}
+
+Array of product_ids that have been decoded from binary. Only available when is_encode_spread is true and the liquidation occurs on V2 Vertex, which went live March 8th 2024. 
 
 {% enddocs %}
