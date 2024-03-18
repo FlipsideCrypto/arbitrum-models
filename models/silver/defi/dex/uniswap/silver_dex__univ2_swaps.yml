@@ -1,6 +1,7 @@
 version: 2
 models:
-  - name: silver__vertex_liquidations
+  - name: silver_dex__univ2_swaps
+
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -18,7 +19,7 @@ models:
           - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
-              interval: 1
+              interval: 2 #might be normal for swaps not to happen on a day
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - TIMESTAMP_LTZ
@@ -28,78 +29,70 @@ models:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: EVENT_INDEX
-        tests:
-          - not_null
       - name: CONTRACT_ADDRESS
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: EVENT_NAME
+      - name: AMOUNT_IN_UNADJ
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: AMOUNT_IN
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: AMOUNT_OUT_UNADJ
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: AMOUNT_OUT
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: TOKEN_IN
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+
+      - name: TOKEN_OUT
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: SYMBOL_IN
         tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - STRING
                 - VARCHAR
-          - not_null
-      - name: DIGEST
+      - name: SYMBOL_OUT
         tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
-      - name: TRADER
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
-      - name: SUBACCOUNT
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - STRING
+                - VARCHAR
+      - name: TX_TO
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: MODE
-        tests:
-          - not_null:
-              where: version = 'v1'
-      - name: PRODUCT_ID
-        tests:
-          - not_null:
-              where: version = 'v2'
-      - name: HEALTH_GROUP
-        tests:
-          - not_null
-      - name: AMOUNT_UNADJ
+      - name: PLATFORM
         tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
-                - NUMBER
-                - FLOAT
-      - name: AMOUNT
-        tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER
-                - FLOAT
-      - name: AMOUNT_QUOTE_UNADJ
-        tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER
-                - FLOAT
-      - name: AMOUNT_QUOTE
-        tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER
-                - FLOAT
-      - name: INSURANCE_COVER_UNADJ
-        tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER
-                - FLOAT
-      - name: INSURANCE_COVER
+                - STRING
+                - VARCHAR
+      - name: EVENT_INDEX
         tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:

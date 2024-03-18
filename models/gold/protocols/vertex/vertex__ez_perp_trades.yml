@@ -30,6 +30,8 @@ models:
         description: '{{ doc("vertex_trader") }}'
       - name: SUBACCOUNT
         description: '{{ doc("vertex_subaccount") }}'
+      - name: VERSION
+        description: '{{ doc("vertex_version") }}'
       - name: TRADE_TYPE
         description: '{{ doc("vertex_trade_type") }}'
       - name: ORDER_TYPE
