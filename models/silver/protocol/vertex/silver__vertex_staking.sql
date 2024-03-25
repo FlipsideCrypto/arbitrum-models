@@ -50,13 +50,13 @@ AND _inserted_timestamp >= (
 SELECT
     *,
     {{ dbt_utils.generate_surrogate_key(
-        ['tx_hash','event_index']
+        ['tx_hash']
     ) }} AS vertex_spot_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
 FROM
-    FINAL 
+    stake_pull 
 WHERE
     function_name <> 'non_staking_tx' qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
