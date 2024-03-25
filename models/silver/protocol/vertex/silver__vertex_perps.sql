@@ -335,12 +335,8 @@ FINAL AS (
         amount_unadj,
         amount,
         CASE
-            WHEN trade_type = 'sell/short' THEN CAST(
-                base_delta * price_amount AS FLOAT
-            ) * -1
-            WHEN trade_type = 'buy/long' THEN CAST(
-                base_delta * price_amount AS FLOAT
-            )
+            WHEN quote_delta < 0 THEN quote_delta * -1
+            ELSE quote_delta
         END AS amount_usd,
         fee_amount_unadj,
         fee_amount,

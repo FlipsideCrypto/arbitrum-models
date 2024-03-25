@@ -52,6 +52,16 @@ There is more information on how to use dbt docs in the last section of this doc
 - [ez_lending_repayments](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.defi__ez_lending_repayments)
 - [ez_lending_withdraws](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.defi__ez_lending_withdraws)
 
+### Flipside Partner Tables (arbitrum.partner_name)
+
+**Vertex Tables:**
+- [dim_products](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.vertex__dim_products)
+- [ez_clearing_house_events](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.vertex__ez_clearing_house_events)
+- [ez_liquidations](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.vertex__ez_liquidations)
+- [ez_perp_trades](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.vertex__ez_perp_trades)
+- [ez_spot_trades](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.vertex__ez_spot_trades)
+
+
 ### NFT Tables (arbitrum.nft)
 - [ez_nft_sales](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.nft__ez_nft_sales)
 - [ez_nft_transfers](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.nft__ez_nft_transfers)
