@@ -10,7 +10,19 @@ with perp_trades as (
     SELECT  
         *
     FROM
-        {{ ref('silver__vertex_perps') }}
+        {{ ref('silver__vertex_perps') }} p 
+    WHERE 
+    1=1
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        ) - INTERVAL '12 hours'
+    FROM
+        {{ this }}
+)
+{% endif %}
 ),
 edge_trades as (
     SELECT
@@ -37,7 +49,9 @@ SELECT
     e.quote_delta_amount as edge_quote_delta,
     p.quote_delta_amount as user_quote_delta,
     e.base_delta_amount as edge_base_delta,
-    p.base_delta_amount as user_base_delta
+    p.base_delta_amount as user_base_delta,
+    e._log_id,
+    e._inserted_timestamp
 FROM
     edge_trades e
 LEFT JOIN

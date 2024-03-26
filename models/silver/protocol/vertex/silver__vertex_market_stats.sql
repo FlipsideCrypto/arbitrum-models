@@ -55,14 +55,13 @@ trade_snapshot as (
         sum(amount_usd) as amount_usd,
         sum(fee_amount) as fee_amount,
         sum(base_delta_amount) as base_delta_amount,
-        sum(quote_delta_amount) as quote_delta_amount,
-        sum(l.liquidation_count) AS liquidation_count,
-        sum(l.liquidation_amount) AS liquidation_amount,
-        sum(l.liquidation_amount_usd) AS liquidation_amount_usd
+        sum(quote_delta_amount) as quote_delta_amount
     from
         arbitrum.silver.vertex_perps p 
     where 
-        block_timestamp >  sysdate() - INTERVAL '1 hours'
+    1=1
+    AND block_timestamp > (select MAX(inserted_timestamp) from {{this}})
+
     group by 
         1,2,3,4
 UNION ALL
@@ -78,23 +77,12 @@ UNION ALL
         sum(amount_usd) as amount_usd,
         sum(fee_amount) as fee_amount,
         sum(base_delta_amount) as base_delta_amount,
-        sum(quote_delta_amount) as quote_delta_amount,
-        sum(l.liquidation_count) AS liquidation_count,
-        sum(l.liquidation_amount) AS liquidation_amount,
-        sum(l.liquidation_amount_usd) AS liquidation_amount_usd
+        sum(quote_delta_amount) as quote_delta_amount
     from
         arbitrum.silver.vertex_spot
     where 
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        )
-    FROM
-        {{ this }}
-)
-{% endif %}
+    1=1
+    AND block_timestamp > (select MAX(inserted_timestamp) from {{this}})
     group by 
         1,2,3,4
  
@@ -110,9 +98,6 @@ FINAL AS (
         t.distinct_subaccount_count,
         t.trade_count,
         t.amount_usd,
-        t.liquidation_count,
-        t.liquidation_amount,
-        t.liquidation_amount_usd,
         t.fee_amount,
         t.base_delta_amount,
         t.quote_delta_amount,
