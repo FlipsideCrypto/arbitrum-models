@@ -22,6 +22,7 @@ WITH stake_pull AS (
             WHEN origin_function_signature = '0x0d51a300' THEN 'claim_usdc_and_stake'
             WHEN origin_function_signature = '0x5de8c74d' THEN 'claim_vrtx'
             WHEN origin_function_signature = '0x2e1a7d4d' THEN 'withdraw'
+            WHEN origin_function_signature = '0x59974e38' THEN 'distribute_rewards'
             ELSE 'non_staking_tx'
         END AS function_name,
         raw_amount_precise AS amount_unadj,
@@ -33,8 +34,7 @@ WITH stake_pull AS (
     FROM
         {{ ref('silver__transfers') }}
     WHERE
-        origin_from_address = LOWER('0x5Be754aD77766089c4284d914F0cC37E8E3F669A')
-        OR origin_to_address = LOWER('0x5Be754aD77766089c4284d914F0cC37E8E3F669A')
+        origin_to_address = LOWER('0x5Be754aD77766089c4284d914F0cC37E8E3F669A')
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

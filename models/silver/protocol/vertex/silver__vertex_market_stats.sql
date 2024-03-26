@@ -41,35 +41,6 @@ market_stats AS (
             input => response
         ) AS f
 ),
-perp_liquidation_snapshot as (
-    select 
-        concat(health_group_symbol,'-PERP_USDC') as ticker_id,
-        count(*) as liquidation_count,
-        sum(abs(amount)) as liquidation_amount,
-        sum(abs(amount_quote)) as liquidation_amount_usd
-    from 
-        arbitrum.vertex.ez_liquidations
-    where 
-        mode = 2
-        AND inserted_timestamp >  sysdate() - INTERVAL '1 hours'
-    GROUP BY 1
-),
-spot_liquidation_snapshot as (
-    select 
-        CASE 
-            WHEN health_group_symbol IN ('ETH','BTC') THEN concat('W',health_group_symbol,'_USDC')
-            ELSE concat(health_group_symbol,'_USDC') 
-        END as ticker_id,
-        count(*) as liquidation_count,
-        sum(abs(amount)) as liquidation_amount,
-        sum(abs(amount_quote)) as liquidation_amount_usd
-    from 
-        arbitrum.vertex.ez_liquidations
-    where 
-        mode = 1
-        AND inserted_timestamp >  sysdate() - INTERVAL '1 hours'
-    GROUP BY 1
-),
 trade_snapshot as (
     
     select
@@ -90,12 +61,8 @@ trade_snapshot as (
         sum(l.liquidation_amount_usd) AS liquidation_amount_usd
     from
         arbitrum.silver.vertex_perps p 
-    LEFT JOIN
-        perp_liquidation_snapshot l
-    ON
-        concat(symbol,'_USDC') = l.ticker_id
     where 
-        inserted_timestamp >  sysdate() - INTERVAL '1 hours'
+        block_timestamp >  sysdate() - INTERVAL '1 hours'
     group by 
         1,2,3,4
 UNION ALL
@@ -117,12 +84,17 @@ UNION ALL
         sum(l.liquidation_amount_usd) AS liquidation_amount_usd
     from
         arbitrum.silver.vertex_spot
-    LEFT JOIN
-        spot_liquidation_snapshot l
-    ON
-        concat(symbol,'_USDC') = l.ticker_id
     where 
-        inserted_timestamp >  sysdate() - INTERVAL '1 hours'
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        )
+    FROM
+        {{ this }}
+)
+{% endif %}
     group by 
         1,2,3,4
  

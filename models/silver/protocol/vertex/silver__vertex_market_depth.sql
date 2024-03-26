@@ -1,8 +1,8 @@
 {{ config(
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
-    unique_key = ['product_id','timestamp','price'],
-    cluster_by = ['timestamp::DATE']
+    unique_key = ['product_id','hour','price'],
+    cluster_by = ['hour::DATE']
 ) }}
 
 WITH market_depth AS ({% for item in range(55) %}
@@ -10,7 +10,7 @@ WITH market_depth AS ({% for item in range(55) %}
     SELECT
         t.ticker_id, 
         t.product_id, 
-        DATE_TRUNC('hour', TRY_TO_TIMESTAMP(t.timestamp)) AS TIMESTAMP, 
+        DATE_TRUNC('hour', TRY_TO_TIMESTAMP(t.timestamp)) AS hour, 
         'asks' AS orderbook_side, 
         A.value [0] :: FLOAT AS price, 
         A.value [1] :: FLOAT AS volume, 
@@ -46,7 +46,7 @@ WITH market_depth AS ({% for item in range(55) %}
     SELECT
         t.ticker_id, 
         t.product_id, 
-        DATE_TRUNC('hour', TRY_TO_TIMESTAMP(t.timestamp)) AS TIMESTAMP, 
+        DATE_TRUNC('hour', TRY_TO_TIMESTAMP(t.timestamp)) AS hour, 
         'bids' AS orderbook_side, 
         A.value [0] :: FLOAT AS price, 
         A.value [1] :: FLOAT AS volume, 
@@ -81,8 +81,33 @@ WITH market_depth AS ({% for item in range(55) %}
         {% if not loop.last %}
         UNION ALL
         {% endif %}
-    {% endfor %})
+    {% endfor %}
+),
+final as (
+        
+    SELECT
+        ticker_id::string as ticker_id,
+        product_id,
+        hour,
+        orderbook_side,
+        price,
+        round(price,2) as round_price_0_01,
+        round(price,1) as round_price_0_1,
+        round(price,0) as round_price_1,
+        round(price,-1) as round_price_10,
+        round(price,-2) as round_price_100,
+        volume,
+        _inserted_timestamp
+    FROM
+        market_depth
+)
 SELECT
-    *
+    *,
+    {{ dbt_utils.generate_surrogate_key(
+        ['product_id','hour','price']
+    ) }} AS vertex_market_depth_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
-    market_depth
+    FINAL
