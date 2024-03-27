@@ -24,6 +24,7 @@ SELECT
     long_count,
     short_count,
     total_usd_volume,
+    avg_usd_trade_size,
     total_fee_amount,
     total_base_delta_amount,
     total_quote_delta_amount,

@@ -11,21 +11,21 @@ models:
       - name: PRODUCT_ID
         description: '{{ doc("vertex_product_id") }}'
       - name: ORDERBOOK_SIDE
-        description: '{{ doc("") }}'
+        description: '{{ doc("vertex_orderbook_side") }}'
       - name: VOLUME
-        description: '{{ doc("") }}'
+        description: '{{ doc("vertex_orderbook_volume") }}'
       - name: PRICE
-        description: '{{ doc("") }}'
+        description: '{{ doc("vertex_orderbook_price") }}'
       - name: ROUND_PRICE_0_01
-        description: '{{ doc("") }}'
+        description: '{{ doc("vertex_orderbook_round_price_0_01") }}'
       - name: ROUND_PRICE_0_1
-        description: '{{ doc("") }}'
+        description: '{{ doc("vertex_orderbook_round_price_0_1") }}'
       - name: ROUND_PRICE_1
-        description: '{{ doc("") }}'
+        description: '{{ doc("vertex_orderbook_round_price_1") }}'
       - name: ROUND_PRICE_10
-        description: '{{ doc("") }}'
+        description: '{{ doc("vertex_orderbook_round_price_10") }}'
       - name: ROUND_PRICE_100
-        description: '{{ doc("") }}'
+        description: '{{ doc("vertex_orderbook_round_price_100") }}'
       - name: EZ_MARKET_DEPTH_ID
         description: '{{ doc("pk") }}'
       - name: INSERTED_TIMESTAMP

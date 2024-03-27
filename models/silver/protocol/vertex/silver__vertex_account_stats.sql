@@ -131,6 +131,7 @@ fianl as (
             when trade_type = 'sell/short' THEN +1
             else 0 end) as short_count,
         sum(amount_usd) as total_usd_volume,
+        avg(amount_usd) as avg_usd_trade_size,
         sum(fee_amount) as total_fee_amount,
         sum(base_delta_amount) as total_base_delta_amount,
         sum(quote_delta_amount) as total_quote_delta_amount,

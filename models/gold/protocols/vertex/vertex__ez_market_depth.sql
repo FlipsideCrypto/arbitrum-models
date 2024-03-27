@@ -24,7 +24,6 @@ SELECT
     round_price_1,
     round_price_10,
     round_price_100,
-    _inserted_timestamp,
     vertex_market_depth_id,
     inserted_timestamp,
     modified_timestamp
