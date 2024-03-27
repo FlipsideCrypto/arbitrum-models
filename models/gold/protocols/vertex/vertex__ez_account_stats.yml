@@ -1,30 +1,42 @@
 version: 2
 models:
   - name: vertex__ez_account_stats
-    description: '{{ doc("vertex_dim_products") }}'
+    description: '{{ doc("vertex_account_stats") }}'
 
     columns:
-      - name: BLOCK_NUMBER
-        description: '{{ doc("arb_block_number") }}'
-      - name: BLOCK_TIMESTAMP
-        description: '{{ doc("arb_block_timestamp") }}'
-      - name: TX_HASH
-        description: '{{ doc("arb_logs_tx_hash") }}'
-      - name: BOOK_ADDRESS
-        description: '{{ doc("vertex_book_address") }}'
-      - name: PRODUCT_ID
-        description: '{{ doc("vertex_product_id") }}'
-      - name: PRODUCT_TYPE
-        description: '{{ doc("vertex_product_type") }}'
-      - name: TICKER_ID
-        description: '{{ doc("vertex_ticker_id") }}'
-      - name: SYMBOL
-        description: '{{ doc("vertex_symbol") }}'
-      - name: NAME
-        description: '{{ doc("vertex_name") }}'
-      - name: VERSION
-        description: '{{ doc("vertex_version") }}'
-      - name: DIM_PRODUCTS_ID
+      - name: SUBACCOUNT
+        description: '{{ doc("vertex_subaccount") }}'
+      - name: TRADE
+        description: '{{ doc("vertex_trader") }}'
+      - name: FIRST_TRADE_TIMESTAMP
+        description: '{{ doc("") }}'
+      - name: LAST_TRADE_TIMESTAMP
+        description: '{{ doc("") }}'
+      - name: ACCOUNT_AGE
+        description: '{{ doc("") }}'
+      - name: TRADE_COUNT
+        description: '{{ doc("") }}'
+      - name: PERP_TRADE_COUNT
+        description: '{{ doc("") }}'
+      - name: SPOT_TRADE_COUNT
+        description: '{{ doc("") }}'
+      - name: LONG_COUNT
+        description: '{{ doc("") }}'
+      - name: SHORT_COUNT
+        description: '{{ doc("") }}'
+      - name: TOTAL_USD_VOLUME
+        description: '{{ doc("") }}'
+      - name: TOTAL_FEE_AMOUNT
+        description: '{{ doc("") }}'
+      - name: TOTAL_BASE_DELTA_AMOUNT
+        description: '{{ doc("") }}'
+      - name: TOTAL_QUOTE_DELTA_AMOUNT
+        description: '{{ doc("") }}'
+      - name: TOTAL_LIQUIDATION_AMOUNT
+        description: '{{ doc("") }}'
+      - name: TOTAL_LIQUIDATION_AMOUNT_COUNT
+        description: '{{ doc("") }}'
+      - name: VERTEX_ACCOUNT_ID
         description: '{{ doc("pk") }}' 
       - name: INSERTED_TIMESTAMP
         description: '{{ doc("inserted_timestamp") }}'   

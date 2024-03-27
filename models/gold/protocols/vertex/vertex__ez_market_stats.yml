@@ -10,7 +10,7 @@ models:
         description: '{{ doc("vertex_ticker_id") }}'
       - name: PRODUCT_ID
         description: '{{ doc("vertex_product_id") }}'
-      - name: PRODUCT_ID
+      - name: SYMBOL
         description: '{{ doc("vertex_symbol") }}'
       - name: DISTINCT_SEQUENCER_BATCHES
         description: '{{ doc("") }}'
@@ -54,3 +54,9 @@ models:
         description: '{{ doc("vertex_product_type") }}'
       - name: QUOTE_CURRENCY
         description: '{{ doc("vertex_product_type") }}'
+      - name: EZ_MARKET_STATS_ID
+        description: '{{ doc("pk") }}'
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
