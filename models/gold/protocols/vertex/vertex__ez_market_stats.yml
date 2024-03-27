@@ -1,0 +1,56 @@
+version: 2
+models:
+  - name: vertex__ez_market_stats
+    description: '{{ doc("vertex_ez_market_stats") }}'
+
+    columns:
+      - name: HOUR
+        description: '{{ doc("vertex_hour") }}'
+      - name: TICKER_ID
+        description: '{{ doc("vertex_ticker_id") }}'
+      - name: PRODUCT_ID
+        description: '{{ doc("vertex_product_id") }}'
+      - name: PRODUCT_ID
+        description: '{{ doc("vertex_symbol") }}'
+      - name: DISTINCT_SEQUENCER_BATCHES
+        description: '{{ doc("") }}'
+      - name: DISTINCT_TRADER_COUNT
+        description: '{{ doc("") }}'
+      - name: DISTINCT_SUBACCOUNT_COUNT
+        description: '{{ doc("") }}'
+      - name: TRADE_COUNT
+        description: '{{ doc("") }}'
+      - name: AMOUNT_USD
+        description: '{{ doc("vertex_amount_usd") }}'
+      - name: FEE_AMOUNT
+        description: '{{ doc("vertex_fee_amount") }}'
+      - name: BASE_DELTA_AMOUNT
+        description: '{{ doc("vertex_base_delta_amount") }}'
+      - name: QUOTE_DELTA_AMOUNT
+        description: '{{ doc("vertex_quote_delta_amount") }}'
+      - name: BASE_CURRENCY
+        description: '{{ doc("") }}'
+      - name: BASE_VOLUME
+        description: '{{ doc("") }}'
+      - name: CONTRACT_PRICE
+        description: '{{ doc("") }}'
+      - name: CONTRACT_PRICE_CURRENCY
+        description: '{{ doc("") }}'
+      - name: FUNDING_RATE
+        description: '{{ doc("") }}'
+      - name: INDEX_PRICE
+        description: '{{ doc("") }}'
+      - name: LAST_PRICE
+        description: '{{ doc("") }}'
+      - name: MARK_PRICE
+        description: '{{ doc("") }}'
+      - name: NEXT_FUNDING_RATE
+        description: '{{ doc("") }}'
+      - name: OPEN_INTEREST
+        description: '{{ doc("") }}'
+      - name: OPEN_INTEREST_USD
+        description: '{{ doc("") }}'
+      - name: PRODUCT_TYPE
+        description: '{{ doc("vertex_product_type") }}'
+      - name: QUOTE_CURRENCY
+        description: '{{ doc("vertex_product_type") }}'

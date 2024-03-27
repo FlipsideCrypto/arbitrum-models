@@ -50,8 +50,8 @@ AND _inserted_timestamp >= (
 SELECT
     *,
     {{ dbt_utils.generate_surrogate_key(
-        ['tx_hash']
-    ) }} AS vertex_spot_id,
+        ['_log_id']
+    ) }} AS vertex_staking_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id

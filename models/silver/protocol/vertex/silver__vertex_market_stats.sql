@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = ['ticker_id','inserted_timestamp'],
+    unique_key = ['ticker_id','hour'],
     cluster_by = ['HOUR::DATE']
 ) }}
 
@@ -57,11 +57,12 @@ trade_snapshot as (
         sum(base_delta_amount) as base_delta_amount,
         sum(quote_delta_amount) as quote_delta_amount
     from
-        arbitrum.silver.vertex_perps p 
+        {{ ref('silver__vertex_perps') }} p 
     where 
     1=1
-    AND block_timestamp > (select MAX(inserted_timestamp) from {{this}})
-
+{% if is_incremental() %}
+AND block_timestamp > (select MAX(inserted_timestamp) from {{this}})
+{% endif %}
     group by 
         1,2,3,4
 UNION ALL
@@ -79,10 +80,12 @@ UNION ALL
         sum(base_delta_amount) as base_delta_amount,
         sum(quote_delta_amount) as quote_delta_amount
     from
-        arbitrum.silver.vertex_spot
+        {{ ref('silver__vertex_spot') }}
     where 
     1=1
-    AND block_timestamp > (select MAX(inserted_timestamp) from {{this}})
+{% if is_incremental() %}
+AND block_timestamp > (select MAX(inserted_timestamp) from {{this}})
+{% endif %}
     group by 
         1,2,3,4
  
