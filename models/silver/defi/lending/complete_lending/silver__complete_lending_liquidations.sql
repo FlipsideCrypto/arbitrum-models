@@ -6,36 +6,36 @@
   tags = ['reorg','curated']
 ) }}
 
-WITH liquidation_union AS (
+WITH Lodestar AS (
 
-  SELECT
-    tx_hash,
-    block_number,
-    block_timestamp,
-    event_index,
-    origin_from_address,
-    origin_to_address,
-    origin_function_signature,
-    contract_address,
-    liquidator,
-    borrower,
-    amount_unadj,
-    liquidation_amount AS liquidated_amount,
-    NULL AS liquidated_amount_usd,
-    itoken AS protocol_collateral_asset,
-    liquidation_contract_address AS collateral_asset,
-    liquidation_contract_symbol AS collateral_asset_symbol,
-    collateral_token AS debt_asset,
-    collateral_symbol AS debt_asset_symbol,
-    platform,
-    'arbitrum' AS blockchain,
-    l._LOG_ID,
-    l._INSERTED_TIMESTAMP
-  FROM
-    {{ ref('silver__lodestar_liquidations') }}
-    l
+    SELECT
+      tx_hash,
+      block_number,
+      block_timestamp,
+      event_index,
+      origin_from_address,
+      origin_to_address,
+      origin_function_signature,
+      contract_address,
+      liquidator,
+      borrower,
+      amount_unadj,
+      liquidation_amount AS liquidated_amount,
+      NULL AS liquidated_amount_usd,
+      itoken AS protocol_collateral_asset,
+      liquidation_contract_address AS debt_asset,
+      liquidation_contract_symbol AS debt_asset_symbol,
+      collateral_token AS collateral_asset,
+      collateral_symbol AS collateral_asset_symbol,
+      platform,
+      'arbitrum' AS blockchain,
+      l._LOG_ID,
+      l._INSERTED_TIMESTAMP
+    FROM
+      {{ ref('silver__lodestar_liquidations') }}
+      l
 
-{% if is_incremental() %}
+{% if is_incremental() and 'lodestar' not in var('HEAL_CURATED_MODEL') %}
 WHERE
   l._inserted_timestamp >= (
     SELECT
@@ -44,7 +44,46 @@ WHERE
       {{ this }}
   )
 {% endif %}
-UNION ALL
+),
+dforce as (
+    SELECT
+      tx_hash,
+      block_number,
+      block_timestamp,
+      event_index,
+      origin_from_address,
+      origin_to_address,
+      origin_function_signature,
+      contract_address,
+      liquidator,
+      borrower,
+      amount_unadj,
+      amount AS liquidated_amount,
+      NULL AS liquidated_amount_usd,
+      token AS protocol_collateral_asset,
+      liquidation_contract_address AS debt_asset,
+      liquidation_contract_symbol AS debt_asset_symbol,
+      collateral_token AS collateral_asset,
+      collateral_symbol AS collateral_asset_symbol,
+      platform,
+      'arbitrum' AS blockchain,
+      l._LOG_ID,
+      l._INSERTED_TIMESTAMP
+    FROM
+      {{ ref('silver__dforce_liquidations') }}
+      l
+
+  {% if is_incremental() and 'dforce' not in var('HEAL_CURATED_MODEL') %}
+  WHERE
+    l._inserted_timestamp >= (
+      SELECT
+        MAX(_inserted_timestamp) - INTERVAL '36 hours'
+      FROM
+        {{ this }}
+    )
+  {% endif %}
+),
+aave as (
   SELECT
     tx_hash,
     block_number,
@@ -59,173 +98,172 @@ UNION ALL
     amount_unadj,
     amount AS liquidated_amount,
     NULL AS liquidated_amount_usd,
-    token AS protocol_collateral_asset,
-    liquidation_contract_address AS collateral_asset,
-    liquidation_contract_symbol AS collateral_asset_symbol,
-    collateral_token AS debt_asset,
-    collateral_symbol AS debt_asset_symbol,
+    collateral_aave_token AS protocol_collateral_asset,
+    collateral_asset,
+    collateral_token_symbol AS collateral_asset_symbol,
+    debt_asset,
+    debt_token_symbol AS debt_asset_symbol,
+    'Aave V3' AS platform,
+    'arbitrum' AS blockchain,
+    _LOG_ID,
+    _INSERTED_TIMESTAMP
+  FROM
+    {{ ref('silver__aave_liquidations') }}
+
+  {% if is_incremental() and 'aave' not in var('HEAL_CURATED_MODEL') %}
+  WHERE
+    _inserted_timestamp >= (
+      SELECT
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      FROM
+        {{ this }}
+    )
+  {% endif %}
+),
+radiant as (
+  SELECT
+    tx_hash,
+    block_number,
+    block_timestamp,
+    event_index,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    contract_address,
+    liquidator,
+    borrower,
+    amount_unadj,
+    amount AS liquidated_amount,
+    NULL AS liquidated_amount_usd,
+    collateral_radiant_token AS protocol_collateral_asset,
+    collateral_asset,
+    collateral_token_symbol AS collateral_asset_symbol,
+    debt_asset,
+    debt_token_symbol AS debt_asset_symbol,
     platform,
+    'arbitrum' AS blockchain,
+    _LOG_ID,
+    _INSERTED_TIMESTAMP
+  FROM
+    {{ ref('silver__radiant_liquidations') }}
+
+  {% if is_incremental() and 'radiant' not in var('HEAL_CURATED_MODEL') %}
+  WHERE
+    _inserted_timestamp >= (
+      SELECT
+        MAX(_inserted_timestamp) - INTERVAL '36 hours'
+      FROM
+        {{ this }}
+    )
+  {% endif %}
+),
+
+silo as (
+  SELECT
+    tx_hash,
+    block_number,
+    block_timestamp,
+    event_index,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    contract_address,
+    receiver_address AS liquidator,
+    depositor_address AS borrower,
+    amount_unadj,
+    amount AS liquidated_amount,
+    NULL AS liquidated_amount_usd,
+    protocol_collateral_token AS protocol_collateral_asset,
+    token_address AS collateral_asset,
+    token_symbol AS collateral_asset_symbol,
+    debt_asset,
+    debt_asset_symbol,
+    platform,
+    'arbitrum' AS blockchain,
+    _LOG_ID,
+    _INSERTED_TIMESTAMP
+  FROM
+    {{ ref('silver__silo_liquidations') }}
+
+  {% if is_incremental() and 'silo' not in var('HEAL_CURATED_MODEL') %}
+  WHERE
+    _inserted_timestamp >= (
+      SELECT
+        MAX(_inserted_timestamp) - INTERVAL '36 hours'
+      FROM
+        {{ this }}
+    )
+  {% endif %}
+),
+
+comp as (
+  SELECT
+    tx_hash,
+    block_number,
+    block_timestamp,
+    event_index,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    contract_address,
+    absorber AS liquidator,
+    borrower,
+    amount_unadj,
+    amount AS liquidated_amount,
+    amount_usd AS liquidated_amount_usd,
+    compound_market AS protocol_collateral_asset,
+    token_address AS collateral_asset,
+    token_symbol AS collateral_asset_symbol,
+    debt_asset,
+    debt_asset_symbol,
+    l.compound_version AS platform,
     'arbitrum' AS blockchain,
     l._LOG_ID,
     l._INSERTED_TIMESTAMP
   FROM
-    {{ ref('silver__dforce_liquidations') }}
+    {{ ref('silver__comp_liquidations') }}
     l
 
-{% if is_incremental() %}
-WHERE
-  l._inserted_timestamp >= (
-    SELECT
-      MAX(_inserted_timestamp) - INTERVAL '36 hours'
-    FROM
-      {{ this }}
-  )
-{% endif %}
-UNION ALL
-SELECT
-  tx_hash,
-  block_number,
-  block_timestamp,
-  event_index,
-  origin_from_address,
-  origin_to_address,
-  origin_function_signature,
-  contract_address,
-  liquidator,
-  borrower,
-  amount_unadj,
-  amount AS liquidated_amount,
-  NULL AS liquidated_amount_usd,
-  collateral_aave_token AS protocol_collateral_asset,
-  collateral_asset,
-  collateral_token_symbol AS collateral_asset_symbol,
-  debt_asset,
-  debt_token_symbol AS debt_asset_symbol,
-  'Aave V3' AS platform,
-  'arbitrum' AS blockchain,
-  _LOG_ID,
-  _INSERTED_TIMESTAMP
-FROM
-  {{ ref('silver__aave_liquidations') }}
-
-{% if is_incremental() %}
-WHERE
-  _inserted_timestamp >= (
-    SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
-    FROM
-      {{ this }}
-  )
-{% endif %}
-UNION ALL
-SELECT
-  tx_hash,
-  block_number,
-  block_timestamp,
-  event_index,
-  origin_from_address,
-  origin_to_address,
-  origin_function_signature,
-  contract_address,
-  liquidator,
-  borrower,
-  amount_unadj,
-  amount AS liquidated_amount,
-  NULL AS liquidated_amount_usd,
-  collateral_radiant_token AS protocol_collateral_asset,
-  collateral_asset,
-  collateral_token_symbol AS collateral_asset_symbol,
-  debt_asset,
-  debt_token_symbol AS debt_asset_symbol,
-  platform,
-  'arbitrum' AS blockchain,
-  _LOG_ID,
-  _INSERTED_TIMESTAMP
-FROM
-  {{ ref('silver__radiant_liquidations') }}
-
-{% if is_incremental() %}
-WHERE
-  _inserted_timestamp >= (
-    SELECT
-      MAX(_inserted_timestamp) - INTERVAL '36 hours'
-    FROM
-      {{ this }}
-  )
-{% endif %}
-UNION ALL
-SELECT
-  tx_hash,
-  block_number,
-  block_timestamp,
-  event_index,
-  origin_from_address,
-  origin_to_address,
-  origin_function_signature,
-  contract_address,
-  receiver_address AS liquidator,
-  depositor_address AS borrower,
-  amount_unadj,
-  amount AS liquidated_amount,
-  NULL AS liquidated_amount_usd,
-  protocol_collateral_token AS protocol_collateral_asset,
-  token_address AS collateral_asset,
-  token_symbol AS collateral_asset_symbol,
-  debt_asset,
-  debt_asset_symbol,
-  platform,
-  'arbitrum' AS blockchain,
-  _LOG_ID,
-  _INSERTED_TIMESTAMP
-FROM
-  {{ ref('silver__silo_liquidations') }}
-
-{% if is_incremental() %}
-WHERE
-  _inserted_timestamp >= (
-    SELECT
-      MAX(_inserted_timestamp) - INTERVAL '36 hours'
-    FROM
-      {{ this }}
-  )
-{% endif %}
-UNION ALL
-SELECT
-  tx_hash,
-  block_number,
-  block_timestamp,
-  event_index,
-  origin_from_address,
-  origin_to_address,
-  origin_function_signature,
-  contract_address,
-  absorber AS liquidator,
-  borrower,
-  amount_unadj,
-  amount AS liquidated_amount,
-  amount_usd AS liquidated_amount_usd,
-  compound_market AS protocol_collateral_asset,
-  token_address AS collateral_asset,
-  token_symbol AS collateral_asset_symbol,
-  debt_asset,
-  debt_asset_symbol,
-  l.compound_version AS platform,
-  'arbitrum' AS blockchain,
-  l._LOG_ID,
-  l._INSERTED_TIMESTAMP
-FROM
-  {{ ref('silver__comp_liquidations') }}
-  l
-
-{% if is_incremental() %}
-WHERE
-  l._inserted_timestamp >= (
-    SELECT
-      MAX(_inserted_timestamp) - INTERVAL '36 hours'
-    FROM
-      {{ this }}
-  )
-{% endif %}
+  {% if is_incremental() and 'comp' not in var('HEAL_CURATED_MODEL') %}
+  WHERE
+    l._inserted_timestamp >= (
+      SELECT
+        MAX(_inserted_timestamp) - INTERVAL '36 hours'
+      FROM
+        {{ this }}
+    )
+  {% endif %}
+),
+liquidation_union as (
+  SELECT
+    *
+  FROM
+    aave
+  UNION ALL
+  SELECT
+    *
+  FROM
+    radiant
+  UNION ALL
+  SELECT
+    *
+  FROM
+    comp
+  UNION ALL
+  SELECT
+    *
+  FROM
+    dforce
+  UNION ALL
+  SELECT
+    *
+  FROM
+    lodestar
+  UNION ALL
+  SELECT
+    *
+  FROM
+    silo
 ),
 contracts AS (
   SELECT
