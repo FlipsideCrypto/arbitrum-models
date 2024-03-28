@@ -105,7 +105,7 @@ WHERE subaccount in (select subaccount from new_subaccount_actions)
 {% endif %}
     group by 1,2
 ),
-fianl as (
+FINAL as (
     select
         t.subaccount,
         t.trader,

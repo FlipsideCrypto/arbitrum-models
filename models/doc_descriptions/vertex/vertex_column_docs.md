@@ -299,12 +299,6 @@ The total amount of sell/shorts on the account.
 
 {% enddocs %}
 
-{% docs vertex_short_count %}
-
-The total amount of sell/shorts on the account.
-
-{% enddocs %}
-
 {% docs vertex_total_usd_volume %}
 
 The total USD denominated volume of the account.
@@ -338,12 +332,6 @@ The total quote delta amount of the account.
 {% docs vertex_total_liquidation_amount %}
 
 The total liquidation amount of the account.
-
-{% enddocs %}
-
-{% docs vertex_total_liquidation_count %}
-
-The total count of liquidation accounts on the account.
 
 {% enddocs %}
 
@@ -399,4 +387,103 @@ The price level for each bid/ask order, rounded to nearest 10 dollars.
 
 The price level for each bid/ask order, rounded to nearest 100 dollars. 
 
+{% enddocs %}
+
+{% docs vertex_hour %}
+
+The hour in which the stats table data was pull and inserted into the table.
+
+{% enddocs %}
+
+{% docs vertex_distinct_sequencer_batches %}
+
+The amount of sequencer transactions that included this product in the last hour.
+
+{% enddocs %}
+
+{% docs vertex_trader_count %}
+
+The distinct traders in the last hour, based on a distinct count of wallet addresses.
+
+{% enddocs %}
+
+{% docs vertex_subaccount_count %}
+
+The distinct traders in the last hour, based on a distinct count of subaccount.
+
+{% enddocs %}
+
+{% docs vertex_total_trade_count %}
+
+The total number of trades on Vertex in the last hour.
+
+{% enddocs %}
+
+{% docs vertex_contract_price %}
+
+The price of the contract when the data was inserted into the table.
+
+{% enddocs %}
+
+{% docs vertex_base_volume_24h %}
+
+The 24 hour trading volume for the pair (unit in base).
+
+{% enddocs %}
+
+{% docs vertex_quote_volume_24h %}
+
+The 24 hour trading volume for the pair (unit in quote).
+
+{% enddocs %}
+
+{% docs vertex_funding_rate %}
+
+Current 24hr funding rate. Can compute hourly funding rate dividing by 24.
+
+A funding rate is a mechanism used to ensure that the price of a perp contract tracks the underlying asset's price as closely as possible.
+
+Positive funding rates reflect the perpetual trading at a premium to the underlying asset’s price.
+
+{% enddocs %}
+
+{% docs vertex_index_price %}
+
+Last calculated index price for underlying of contract.
+{% enddocs %}
+
+{% docs vertex_last_price %}
+
+Last transacted price of base currency based on given quote currency.
+{% enddocs %}
+
+
+{% docs vertex_mark_price %}
+
+The calculated fair value of the contract, independent of the last traded price on the specific exchange. 
+{% enddocs %}
+
+{% docs vertex_next_funding_rate %}
+
+Timestamp of the next funding rate change, specific to hour the data was pulled from the API.
+{% enddocs %}
+
+{% docs vertex_open_interest %}
+
+The open interest of the contract for the hour that the data was pulled. Open interest (OI) refers to the total number of outstanding derivative contracts (e.g., futures or options) that are currently held by market participants and have not yet been settled
+{% enddocs %}
+
+{% docs vertex_open_interest_usd %}
+
+The open interest of the contract for the hour that the data was pulled, denominated in USD. Open interest (OI) refers to the total number of outstanding derivative contracts (e.g., futures or options) that are currently held by market participants and have not yet been settled
+{% enddocs %}
+
+{% docs vertex_quote_currency %}
+
+Symbol of the target asset.
+{% enddocs %}
+
+{% docs vertex_staking_function %}
+
+The staking function taking place in the transaction, based on the origin_function_signature.
 {% enddocs %}

@@ -29,3 +29,27 @@ Vertex’s spot markets allow you to buy or sell listed crypto assets paired wit
 Vertex’s on-chain clearinghouse operates as the hub combining perpetual and spot markets, collateral, and risk calculations into a single integrated system. The events in this table track when a wallet either deposits or withdraws from the clearinghouse contract.
 
 {% enddocs %}
+
+{% docs vertex_ez_account_stats %}
+
+Subaccount level table showing aggregated total activity across the Vertex exchange.
+
+{% enddocs %}
+
+{% docs vertex_ez_market_stats %}
+
+Orderbook level market stats based on a combination of on-chain data and data from Vertex's ticker V2 API which includes 24-hour pricing and volume information on each market pair available on Vertex.
+
+{% enddocs %}
+
+{% docs vertex_ez_market_depth %}
+
+Liquidity data taken from Vertex's Orderbook API, showing amount of liquidity at each price level.
+
+{% enddocs %}
+
+{% docs vertex_ez_staking  %}
+
+All staking actions taken with the VRTX staking contract.
+
+{% enddocs %}
