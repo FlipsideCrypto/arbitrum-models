@@ -1,5 +1,6 @@
 {{ config(
     materialized = 'incremental',
+    full_refresh = false,
     unique_key = ['ticker_id','hour'],
     cluster_by = ['HOUR::DATE']
 ) }}
@@ -41,55 +42,84 @@ market_stats AS (
             input => response
         ) AS f
 ),
-trade_snapshot as (
-    
-    select
-        DATE_TRUNC('hour', SYSDATE()) AS HOUR,
-        concat(symbol,'_USDC') as ticker_id,
+trade_snapshot AS (
+    SELECT
+        DATE_TRUNC(
+            'hour',
+            block_timestamp
+        ) AS HOUR,
+        CONCAT(
+            symbol,
+            '_USDC'
+        ) AS ticker_id,
         symbol,
         product_id,
-        count(distinct(tx_hash)) as distinct_sequencer_batches, --may need to change this or just delete
-        count(distinct(trader)) as distinct_trader_count,
-        count(distinct(subaccount)) as distinct_subaccount_count,
-        count(*) as trade_count,
-        sum(amount_usd) as amount_usd,
-        sum(fee_amount) as fee_amount,
-        sum(base_delta_amount) as base_delta_amount,
-        sum(quote_delta_amount) as quote_delta_amount
-    from
-        {{ ref('silver__vertex_perps') }} p 
-    where 
-    1=1
+        COUNT(DISTINCT(tx_hash)) AS distinct_sequencer_batches,
+        --may need to change this or just delete
+        COUNT(DISTINCT(trader)) AS distinct_trader_count,
+        COUNT(DISTINCT(subaccount)) AS distinct_subaccount_count,
+        COUNT(*) AS trade_count,
+        SUM(amount_usd) AS amount_usd,
+        SUM(fee_amount) AS fee_amount,
+        SUM(base_delta_amount) AS base_delta_amount,
+        SUM(quote_delta_amount) AS quote_delta_amount
+    FROM
+        {{ ref('silver__vertex_perps') }}
+        p
+    WHERE
+        AND _inserted_timestamp > COALESCE(
+
 {% if is_incremental() %}
-AND block_timestamp > (select MAX(inserted_timestamp) from {{this}})
+(
+SELECT
+    MAX(inserted_timestamp)
+FROM
+    {{ this }}),
 {% endif %}
-    group by 
-        1,2,3,4
+
+SYSDATE() - INTERVAL '1 hour', NULL)
+GROUP BY
+    1,
+    2,
+    3,
+    4
 UNION ALL
-    select
-        DATE_TRUNC('hour', SYSDATE()) AS HOUR,
-        concat(symbol,'_USDC') as ticker_id,
+SELECT
+    DATE_TRUNC('hour', SYSDATE()) AS HOUR,
+    CONCAT(
         symbol,
-        product_id,
-        count(distinct(tx_hash)) as distinct_sequencer_batches,
-        count(distinct(trader)) as distinct_trader_count,
-        count(distinct(subaccount)) as distinct_subaccount_count,
-        count(*) as trade_count,
-        sum(amount_usd) as amount_usd,
-        sum(fee_amount) as fee_amount,
-        sum(base_delta_amount) as base_delta_amount,
-        sum(quote_delta_amount) as quote_delta_amount
-    from
-        {{ ref('silver__vertex_spot') }}
-    where 
-    1=1
+        '_USDC'
+    ) AS ticker_id,
+    symbol,
+    product_id,
+    COUNT(DISTINCT(tx_hash)) AS distinct_sequencer_batches,
+    COUNT(DISTINCT(trader)) AS distinct_trader_count,
+    COUNT(DISTINCT(subaccount)) AS distinct_subaccount_count,
+    COUNT(*) AS trade_count,
+    SUM(amount_usd) AS amount_usd,
+    SUM(fee_amount) AS fee_amount,
+    SUM(base_delta_amount) AS base_delta_amount,
+    SUM(quote_delta_amount) AS quote_delta_amount
+FROM
+    {{ ref('silver__vertex_spot') }}
+WHERE
+    1 = 1
+    AND _inserted_timestamp > COALESCE(
+
 {% if is_incremental() %}
-AND block_timestamp > (select MAX(inserted_timestamp) from {{this}})
+(
+SELECT
+    MAX(inserted_timestamp)
+FROM
+    {{ this }}),
 {% endif %}
-    group by 
-        1,2,3,4
- 
-),
+
+SYSDATE() - INTERVAL '1 hour', NULL)
+GROUP BY
+    1,
+    2,
+    3,
+    4),
 FINAL AS (
     SELECT
         s.hour,
@@ -104,8 +134,8 @@ FINAL AS (
         t.fee_amount,
         t.base_delta_amount,
         t.quote_delta_amount,
-        s.base_volume as base_volume_24h,
-        s.quote_volume as quote_volume_24h,
+        s.base_volume AS base_volume_24h,
+        s.quote_volume AS quote_volume_24h,
         s.contract_price,
         s.contract_price_currency,
         s.funding_rate,
@@ -123,10 +153,8 @@ FINAL AS (
         SYSDATE() AS modified_timestamp
     FROM
         market_stats s
-    LEFT JOIN
-        trade_snapshot t
-    ON
-        t.ticker_id = s.ticker_id
+        LEFT JOIN trade_snapshot t
+        ON t.ticker_id = s.ticker_id
 )
 SELECT
     *,

@@ -1,5 +1,6 @@
 {{ config(
     materialized = 'incremental',
+    full_refresh = false,
     incremental_strategy = 'delete+insert',
     unique_key = ['product_id','hour','price'],
     cluster_by = ['hour::DATE']

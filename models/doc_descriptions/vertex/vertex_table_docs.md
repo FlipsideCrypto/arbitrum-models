@@ -53,3 +53,9 @@ Liquidity data taken from Vertex's Orderbook API, showing amount of liquidity at
 All staking actions taken with the VRTX staking contract.
 
 {% enddocs %}
+
+{% docs vertex_ez_edge_trades  %}
+
+All edge trades paired with the associated trader/subaccount.
+
+{% enddocs %}
