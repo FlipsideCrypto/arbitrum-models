@@ -18,8 +18,8 @@ models:
         description: '{{ doc("arb_origin_from") }}'
       - name: ORIGIN_TO_ADDRESS
         description: '{{ doc("arb_origin_to") }}'
-      - name: FUNCTION_NAME
-        description: '{{ doc("vertex_staking_function") }}'
+      - name: STAKE_ACTION
+        description: '{{ doc("vertex_stake_action") }}'
       - name: SYMBOL
         description: '{{ doc("vertex_symbol") }}'
       - name: AMOUNT_UNADJ

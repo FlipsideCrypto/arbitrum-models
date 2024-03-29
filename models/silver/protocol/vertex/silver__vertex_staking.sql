@@ -16,16 +16,9 @@ WITH stake_pull AS (
         origin_from_address,
         origin_to_address,
         contract_address,
-        CASE
-            WHEN origin_function_signature = '0xa694fc3a' THEN 'stake'
-            WHEN origin_function_signature = '0x1d6ee8eb' THEN 'claim_usdc'
-            WHEN origin_function_signature = '0x0d51a300' THEN 'claim_usdc_and_stake'
-            WHEN origin_function_signature = '0x5de8c74d' THEN 'claim_vrtx'
-            WHEN origin_function_signature = '0x2e1a7d4d' THEN 'withdraw'
-            WHEN origin_function_signature = '0x59974e38' THEN 'distribute_rewards'
-            ELSE 'non_staking_tx'
-        END AS function_name,
-        raw_amount_precise AS amount_unadj,
+        from_address,
+        to_address,
+        raw_amount_precise::INT AS amount_unadj,
         amount,
         amount_usd,
         symbol,
@@ -34,7 +27,9 @@ WITH stake_pull AS (
     FROM
         {{ ref('silver__transfers') }}
     WHERE
-        origin_to_address = LOWER('0x5Be754aD77766089c4284d914F0cC37E8E3F669A')
+        to_address = LOWER('0x5Be754aD77766089c4284d914F0cC37E8E3F669A')
+        or
+        from_address = LOWER('0x5Be754aD77766089c4284d914F0cC37E8E3F669A')
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -46,6 +41,35 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
+),
+final as (
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
+        contract_address,
+        from_address,
+        to_address,
+        CASE
+            WHEN to_address = LOWER('0x5Be754aD77766089c4284d914F0cC37E8E3F669A') THEN 'stake'
+            WHEN from_address = LOWER('0x5Be754aD77766089c4284d914F0cC37E8E3F669A') THEN 'withdraw/claim'
+            ELSE NULL
+        END AS stake_action,
+        amount_unadj,
+        amount,
+        amount_usd,
+        symbol,
+        _log_id,
+        _inserted_timestamp
+    FROM
+        stake_pull
+    WHERE 
+        symbol IN ('USDC','VRTX')
+    AND
+        to_address <> from_address
 )
 SELECT
     *,
@@ -56,8 +80,7 @@ SELECT
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
 FROM
-    stake_pull 
-WHERE
-    function_name <> 'non_staking_tx' qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    final 
+    qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1

@@ -58,7 +58,7 @@ trade_snapshot AS (
         --may need to change this or just delete
         COUNT(DISTINCT(trader)) AS distinct_trader_count,
         COUNT(DISTINCT(subaccount)) AS distinct_subaccount_count,
-        COUNT(*) AS trade_count,
+        COUNT(DISTINCT(digest)) AS trade_count,
         SUM(amount_usd) AS amount_usd,
         SUM(fee_amount) AS fee_amount,
         SUM(base_delta_amount) AS base_delta_amount,
@@ -67,7 +67,7 @@ trade_snapshot AS (
         {{ ref('silver__vertex_perps') }}
         p
     WHERE
-        AND _inserted_timestamp > COALESCE(
+        _inserted_timestamp > COALESCE(
 
 {% if is_incremental() %}
 (
@@ -95,7 +95,7 @@ SELECT
     COUNT(DISTINCT(tx_hash)) AS distinct_sequencer_batches,
     COUNT(DISTINCT(trader)) AS distinct_trader_count,
     COUNT(DISTINCT(subaccount)) AS distinct_subaccount_count,
-    COUNT(*) AS trade_count,
+    COUNT(DISTINCT(digest)) AS trade_count,
     SUM(amount_usd) AS amount_usd,
     SUM(fee_amount) AS fee_amount,
     SUM(base_delta_amount) AS base_delta_amount,
@@ -103,8 +103,7 @@ SELECT
 FROM
     {{ ref('silver__vertex_spot') }}
 WHERE
-    1 = 1
-    AND _inserted_timestamp > COALESCE(
+    _inserted_timestamp > COALESCE(
 
 {% if is_incremental() %}
 (
@@ -124,8 +123,8 @@ FINAL AS (
     SELECT
         s.hour,
         s.ticker_id,
-        t.symbol,
-        t.product_id,
+        p.symbol,
+        p.product_id,
         t.distinct_sequencer_batches,
         t.distinct_trader_count,
         t.distinct_subaccount_count,
@@ -155,6 +154,8 @@ FINAL AS (
         market_stats s
         LEFT JOIN trade_snapshot t
         ON t.ticker_id = s.ticker_id
+        LEFT JOIN {{ ref('silver__vertex_dim_products') }} p 
+        ON p.ticker_id = p.ticker_id
 )
 SELECT
     *,

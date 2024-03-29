@@ -483,7 +483,7 @@ The open interest of the contract for the hour that the data was pulled, denomin
 Symbol of the target asset.
 {% enddocs %}
 
-{% docs vertex_staking_function %}
+{% docs vertex_stake_action %}
 
-The staking function taking place in the transaction, based on the origin_function_signature.
+The staking action with the VRTX staking address
 {% enddocs %}

@@ -26,7 +26,8 @@ AND _inserted_timestamp >= (
 ),
 edge_trades as (
     SELECT
-        event_index - 1 as trader_event,
+        event_index - 1 as trader_event_before,
+        event_index - 1 as trader_event_after,
         *
     FROM 
         perp_trades
@@ -38,14 +39,14 @@ final as (
         e.block_timestamp,
         e.tx_hash,
         e.event_index as edge_event_index,
-        p.event_index as user_event_index,
-        e.digest as edge_digest
+        e.trader_event_before as user_event_index,
+        e.digest as edge_digest,
         p.digest as user_digest,
         p.trader,
-        p.subaccount
+        p.subaccount,
         p.symbol,
         e.order_type as edge_order_type,
-        p.order_type as edge_order_type,
+        p.order_type as user_order_type,
         e.is_taker as edge_is_taker,
         p.is_taker as user_is_taker,
         e.trade_type as edge_trade_type,
@@ -65,9 +66,47 @@ final as (
     ON
         e.TX_HASH = p.tx_hash
     AND
-        e.trader_event = p.event_index 
+        e.trader_event_before = p.event_index 
     AND
         e.product_id = p.PRODUCT_ID
+    WHERE user_digest is not NULL
+UNION ALL
+    SELECT 
+        e.block_number,
+        e.block_timestamp,
+        e.tx_hash,
+        e.event_index as edge_event_index,
+        e.trader_event_after as user_event_index,
+        e.digest as edge_digest,
+        p.digest as user_digest,
+        p.trader,
+        p.subaccount,
+        p.symbol,
+        e.order_type as edge_order_type,
+        p.order_type as user_order_type,
+        e.is_taker as edge_is_taker,
+        p.is_taker as user_is_taker,
+        e.trade_type as edge_trade_type,
+        p.trade_type as user_trade_type,
+        e.amount_usd as edge_amount_usd,
+        p.amount_usd as user_amount_usd,
+        e.quote_delta_amount as edge_quote_delta,
+        p.quote_delta_amount as user_quote_delta,
+        e.base_delta_amount as edge_base_delta,
+        p.base_delta_amount as user_base_delta,
+        e._log_id,
+        e._inserted_timestamp
+    FROM
+        edge_trades e
+    LEFT JOIN
+        (SELECT * FROM perp_trades WHERE TRADER <> '0x0000000000000000000000000000000000000000') p
+    ON
+        e.TX_HASH = p.tx_hash
+    AND
+        e.trader_event_after = p.event_index 
+    AND
+        e.product_id = p.PRODUCT_ID
+    WHERE user_digest is not NULL
 )
 SELECT
     *,

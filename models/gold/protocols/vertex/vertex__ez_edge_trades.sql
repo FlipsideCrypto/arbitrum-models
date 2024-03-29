@@ -18,8 +18,13 @@ SELECT
     tx_hash,
     edge_event_index,
     user_event_index,
+    edge_digest,
+    user_digest,
     trader,
+    subaccount,
     symbol,
+    edge_order_type,
+    user_order_type,
     edge_is_taker,
     user_is_taker,
     edge_trade_type,
@@ -34,4 +39,4 @@ SELECT
     inserted_timestamp,
     modified_timestamp,
 FROM
-    {{ ref('silver__vertex_account_stats') }}
+    {{ ref('silver__vertex_edge_trades') }}
