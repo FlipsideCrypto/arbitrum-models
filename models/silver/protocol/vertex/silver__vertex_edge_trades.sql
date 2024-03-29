@@ -6,13 +6,16 @@
     tags = ['curated','reorg']
 ) }}
 
-with perp_trades as (
-    SELECT  
+WITH perp_trades AS (
+
+    SELECT
         *
     FROM
-        {{ ref('silver__vertex_perps') }} p 
-    WHERE 
-    1=1
+        {{ ref('silver__vertex_perps') }}
+        p
+    WHERE
+        1 = 1
+
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
@@ -24,89 +27,98 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 ),
-edge_trades as (
+edge_trades AS (
     SELECT
-        event_index - 1 as trader_event_before,
-        event_index - 1 as trader_event_after,
+        event_index - 1 AS trader_event_before,
+        event_index + 1 AS trader_event_after,
         *
-    FROM 
+    FROM
         perp_trades
-    WHERE TRADER = '0x0000000000000000000000000000000000000000'
+    WHERE
+        trader = '0x0000000000000000000000000000000000000000'
 ),
-final as (
-    SELECT 
+FINAL AS (
+    SELECT
         e.block_number,
         e.block_timestamp,
         e.tx_hash,
-        e.event_index as edge_event_index,
-        e.trader_event_before as user_event_index,
-        e.digest as edge_digest,
-        p.digest as user_digest,
+        e.event_index AS edge_event_index,
+        e.trader_event_before AS user_event_index,
+        e.digest AS edge_digest,
+        p.digest AS user_digest,
         p.trader,
         p.subaccount,
         p.symbol,
-        e.order_type as edge_order_type,
-        p.order_type as user_order_type,
-        e.is_taker as edge_is_taker,
-        p.is_taker as user_is_taker,
-        e.trade_type as edge_trade_type,
-        p.trade_type as user_trade_type,
-        e.amount_usd as edge_amount_usd,
-        p.amount_usd as user_amount_usd,
-        e.quote_delta_amount as edge_quote_delta,
-        p.quote_delta_amount as user_quote_delta,
-        e.base_delta_amount as edge_base_delta,
-        p.base_delta_amount as user_base_delta,
+        e.order_type AS edge_order_type,
+        p.order_type AS user_order_type,
+        e.is_taker AS edge_is_taker,
+        p.is_taker AS user_is_taker,
+        e.trade_type AS edge_trade_type,
+        p.trade_type AS user_trade_type,
+        e.amount_usd AS edge_amount_usd,
+        p.amount_usd AS user_amount_usd,
+        e.quote_delta_amount AS edge_quote_delta,
+        p.quote_delta_amount AS user_quote_delta,
+        e.base_delta_amount AS edge_base_delta,
+        p.base_delta_amount AS user_base_delta,
         e._log_id,
         e._inserted_timestamp
     FROM
         edge_trades e
-    LEFT JOIN
-        (SELECT * FROM perp_trades WHERE TRADER <> '0x0000000000000000000000000000000000000000') p
-    ON
-        e.TX_HASH = p.tx_hash
-    AND
-        e.trader_event_before = p.event_index 
-    AND
-        e.product_id = p.PRODUCT_ID
-    WHERE user_digest is not NULL
-UNION ALL
-    SELECT 
+        LEFT JOIN (
+            SELECT
+                *
+            FROM
+                perp_trades
+            WHERE
+                trader <> '0x0000000000000000000000000000000000000000'
+        ) p
+        ON e.tx_hash = p.tx_hash
+        AND e.trader_event_before = p.event_index
+        AND e.product_id = p.product_id
+    WHERE
+        user_digest IS NOT NULL
+    UNION ALL
+    SELECT
         e.block_number,
         e.block_timestamp,
         e.tx_hash,
-        e.event_index as edge_event_index,
-        e.trader_event_after as user_event_index,
-        e.digest as edge_digest,
-        p.digest as user_digest,
+        e.event_index AS edge_event_index,
+        e.trader_event_after AS user_event_index,
+        e.digest AS edge_digest,
+        p.digest AS user_digest,
         p.trader,
         p.subaccount,
         p.symbol,
-        e.order_type as edge_order_type,
-        p.order_type as user_order_type,
-        e.is_taker as edge_is_taker,
-        p.is_taker as user_is_taker,
-        e.trade_type as edge_trade_type,
-        p.trade_type as user_trade_type,
-        e.amount_usd as edge_amount_usd,
-        p.amount_usd as user_amount_usd,
-        e.quote_delta_amount as edge_quote_delta,
-        p.quote_delta_amount as user_quote_delta,
-        e.base_delta_amount as edge_base_delta,
-        p.base_delta_amount as user_base_delta,
+        e.order_type AS edge_order_type,
+        p.order_type AS user_order_type,
+        e.is_taker AS edge_is_taker,
+        p.is_taker AS user_is_taker,
+        e.trade_type AS edge_trade_type,
+        p.trade_type AS user_trade_type,
+        e.amount_usd AS edge_amount_usd,
+        p.amount_usd AS user_amount_usd,
+        e.quote_delta_amount AS edge_quote_delta,
+        p.quote_delta_amount AS user_quote_delta,
+        e.base_delta_amount AS edge_base_delta,
+        p.base_delta_amount AS user_base_delta,
         e._log_id,
         e._inserted_timestamp
     FROM
         edge_trades e
-    LEFT JOIN
-        (SELECT * FROM perp_trades WHERE TRADER <> '0x0000000000000000000000000000000000000000') p
-    ON
-        e.TX_HASH = p.tx_hash
-    AND
-        e.trader_event_after = p.event_index 
-    AND
-        e.product_id = p.PRODUCT_ID
-    WHERE user_digest is not NULL
+        LEFT JOIN (
+            SELECT
+                *
+            FROM
+                perp_trades
+            WHERE
+                trader <> '0x0000000000000000000000000000000000000000'
+        ) p
+        ON e.tx_hash = p.tx_hash
+        AND e.trader_event_after = p.event_index
+        AND e.product_id = p.product_id
+    WHERE
+        user_digest IS NOT NULL
 )
 SELECT
     *,
