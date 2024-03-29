@@ -30,8 +30,7 @@ AND _inserted_timestamp >= (
 edge_trades AS (
     SELECT
         event_index - 1 AS trader_event_before,
-        event_index + 1 AS trader_event_after,
-        *
+        event_index + 1 AS trader_event_after,*
     FROM
         perp_trades
     WHERE

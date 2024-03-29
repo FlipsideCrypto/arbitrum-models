@@ -73,7 +73,7 @@ trade_snapshot AS (
         3,
         4
 ),
-products as (
+products AS (
     SELECT
         *
     FROM
@@ -114,46 +114,48 @@ FINAL AS (
         INNER JOIN trade_snapshot t
         ON t.ticker_id = s.ticker_id
         AND s.hour = t.hour
-        LEFT JOIN products p 
+        LEFT JOIN products p
         ON s.ticker_id = p.ticker_id
+
 {% if is_incremental() %}
 UNION ALL
-    SELECT
-        s.hour,
-        s.ticker_id,
-        p.symbol,
-        p.product_id,
-        t.distinct_sequencer_batches,
-        t.distinct_trader_count,
-        t.distinct_subaccount_count,
-        t.trade_count,
-        t.amount_usd,
-        t.fee_amount,
-        t.base_delta_amount,
-        t.quote_delta_amount,
-        s.base_volume_24h,
-        s.quote_volume_24h,
-        s.contract_price,
-        s.contract_price_currency,
-        s.funding_rate,
-        s.index_price,
-        s.last_price,
-        s.mark_price,
-        s.next_funding_rate_timestamp,
-        s.open_interest,
-        s.open_interest_usd,
-        s.price_change_percent_24h,
-        s.product_type,
-        s.quote_currency,
-        s.quote_volume,
-        t._inserted_timestamp
-    FROM
-        {{this}} s
-        INNER JOIN trade_snapshot t
-        ON t.ticker_id = s.ticker_id
-        AND s.hour = t.hour
-        LEFT JOIN products p 
-        ON s.ticker_id = p.ticker_id
+SELECT
+    s.hour,
+    s.ticker_id,
+    p.symbol,
+    p.product_id,
+    t.distinct_sequencer_batches,
+    t.distinct_trader_count,
+    t.distinct_subaccount_count,
+    t.trade_count,
+    t.amount_usd,
+    t.fee_amount,
+    t.base_delta_amount,
+    t.quote_delta_amount,
+    s.base_volume_24h,
+    s.quote_volume_24h,
+    s.contract_price,
+    s.contract_price_currency,
+    s.funding_rate,
+    s.index_price,
+    s.last_price,
+    s.mark_price,
+    s.next_funding_rate_timestamp,
+    s.open_interest,
+    s.open_interest_usd,
+    s.price_change_percent_24h,
+    s.product_type,
+    s.quote_currency,
+    s.quote_volume,
+    t._inserted_timestamp
+FROM
+    {{ this }}
+    s
+    INNER JOIN trade_snapshot t
+    ON t.ticker_id = s.ticker_id
+    AND s.hour = t.hour
+    LEFT JOIN products p
+    ON s.ticker_id = p.ticker_id
 {% endif %}
 )
 SELECT
@@ -165,6 +167,6 @@ SELECT
     ) }} AS vertex_market_stats_id,
     '{{ invocation_id }}' AS _invocation_id
 FROM
-    FINAL qualify(ROW_NUMBER() over(PARTITION BY ticker_id, hour
+    FINAL qualify(ROW_NUMBER() over(PARTITION BY ticker_id, HOUR
 ORDER BY
     _inserted_timestamp DESC)) = 1

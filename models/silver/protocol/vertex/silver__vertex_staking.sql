@@ -18,7 +18,7 @@ WITH stake_pull AS (
         contract_address,
         from_address,
         to_address,
-        raw_amount_precise::INT AS amount_unadj,
+        raw_amount_precise :: INT AS amount_unadj,
         amount,
         amount_usd,
         symbol,
@@ -28,8 +28,7 @@ WITH stake_pull AS (
         {{ ref('silver__transfers') }}
     WHERE
         to_address = LOWER('0x5Be754aD77766089c4284d914F0cC37E8E3F669A')
-        or
-        from_address = LOWER('0x5Be754aD77766089c4284d914F0cC37E8E3F669A')
+        OR from_address = LOWER('0x5Be754aD77766089c4284d914F0cC37E8E3F669A')
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -42,7 +41,7 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 ),
-final as (
+FINAL AS (
     SELECT
         block_number,
         block_timestamp,
@@ -66,10 +65,12 @@ final as (
         _inserted_timestamp
     FROM
         stake_pull
-    WHERE 
-        symbol IN ('USDC','VRTX')
-    AND
-        to_address <> from_address
+    WHERE
+        symbol IN (
+            'USDC',
+            'VRTX'
+        )
+        AND to_address <> from_address
 )
 SELECT
     *,
@@ -80,7 +81,6 @@ SELECT
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
 FROM
-    final 
-    qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    FINAL qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1
