@@ -54,70 +54,31 @@ trade_snapshot AS (
         symbol,
         product_id,
         COUNT(DISTINCT(tx_hash)) AS distinct_sequencer_batches,
-        --may need to change this or just delete
         COUNT(DISTINCT(trader)) AS distinct_trader_count,
         COUNT(DISTINCT(subaccount)) AS distinct_subaccount_count,
         COUNT(DISTINCT(digest)) AS trade_count,
         SUM(amount_usd) AS amount_usd,
         SUM(fee_amount) AS fee_amount,
         SUM(base_delta_amount) AS base_delta_amount,
-        SUM(quote_delta_amount) AS quote_delta_amount
+        SUM(quote_delta_amount) AS quote_delta_amount,
+        MAX(_inserted_timestamp) AS _inserted_timestamp
     FROM
         {{ ref('silver__vertex_perps') }}
         p
     WHERE
-        _inserted_timestamp > COALESCE(
-
-{% if is_incremental() %}
-(
-SELECT
-    MAX(inserted_timestamp)
-FROM
-    {{ this }}),
-{% endif %}
-
-SYSDATE() - INTERVAL '1 hour', NULL)
-GROUP BY
-    1,
-    2,
-    3,
-    4
-UNION ALL
-SELECT
-    DATE_TRUNC('hour', SYSDATE()) AS HOUR,
-    CONCAT(
-        symbol,
-        '_USDC'
-    ) AS ticker_id,
-    symbol,
-    product_id,
-    COUNT(DISTINCT(tx_hash)) AS distinct_sequencer_batches,
-    COUNT(DISTINCT(trader)) AS distinct_trader_count,
-    COUNT(DISTINCT(subaccount)) AS distinct_subaccount_count,
-    COUNT(DISTINCT(digest)) AS trade_count,
-    SUM(amount_usd) AS amount_usd,
-    SUM(fee_amount) AS fee_amount,
-    SUM(base_delta_amount) AS base_delta_amount,
-    SUM(quote_delta_amount) AS quote_delta_amount
-FROM
-    {{ ref('silver__vertex_spot') }}
-WHERE
-    _inserted_timestamp > COALESCE(
-
-{% if is_incremental() %}
-(
-SELECT
-    MAX(inserted_timestamp)
-FROM
-    {{ this }}),
-{% endif %}
-
-SYSDATE() - INTERVAL '1 hour', NULL)
-GROUP BY
-    1,
-    2,
-    3,
-    4),
+        block_timestamp > SYSDATE() - INTERVAL '12 hour'
+    GROUP BY
+        1,
+        2,
+        3,
+        4
+),
+products as (
+    SELECT
+        *
+    FROM
+        {{ ref('silver__vertex_dim_products') }}
+),
 FINAL AS (
     SELECT
         s.hour,
@@ -147,22 +108,63 @@ FINAL AS (
         s.product_type,
         s.quote_currency,
         s.quote_volume,
-        SYSDATE() AS inserted_timestamp,
-        SYSDATE() AS modified_timestamp
+        t._inserted_timestamp,
     FROM
         market_stats s
-        LEFT JOIN trade_snapshot t
+        INNER JOIN trade_snapshot t
         ON t.ticker_id = s.ticker_id
-        LEFT JOIN {{ ref('silver__vertex_dim_products') }} p 
-        ON p.ticker_id = p.ticker_id
+        AND s.hour = t.hour
+        LEFT JOIN products p 
+        ON s.ticker_id = p.ticker_id
+{% if is_incremental() %}
+UNION ALL
+    SELECT
+        s.hour,
+        s.ticker_id,
+        p.symbol,
+        p.product_id,
+        t.distinct_sequencer_batches,
+        t.distinct_trader_count,
+        t.distinct_subaccount_count,
+        t.trade_count,
+        t.amount_usd,
+        t.fee_amount,
+        t.base_delta_amount,
+        t.quote_delta_amount,
+        s.base_volume_24h,
+        s.quote_volume_24h,
+        s.contract_price,
+        s.contract_price_currency,
+        s.funding_rate,
+        s.index_price,
+        s.last_price,
+        s.mark_price,
+        s.next_funding_rate_timestamp,
+        s.open_interest,
+        s.open_interest_usd,
+        s.price_change_percent_24h,
+        s.product_type,
+        s.quote_currency,
+        s.quote_volume,
+        t._inserted_timestamp
+    FROM
+        {{this}} s
+        INNER JOIN trade_snapshot t
+        ON t.ticker_id = s.ticker_id
+        AND s.hour = t.hour
+        LEFT JOIN products p 
+        ON s.ticker_id = p.ticker_id
+{% endif %}
 )
 SELECT
     *,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
     {{ dbt_utils.generate_surrogate_key(
-        ['ticker_id','inserted_timestamp']
+        ['ticker_id','hour']
     ) }} AS vertex_market_stats_id,
     '{{ invocation_id }}' AS _invocation_id
 FROM
-    FINAL qualify(ROW_NUMBER() over(PARTITION BY ticker_id
+    FINAL qualify(ROW_NUMBER() over(PARTITION BY ticker_id, hour
 ORDER BY
-    HOUR DESC)) = 1
+    _inserted_timestamp DESC)) = 1

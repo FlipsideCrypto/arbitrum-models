@@ -109,6 +109,7 @@ FINAL as (
     select
         t.subaccount,
         t.trader,
+        --ROW_NUMBER() over(ORDER BY sum(amount_usd) DESC) AS usd_volume_rank, not sure how to incorp w/ incremental, maybe just remove
         min(t.block_timestamp) as first_trade_timestamp,
         max(t.block_timestamp) as last_trade_timestamp,
         DATEDIFF(
