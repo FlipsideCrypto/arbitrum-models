@@ -275,6 +275,24 @@ The total amount of trades executed by the account
 
 {% enddocs %}
 
+{% docs vertex_trade_count_rank %}
+
+The rank against all accounts based on trade count volume.
+
+{% enddocs %}
+
+{% docs vertex_trade_count_24h %}
+
+The total amount of trades made in the last 24 hours.
+
+{% enddocs %}
+
+{% docs vertex_trade_count_rank_24h %}
+
+The rank against all accounts based on trade count volume in the last 24 hours.
+
+{% enddocs %}
+
 {% docs vertex_perp_trade_count %}
 
 The total amount of perpetual trades executed by the account
@@ -302,6 +320,24 @@ The total amount of sell/shorts on the account.
 {% docs vertex_total_usd_volume %}
 
 The total USD denominated volume of the account.
+
+{% enddocs %}
+
+{% docs vertex_total_usd_volume_24h %}
+
+The total USD denominated volume of the account in the last 24 hours.
+
+{% enddocs %}
+
+{% docs vertex_total_usd_volume_rank_24h %}
+
+The rank against all accounts based on the total USD denominated volume of the account in the last 24 hours.
+
+{% enddocs %}
+
+{% docs vertex_total_usd_volume_rank %}
+
+The rank against all accounts based on total usd volume on the account.
 
 {% enddocs %}
 

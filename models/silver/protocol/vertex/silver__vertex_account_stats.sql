@@ -51,6 +51,13 @@ new_subaccount_actions AS (
             FROM
                 {{ this }}
         )
+    UNION
+    SELECT
+        DISTINCT(subaccount)
+    FROM
+        {{this}}
+    WHERE
+        total_usd_volume_24h > 0
 ),
 {% endif %}
 
@@ -134,7 +141,6 @@ FINAL AS (
     SELECT
         t.subaccount,
         t.trader,
-        --ROW_NUMBER() over(ORDER BY sum(amount_usd) DESC) AS usd_volume_rank, not sure how to incorp w/ incremental, maybe just remove
         MIN(
             t.block_timestamp
         ) AS first_trade_timestamp,
@@ -147,6 +153,10 @@ FINAL AS (
             last_trade_timestamp
         ) AS account_age,
         COUNT(DISTINCT(digest)) AS trade_count,
+        COUNT(DISTINCT(CASE
+            WHEN t.block_timestamp >= SYSDATE() - INTERVAL '24 HOURS' 
+            THEN digest
+        END)) AS trade_count_24h,
         SUM(
             CASE
                 WHEN product_type = 'perp' THEN + 1
@@ -172,6 +182,12 @@ FINAL AS (
             END
         ) AS short_count,
         SUM(amount_usd) AS total_usd_volume,
+        SUM(
+            CASE
+                WHEN t.block_timestamp >= SYSDATE() - INTERVAL '24 HOURS' THEN amount_usd
+                ELSE 0
+            END
+        ) AS total_usd_volume_24h,
         AVG(amount_usd) AS avg_usd_trade_size,
         SUM(fee_amount) AS total_fee_amount,
         SUM(base_delta_amount) AS total_base_delta_amount,
