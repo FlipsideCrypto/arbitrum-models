@@ -111,7 +111,7 @@ FINAL AS (
         t._inserted_timestamp,
     FROM
         market_stats s
-        INNER JOIN trade_snapshot t
+        LEFT JOIN trade_snapshot t
         ON t.ticker_id = s.ticker_id
         AND s.hour = t.hour
         LEFT JOIN products p
@@ -151,7 +151,7 @@ SELECT
 FROM
     {{ this }}
     s
-    INNER JOIN trade_snapshot t
+    LEFT JOIN trade_snapshot t
     ON t.ticker_id = s.ticker_id
     AND s.hour = t.hour
     LEFT JOIN products p

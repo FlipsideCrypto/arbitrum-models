@@ -1,6 +1,8 @@
 version: 2
 models:
   - name: silver__vertex_market_depth
+    tests:
+      - vertex_missing_products_market_depth
     columns:
       - name: TICKER_ID
         tests:

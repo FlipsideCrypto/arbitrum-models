@@ -205,19 +205,30 @@ FINAL AS (
     FROM
         trades_union t
         LEFT JOIN liquidations l
-        ON t.trader = l.trader
-        AND t.subaccount = l.subaccount
+        ON t.subaccount = l.subaccount
     GROUP BY
         1,
         2
 )
 SELECT
-    *,
+    f.*,
     {{ dbt_utils.generate_surrogate_key(
-        ['subaccount','trader']
+        ['f.subaccount']
     ) }} AS vertex_account_id,
-    SYSDATE() AS inserted_timestamp,
+    COALESCE(
+    {% if is_incremental() %}
+        a.inserted_timestamp,
+    {% endif %}
+        SYSDATE(),
+        NULL
+    ) AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
 FROM
-    FINAL
+    FINAL f
+{% if is_incremental() %}
+LEFT JOIN
+    {{this}} a
+ON
+    a.subaccount = f.subaccount
+{% endif %}

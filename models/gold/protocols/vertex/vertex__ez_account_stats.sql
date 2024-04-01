@@ -54,4 +54,4 @@ SELECT
     modified_timestamp,
 FROM
     {{ ref('silver__vertex_account_stats') }}
-ORDER BY total_usd_volume_24h_rank DESC
+ORDER BY total_usd_volume_rank DESC
