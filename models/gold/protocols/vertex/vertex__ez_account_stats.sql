@@ -22,7 +22,7 @@ SELECT
     DENSE_RANK() over (
         ORDER BY
             trade_count DESC
-    ) AS trade_count_ramk,
+    ) AS trade_count_rank,
     trade_count_24h,
     DENSE_RANK() over (
         ORDER BY
