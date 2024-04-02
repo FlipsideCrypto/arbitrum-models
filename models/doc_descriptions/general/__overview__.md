@@ -60,11 +60,11 @@ There is more information on how to use dbt docs in the last section of this doc
 - [ez_liquidations](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.vertex__ez_liquidations)
 - [ez_perp_trades](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.vertex__ez_perp_trades)
 - [ez_spot_trades](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.vertex__ez_spot_trades)
-- [ez_perp_trades](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.vertex__ez_account_stats)
-- [ez_spot_trades](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.vertex__ez_edge_transactions)
-- [ez_perp_trades](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.vertex__ez_market_depth)
-- [ez_spot_trades](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.vertex__ez_market_stats)
-- [ez_spot_trades](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.vertex__ez_staking)
+- [ez_account_stats](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.vertex__ez_account_stats)
+- [ez_edge_transactions](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.vertex__ez_edge_transactions)
+- [ez_market_depth_stats](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.vertex__ez_market_depth_stats)
+- [ez_market_stats](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.vertex__ez_market_stats)
+- [ez_staking_actions](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.vertex__ez_staking_actions)
 
 
 ### NFT Tables (arbitrum.nft)
