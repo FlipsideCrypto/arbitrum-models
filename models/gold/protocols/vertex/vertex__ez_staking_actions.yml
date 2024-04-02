@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: vertex__ez_staking
+  - name: vertex__ez_staking_actions
     description: '{{ doc("vertex_ez_staking") }}'
 
     columns:

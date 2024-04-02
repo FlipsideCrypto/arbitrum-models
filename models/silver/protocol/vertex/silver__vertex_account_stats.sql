@@ -27,7 +27,7 @@ new_subaccount_actions AS (
     SELECT
         DISTINCT(subaccount)
     FROM
-        {{ ref('silver__vertex_perps') }}
+        {{ ref('silver__vertex_spot') }}
     WHERE
         _inserted_timestamp >= (
             SELECT
