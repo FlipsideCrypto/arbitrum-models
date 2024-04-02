@@ -6,8 +6,41 @@
   tags = ['reorg','curated']
 ) }}
 
-WITH deposits AS (
+WITH aave AS (
 
+    SELECT
+      tx_hash,
+      block_number,
+      block_timestamp,
+      event_index,
+      origin_from_address,
+      origin_to_address,
+      origin_function_signature,
+      contract_address,
+      depositor_address,
+      aave_token AS protocol_market,
+      aave_market AS token_address,
+      symbol AS token_symbol,
+      amount_unadj,
+      amount,
+      platform,
+      'arbitrum' AS blockchain,
+      _LOG_ID,
+      _INSERTED_TIMESTAMP
+    FROM
+      {{ ref('silver__aave_deposits') }}
+
+  {% if is_incremental() and 'aave' not in var('HEAL_CURATED_MODEL') %}
+  WHERE
+    _inserted_timestamp >= (
+      SELECT
+        MAX(_inserted_timestamp) - INTERVAL '36 hours'
+      FROM
+        {{ this }}
+    )
+  {% endif %}
+),
+radiant as (
   SELECT
     tx_hash,
     block_number,
@@ -18,8 +51,8 @@ WITH deposits AS (
     origin_function_signature,
     contract_address,
     depositor_address,
-    aave_token AS protocol_market,
-    aave_market AS token_address,
+    radiant_token AS protocol_market,
+    radiant_market AS token_address,
     symbol AS token_symbol,
     amount_unadj,
     amount,
@@ -28,177 +61,180 @@ WITH deposits AS (
     _LOG_ID,
     _INSERTED_TIMESTAMP
   FROM
-    {{ ref('silver__aave_deposits') }}
+    {{ ref('silver__radiant_deposits') }}
 
-{% if is_incremental() %}
-WHERE
-  _inserted_timestamp >= (
-    SELECT
-      MAX(_inserted_timestamp) - INTERVAL '36 hours'
-    FROM
-      {{ this }}
-  )
-{% endif %}
-UNION ALL
-SELECT
-  tx_hash,
-  block_number,
-  block_timestamp,
-  event_index,
-  origin_from_address,
-  origin_to_address,
-  origin_function_signature,
-  contract_address,
-  depositor_address,
-  radiant_token AS protocol_market,
-  radiant_market AS token_address,
-  symbol AS token_symbol,
-  amount_unadj,
-  amount,
-  platform,
-  'arbitrum' AS blockchain,
-  _LOG_ID,
-  _INSERTED_TIMESTAMP
-FROM
-  {{ ref('silver__radiant_deposits') }}
+  {% if is_incremental() and 'radiant' not in var('HEAL_CURATED_MODEL') %}
+  WHERE
+    _inserted_timestamp >= (
+      SELECT
+        MAX(_inserted_timestamp) - INTERVAL '36 hours'
+      FROM
+        {{ this }}
+    )
+  {% endif %}
+),
+comp as (
+  SELECT
+    tx_hash,
+    block_number,
+    block_timestamp,
+    event_index,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    contract_address,
+    depositor_address,
+    compound_market AS protocol_market,
+    token_address,
+    token_symbol,
+    amount_unadj,
+    amount,
+    compound_version AS platform,
+    'arbitrum' AS blockchain,
+    _LOG_ID,
+    _INSERTED_TIMESTAMP
+  FROM
+    {{ ref('silver__comp_deposits') }}
 
-{% if is_incremental() %}
-WHERE
-  _inserted_timestamp >= (
-    SELECT
-      MAX(_inserted_timestamp) - INTERVAL '36 hours'
-    FROM
-      {{ this }}
-  )
-{% endif %}
-UNION ALL
-SELECT
-  tx_hash,
-  block_number,
-  block_timestamp,
-  event_index,
-  origin_from_address,
-  origin_to_address,
-  origin_function_signature,
-  contract_address,
-  depositor_address,
-  compound_market AS protocol_market,
-  token_address,
-  token_symbol,
-  amount_unadj,
-  amount,
-  compound_version AS platform,
-  'arbitrum' AS blockchain,
-  _LOG_ID,
-  _INSERTED_TIMESTAMP
-FROM
-  {{ ref('silver__comp_deposits') }}
+  {% if is_incremental() and 'comp' not in var('HEAL_CURATED_MODEL') %}
+  WHERE
+    _inserted_timestamp >= (
+      SELECT
+        MAX(_inserted_timestamp) - INTERVAL '36 hours'
+      FROM
+        {{ this }}
+    )
+  {% endif %}
+),
+lodestar as (
+  SELECT
+    tx_hash,
+    block_number,
+    block_timestamp,
+    event_index,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    contract_address,
+    supplier AS depositor_address,
+    itoken AS protocol_market,
+    supplied_contract_addr AS token_address,
+    supplied_symbol AS token_symbol,
+    amount_unadj,
+    supplied_base_asset AS amount,
+    platform,
+    'arbitrum' AS blockchain,
+    _LOG_ID,
+    _INSERTED_TIMESTAMP
+  FROM
+    {{ ref('silver__lodestar_deposits') }}
 
-{% if is_incremental() %}
-WHERE
-  _inserted_timestamp >= (
-    SELECT
-      MAX(_inserted_timestamp) - INTERVAL '36 hours'
-    FROM
-      {{ this }}
-  )
-{% endif %}
-UNION ALL
-SELECT
-  tx_hash,
-  block_number,
-  block_timestamp,
-  event_index,
-  origin_from_address,
-  origin_to_address,
-  origin_function_signature,
-  contract_address,
-  supplier AS depositor_address,
-  itoken AS protocol_market,
-  supplied_contract_addr AS token_address,
-  supplied_symbol AS token_symbol,
-  amount_unadj,
-  supplied_base_asset AS amount,
-  platform,
-  'arbitrum' AS blockchain,
-  _LOG_ID,
-  _INSERTED_TIMESTAMP
-FROM
-  {{ ref('silver__lodestar_deposits') }}
+  {% if is_incremental() and 'lodestar' not in var('HEAL_CURATED_MODEL') %}
+  WHERE
+    _inserted_timestamp >= (
+      SELECT
+        MAX(_inserted_timestamp) - INTERVAL '36 hours'
+      FROM
+        {{ this }}
+    )
+  {% endif %}
+),
+dforce as (
+  SELECT
+    tx_hash,
+    block_number,
+    block_timestamp,
+    event_index,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    contract_address,
+    supplier AS depositor_address,
+    token_address AS protocol_market,
+    supplied_contract_addr AS token_address,
+    supplied_symbol AS token_symbol,
+    amount_unadj,
+    amount,
+    platform,
+    'arbitrum' AS blockchain,
+    _LOG_ID,
+    _INSERTED_TIMESTAMP
+  FROM
+    {{ ref('silver__dforce_deposits') }}
 
-{% if is_incremental() %}
-WHERE
-  _inserted_timestamp >= (
-    SELECT
-      MAX(_inserted_timestamp) - INTERVAL '36 hours'
-    FROM
-      {{ this }}
-  )
-{% endif %}
-UNION ALL
-SELECT
-  tx_hash,
-  block_number,
-  block_timestamp,
-  event_index,
-  origin_from_address,
-  origin_to_address,
-  origin_function_signature,
-  contract_address,
-  supplier AS depositor_address,
-  token_address AS protocol_market,
-  supplied_contract_addr AS token_address,
-  supplied_symbol AS token_symbol,
-  amount_unadj,
-  amount,
-  platform,
-  'arbitrum' AS blockchain,
-  _LOG_ID,
-  _INSERTED_TIMESTAMP
-FROM
-  {{ ref('silver__dforce_deposits') }}
+  {% if is_incremental() and 'dforce' not in var('HEAL_CURATED_MODEL') %}
+  WHERE
+    _inserted_timestamp >= (
+      SELECT
+        MAX(_inserted_timestamp) - INTERVAL '36 hours'
+      FROM
+        {{ this }}
+    )
+  {% endif %}
+),
+silo as (
+  SELECT
+    tx_hash,
+    block_number,
+    block_timestamp,
+    event_index,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    contract_address,
+    depositor_address,
+    silo_market AS protocol_market,
+    token_address,
+    token_symbol,
+    amount_unadj,
+    amount,
+    platform,
+    'arbitrum' AS blockchain,
+    _LOG_ID,
+    _INSERTED_TIMESTAMP
+  FROM
+    {{ ref('silver__silo_deposits') }}
 
-{% if is_incremental() %}
-WHERE
-  _inserted_timestamp >= (
-    SELECT
-      MAX(_inserted_timestamp) - INTERVAL '36 hours'
-    FROM
-      {{ this }}
-  )
-{% endif %}
-UNION ALL
-SELECT
-  tx_hash,
-  block_number,
-  block_timestamp,
-  event_index,
-  origin_from_address,
-  origin_to_address,
-  origin_function_signature,
-  contract_address,
-  depositor_address,
-  silo_market AS protocol_market,
-  token_address,
-  token_symbol,
-  amount_unadj,
-  amount,
-  platform,
-  'arbitrum' AS blockchain,
-  _LOG_ID,
-  _INSERTED_TIMESTAMP
-FROM
-  {{ ref('silver__silo_deposits') }}
-
-{% if is_incremental() %}
-WHERE
-  _inserted_timestamp >= (
-    SELECT
-      MAX(_inserted_timestamp) - INTERVAL '36 hours'
-    FROM
-      {{ this }}
-  )
-{% endif %}
+  {% if is_incremental() and 'aave' not in var('HEAL_CURATED_MODEL') %}
+  WHERE
+    _inserted_timestamp >= (
+      SELECT
+        MAX(_inserted_timestamp) - INTERVAL '36 hours'
+      FROM
+        {{ this }}
+    )
+  {% endif %}
+),
+deposits as (
+  SELECT
+    *
+  FROM
+    aave
+  UNION ALL
+  SELECT
+    *
+  FROM
+    radiant
+  UNION ALL
+  SELECT
+    *
+  FROM
+    comp
+  UNION ALL
+  SELECT
+    *
+  FROM
+    dforce
+  UNION ALL
+  SELECT
+    *
+  FROM
+    lodestar
+  UNION ALL
+  SELECT
+    *
+  FROM
+    silo
 ),
 FINAL AS (
   SELECT

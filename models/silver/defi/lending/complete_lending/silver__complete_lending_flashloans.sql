@@ -6,7 +6,7 @@
   tags = ['reorg','curated']
 ) }}
 
-WITH flashloans AS (
+WITH aave AS (
 
   SELECT
     tx_hash,
@@ -33,7 +33,7 @@ WITH flashloans AS (
   FROM
     {{ ref('silver__aave_flashloans') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'aave' not in var('HEAL_CURATED_MODEL') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -42,41 +42,53 @@ WHERE
       {{ this }}
   )
 {% endif %}
-UNION ALL
-SELECT
-  tx_hash,
-  block_number,
-  block_timestamp,
-  event_index,
-  origin_from_address,
-  origin_to_address,
-  origin_function_signature,
-  contract_address,
-  radiant_market AS token_address,
-  radiant_token AS protocol_token,
-  flashloan_amount_unadj,
-  flashloan_amount,
-  premium_amount_unadj,
-  premium_amount,
-  initiator_address,
-  target_address,
-  platform,
-  symbol AS token_symbol,
-  blockchain,
-  _LOG_ID,
-  _INSERTED_TIMESTAMP
-FROM
-  {{ ref('silver__radiant_flashloans') }}
+),
+radiant as (
+  SELECT
+    tx_hash,
+    block_number,
+    block_timestamp,
+    event_index,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    contract_address,
+    radiant_market AS token_address,
+    radiant_token AS protocol_token,
+    flashloan_amount_unadj,
+    flashloan_amount,
+    premium_amount_unadj,
+    premium_amount,
+    initiator_address,
+    target_address,
+    platform,
+    symbol AS token_symbol,
+    blockchain,
+    _LOG_ID,
+    _INSERTED_TIMESTAMP
+  FROM
+    {{ ref('silver__radiant_flashloans') }}
 
-{% if is_incremental() %}
-WHERE
-  _inserted_timestamp >= (
-    SELECT
-      MAX(_inserted_timestamp) - INTERVAL '36 hours'
-    FROM
-      {{ this }}
-  )
-{% endif %}
+  {% if is_incremental() and 'radiant' not in var('HEAL_CURATED_MODEL') %}
+  WHERE
+    _inserted_timestamp >= (
+      SELECT
+        MAX(_inserted_timestamp) - INTERVAL '36 hours'
+      FROM
+        {{ this }}
+    )
+  {% endif %}
+),
+flashloans as (
+  SELECT
+    *
+  FROM
+    aave
+  UNION ALL
+  SELECT
+    *
+  FROM
+    radiant
 ),
 FINAL AS (
   SELECT
