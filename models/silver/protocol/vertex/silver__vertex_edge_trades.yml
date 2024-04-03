@@ -42,6 +42,12 @@ models:
       - name: SYMBOL
         tests:
           - not_null
+      - name: EDGE_ORDER_TYPE
+        tests:
+          - not_null
+      - name: USER_ORDER_TYPE
+        tests:
+          - not_null
       - name: EDGE_IS_TAKER
         tests:
           - not_null
@@ -54,6 +60,54 @@ models:
       - name: USER_TRADE_TYPE
         tests:
           - not_null
+      - name: EDGE_PRICE_AMOUNT_UNADJ
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: USER_PRICE_AMOUNT_UNADJ
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: EDGE_PRICE_AMOUNT
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: USER_PRICE_AMOUNT
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: EDGE_AMOUNT_UNADJ
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: USER_AMOUNT_UNADJ
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: EDGE_AMOUNT
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: USER_AMOUNT
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
       - name: EDGE_AMOUNT_USD
         tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
@@ -66,6 +120,18 @@ models:
               column_type_list:
                 - NUMBER
                 - FLOAT
+      - name: EDGE_QUOTE_DELTA_UNADJ
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: USER_QUOTE_DELTA_UNADJ
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
       - name: EDGE_QUOTE_DELTA
         tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
@@ -73,6 +139,18 @@ models:
                 - NUMBER
                 - FLOAT
       - name: USER_QUOTE_DELTA
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: EDGE_BASE_DELTA_UNADJ
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: USER_BASE_DELTA_UNADJ
         tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
