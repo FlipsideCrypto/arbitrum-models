@@ -14,8 +14,6 @@ models:
         description: '{{ doc("arb_event_index") }}'
       - name: USER_EVENT_INDEX
         description: '{{ doc("arb_event_index") }}'
-      - name: SYMBOL
-        description: '{{ doc("vertex_symbol") }}'
       - name: EDGE_DIGEST
         description: '{{ doc("vertex_digest") }}'
       - name: USER_DIGEST
@@ -24,45 +22,65 @@ models:
         description: '{{ doc("vertex_trader") }}'
       - name: SUBACCOUNT
         description: '{{ doc("vertex_subaccount") }}'
-      - name: VERSION
-        description: '{{ doc("vertex_version") }}'
-      - name: TRADE_TYPE
-        description: '{{ doc("vertex_trade_type") }}'
+      - name: SYMBOL
+        description: '{{ doc("vertex_symbol") }}'
       - name: EDGE_ORDER_TYPE
         description: '{{ doc("vertex_order_type") }}'
       - name: USER_ORDER_TYPE
         description: '{{ doc("vertex_order_type") }}'
-      - name: MARKET_REDUCE_FLAG
-        description: '{{ doc("vertex_market_reduce_flag") }}'
-      - name: EXPIRATION
-        description: '{{ doc("vertex_expiration") }}'
-      - name: NONCE 
-        description: '{{ doc("vertex_nonce") }}'
-      - name: IS_TAKER
+      - name: EDGE_TRADE_TYPE
+        description: '{{ doc("vertex_trade_type") }}'
+      - name: USER_TRADE_TYPE
+        description: '{{ doc("vertex_trade_type") }}'
+      - name: EDGE_IS_TAKER
         description: '{{ doc("vertex_is_taker") }}'
-      - name: PRICE_AMOUNT_UNADJ
+      - name: USER_IS_TAKER
+        description: '{{ doc("vertex_is_taker") }}'
+      - name: EDGE_PRICE_AMOUNT_UNADJ
         description: '{{ doc("vertex_price_amount_unadj") }}'
-      - name: PRICE_AMOUNT
+      - name: USER_PRICE_AMOUNT_UNADJ
+        description: '{{ doc("vertex_price_amount_unadj") }}'
+      - name: EDGE_PRICE_AMOUNT
         description: '{{ doc("vertex_price_amount") }}'
-      - name: AMOUNT_UNADJ
+      - name: USER_PRICE_AMOUNT
+        description: '{{ doc("vertex_price_amount") }}'
+      - name: EDGE_AMOUNT_UNADJ
         description: '{{ doc("vertex_amount_unadj") }}'
-      - name: AMOUNT
+      - name: USER_AMOUNT_UNADJ
+        description: '{{ doc("vertex_amount_unadj") }}'
+      - name: EDGE_AMOUNT
         description: '{{ doc("vertex_amount") }}'
-      - name: AMOUNT_USD
+      - name: USER_AMOUNT
+        description: '{{ doc("vertex_amount") }}'
+      - name: EDGE_AMOUNT_USD
         description: '{{ doc("vertex_amount_usd") }}'
-      - name: FEE_AMOUNT_UNADJ
+      - name: USER_AMOUNT_USD
+        description: '{{ doc("vertex_amount_usd") }}'
+      - name: EDGE_FEE_AMOUNT_UNADJ
         description: '{{ doc("vertex_fee_amount_unadj") }}'
-      - name: FEE_AMOUNT
+      - name: USER_FEE_AMOUNT_UNADJ
+        description: '{{ doc("vertex_fee_amount_unadj") }}'
+      - name: EDGE_FEE_AMOUNT
         description: '{{ doc("vertex_fee_amount") }}'
-      - name: BASE_DELTA_AMOUNT_UNADJ
+      - name: USER_FEE_AMOUNT
+        description: '{{ doc("vertex_fee_amount") }}'
+      - name: EDGE_BASE_DELTA_AMOUNT_UNADJ
         description: '{{ doc("vertex_base_delta_amount_unadj") }}'
-      - name: BASE_DELTA_AMOUNT
+      - name: USER_BASE_DELTA_AMOUNT_UNADJ
+        description: '{{ doc("vertex_base_delta_amount_unadj") }}'
+      - name: EDGE_BASE_DELTA_AMOUNT
         description: '{{ doc("vertex_base_delta_amount") }}'
-      - name: QUOTE_DELTA_AMOUNT_UNADJ
+      - name: USER_BASE_DELTA_AMOUNT
+        description: '{{ doc("vertex_base_delta_amount") }}'
+      - name: EDGE_QUOTE_DELTA_AMOUNT_UNADJ
         description: '{{ doc("vertex_quote_delta_amount_unadj") }}'
-      - name: QUOTE_DELTA_AMOUNT
+      - name: USER_QUOTE_DELTA_AMOUNT_UNADJ
+        description: '{{ doc("vertex_quote_delta_amount_unadj") }}'
+      - name: EDGE_QUOTE_DELTA_AMOUNT
         description: '{{ doc("vertex_quote_delta_amount") }}'
-      - name: EZ_PERP_TRADES_ID
+      - name: USER_QUOTE_DELTA_AMOUNT
+        description: '{{ doc("vertex_quote_delta_amount") }}'
+      - name: EZ_EDGE_TRADES_ID
         description: '{{ doc("pk") }}'
       - name: INSERTED_TIMESTAMP
         description: '{{ doc("inserted_timestamp") }}'   
