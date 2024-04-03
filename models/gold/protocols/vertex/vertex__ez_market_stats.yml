@@ -31,7 +31,7 @@ models:
       - name: BASE_VOLUME_24H
         description: '{{ doc("vertex_base_volume_24h") }}'
       - name: QUOTE_VOLUME_24H
-        description: '{{ doc("vertex_base_volume_24h") }}'
+        description: '{{ doc("vertex_quote_volume_24h") }}'
       - name: FUNDING_RATE
         description: '{{ doc("vertex_funding_rate") }}'
       - name: INDEX_PRICE
@@ -40,7 +40,7 @@ models:
         description: '{{ doc("vertex_last_price") }}'
       - name: MARK_PRICE
         description: '{{ doc("vertex_mark_price") }}'
-      - name: NEXT_FUNDING_RATE
+      - name: NEXT_FUNDING_RATE_TIMESTAMP
         description: '{{ doc("vertex_next_funding_rate") }}'
       - name: OPEN_INTEREST
         description: '{{ doc("vertex_open_interest") }}'

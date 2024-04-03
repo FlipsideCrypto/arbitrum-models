@@ -38,7 +38,7 @@ SELECT
     product_type,
     quote_currency,
     quote_volume,
-    vertex_market_stats_id,
+    vertex_market_stats_id as ez_market_stats_id,
     inserted_timestamp,
     modified_timestamp
 FROM

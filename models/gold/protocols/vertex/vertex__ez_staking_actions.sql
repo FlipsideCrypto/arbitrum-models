@@ -27,9 +27,8 @@ SELECT
     amount_unadj,
     amount,
     amount_usd,
-    vertex_staking_id,
+    vertex_staking_id as ez_staking_id,
     inserted_timestamp,
-    modified_timestamp,
-    vertex_staking_id
+    modified_timestamp
 FROM
     {{ ref('silver__vertex_staking') }}

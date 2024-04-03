@@ -49,9 +49,9 @@ SELECT
     total_liquidation_amount,
     total_liquidation_amount_quote,
     total_liquidation_count,
-    vertex_account_id,
+    vertex_account_id as ez_account_stats_id,
     inserted_timestamp,
-    modified_timestamp,
+    modified_timestamp
 FROM
     {{ ref('silver__vertex_account_stats') }}
 ORDER BY total_usd_volume_rank DESC

@@ -6,7 +6,7 @@ models:
     columns:
       - name: SUBACCOUNT
         description: '{{ doc("vertex_subaccount") }}'
-      - name: TRADE
+      - name: TRADER
         description: '{{ doc("vertex_trader") }}'
       - name: FIRST_TRADE_TIMESTAMP
         description: '{{ doc("vertex_first_trade_timestamp") }}'
@@ -48,9 +48,11 @@ models:
         description: '{{ doc("vertex_total_quote_delta_amount") }}'
       - name: TOTAL_LIQUIDATION_AMOUNT
         description: '{{ doc("vertex_total_liquidation_amount") }}'
-      - name: TOTAL_LIQUIDATION_AMOUNT_COUNT
+      - name: TOTAL_LIQUIDATION_AMOUNT_QUOTE
+        description: '{{ doc("vertex_amount_quote_unadj") }}'
+      - name: TOTAL_LIQUIDATION_COUNT
         description: '{{ doc("vertex_total_liquidation_count") }}'
-      - name: VERTEX_ACCOUNT_ID
+      - name: EZ_ACCOUNT_STATS_ID
         description: '{{ doc("pk") }}' 
       - name: INSERTED_TIMESTAMP
         description: '{{ doc("inserted_timestamp") }}'   
