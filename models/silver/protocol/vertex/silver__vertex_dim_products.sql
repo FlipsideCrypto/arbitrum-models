@@ -129,6 +129,8 @@ FINAL AS (
                 '-'
             ) [0]
         END AS health_group_symbol,
+        p.taker_fee,
+        p.maker_fee,
         C.version,
         _inserted_timestamp,
         _log_id
