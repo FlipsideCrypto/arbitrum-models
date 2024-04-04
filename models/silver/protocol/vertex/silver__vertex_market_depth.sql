@@ -2,7 +2,8 @@
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
     unique_key = ['product_id','hour','price'],
-    cluster_by = ['hour::DATE']
+    cluster_by = ['hour::DATE'],
+    tags = 'curated'
 ) }}
 
 WITH market_depth AS ({% for item in range(55) %}
