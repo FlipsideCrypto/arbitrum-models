@@ -2,7 +2,8 @@
     materialized = 'incremental',
     full_refresh = false,
     unique_key = ['ticker_id','hour'],
-    cluster_by = ['HOUR::DATE']
+    cluster_by = ['HOUR::DATE'],
+    tags = 'curated'
 ) }}
 
 WITH api_pull AS (
