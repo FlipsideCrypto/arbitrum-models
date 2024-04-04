@@ -24,7 +24,7 @@ SELECT
     round_price_1,
     round_price_10,
     round_price_100,
-    vertex_market_depth_id as ez_market_depth_id,
+    vertex_market_depth_id as ez_market_depth_stats_id,
     inserted_timestamp,
     modified_timestamp
 FROM

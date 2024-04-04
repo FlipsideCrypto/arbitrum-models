@@ -26,7 +26,7 @@ models:
         description: '{{ doc("vertex_orderbook_round_price_10") }}'
       - name: ROUND_PRICE_100
         description: '{{ doc("vertex_orderbook_round_price_100") }}'
-      - name: EZ_MARKET_DEPTH_ID
+      - name: EZ_MARKET_DEPTH_STATS_ID
         description: '{{ doc("pk") }}'
       - name: INSERTED_TIMESTAMP
         description: '{{ doc("inserted_timestamp") }}'   
