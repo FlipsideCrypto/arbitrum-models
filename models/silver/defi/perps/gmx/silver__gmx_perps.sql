@@ -39,6 +39,11 @@ lat_flat AS (
         event_index,
         _log_id,
         _inserted_timestamp,
+        decoded_flat:eventName as event_name,
+        decoded_flat:eventNameHash as event_name_hash,
+        decoded_flat:msgSender as msg_sender,
+        decoded_flat:topic1 as topic_1,
+        decoded_flat:topic2 as topic_2,
         event.value [0] :: variant AS event_data
     FROM
         decoded_logs,
@@ -58,6 +63,11 @@ lat_flat_2 AS (
         event_index,
         _log_id,
         _inserted_timestamp,
+        event_name,
+        event_name_hash,
+        msg_sender,
+        topic_1,
+        topic_2,
         UPPER(
             VALUE [0] :: STRING
         ) AS key,
@@ -86,6 +96,11 @@ column_format AS (
         event_index,
         _log_id,
         _inserted_timestamp,
+        event_name,
+        event_name_hash,
+        msg_sender,
+        topic_1,
+        topic_2,
         "'ACCOUNT'" AS account,
         "'RECEIVER'" AS reciever,
         "'CALLBACKCONTRACT'" AS callback_contract,
@@ -110,19 +125,26 @@ column_format AS (
         pivot
 )
 SELECT
-    block_number,
-    block_timestamp,
-    tx_hash,
-    origin_function_signature,
-    origin_from_address,
-    origin_to_address,
-    contract_address,
-    event_index,
+    a.block_number,
+    a.block_timestamp,
+    a.tx_hash,
+    a.origin_function_signature,
+    a.origin_from_address,
+    a.origin_to_address,
+    a.contract_address,
+    a.event_index,
     account,
     reciever,
     callback_contract,
     ui_fee_reciever,
     market,
+    p.symbol,
+    p.address as underlying_address,
+    event_name,
+    event_name_hash,
+    msg_sender,
+    topic_1,
+    topic_2,
     initial_collateral_token,
     order_type,
     decrease_position_swap_type,
@@ -158,7 +180,11 @@ SELECT
     should_unwrap_native_token,
     is_frozen,
     key,
-    _log_id,
-    _inserted_timestamp
+    a._log_id,
+    a._inserted_timestamp
 FROM
-    column_format
+    column_format a
+LEFT JOIN
+    {{ ref('silver__gmx_dim_products') }} p 
+ON
+    p.market_address = a.market
