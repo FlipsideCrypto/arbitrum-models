@@ -39,11 +39,11 @@ lat_flat AS (
         event_index,
         _log_id,
         _inserted_timestamp,
-        decoded_flat:eventName as event_name,
-        decoded_flat:eventNameHash as event_name_hash,
-        decoded_flat:msgSender as msg_sender,
-        decoded_flat:topic1 as topic_1,
-        decoded_flat:topic2 as topic_2,
+        decoded_flat:eventName :: STRING as event_name,
+        decoded_flat:eventNameHash :: STRING as event_name_hash,
+        decoded_flat:msgSender :: STRING as msg_sender,
+        decoded_flat:topic1 :: STRING as topic_1,
+        decoded_flat:topic2 :: STRING as topic_2,
         event.value [0] :: variant AS event_data
     FROM
         decoded_logs,

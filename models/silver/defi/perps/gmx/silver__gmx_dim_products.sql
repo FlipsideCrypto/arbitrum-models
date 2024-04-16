@@ -26,9 +26,9 @@ product_metadata AS (
         LOWER(
             VALUE :address
         ) AS address,
-        VALUE :decimals AS decimals,
-        VALUE :symbol AS symbol,
-        VALUE :synthetic AS synthetic
+        VALUE :decimals:: INT AS decimals,
+        VALUE :symbol:: STRING AS symbol,
+        VALUE :synthetic:: STRING AS synthetic
     FROM
         api_lateral_flatten
 ),
