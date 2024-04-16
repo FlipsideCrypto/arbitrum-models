@@ -185,6 +185,6 @@ SELECT
 FROM
     column_format a
 LEFT JOIN
-    {{ ref('silver__gmx_dim_products') }} p 
+    {{ ref('silver__gmx_dim_products_v2') }} p 
 ON
     p.market_address = a.market
