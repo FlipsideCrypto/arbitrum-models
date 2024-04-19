@@ -25,6 +25,7 @@ lat_flat AS (
 ),
 protocol_expand AS (
     SELECT
+        VALUE :defillamaId :: STRING AS protocol_id,
         VALUE :category :: STRING AS category,
         VALUE :name :: STRING AS NAME,
         VALUE :mcap :: FLOAT AS market_cap,
@@ -41,6 +42,7 @@ protocol_expand AS (
 ),
 chain_expand AS (
     SELECT
+        protocol_id,
         category,
         NAME,
         market_cap,
@@ -61,6 +63,7 @@ chain_expand AS (
 ),
 FINAL AS (
     SELECT
+        protocol_id,
         category,
         NAME,
         market_cap,
