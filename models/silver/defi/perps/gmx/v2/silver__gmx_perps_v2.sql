@@ -12,8 +12,11 @@ WITH gmx_events AS (
         *
     FROM
         {{ ref('silver__gmx_events_v2') }}
-    WHERE 
-        event_name in ('OrderCreated','OrderExecuted')
+    WHERE
+        event_name IN (
+            'OrderCreated',
+            'OrderExecuted'
+        )
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -28,83 +31,117 @@ AND _inserted_timestamp >= (
 ),
 parse_data AS (
     SELECT
-        block_number,
-        block_timestamp,
-        tx_hash,
-        origin_function_signature,
-        origin_from_address,
-        origin_to_address,
-        contract_address,
-        event_index,
-        _log_id,
-        _inserted_timestamp,
+        A.block_number,
+        A.block_timestamp,
+        A.tx_hash,
+        A.origin_function_signature,
+        A.origin_from_address,
+        A.origin_to_address,
+        A.contract_address,
+        A.event_index,
+        A._log_id,
+        A._inserted_timestamp,
         event_name,
         event_name_hash,
         msg_sender,
         topic_1,
         topic_2,
-        event_data[0][0][0][1] as account,
-        event_data[0][0][1][1] as receiver,
-        event_data[0][0][2][1] as call_back_contract,
-        event_data[0][0][3][1] as ui_fee_receiver,
-        event_data[0][0][4][1] as market,
-        event_data[0][0][5][1] as initial_collateral_token,
-        event_data[0][1][0][1][0] as swap_path,
-        event_data[1][0][0][1] as order_type,
-        event_data[1][0][1][1] as decrease_position_swap_type,
-        event_data[1][0][2][1] as size_delta_usd,
-        event_data[1][0][3][1] as initial_collateral_delta_amount,
-        event_data[1][0][4][1] as trigger_price,
-        event_data[1][0][5][1] as acceptable_price,
-        event_data[1][0][6][1] as execution_fee,
-        event_data[1][0][7][1] as call_back_gas_limit,
-        event_data[1][0][8][1] as min_output_amount,
-        event_data[1][0][9][1] as updated_at_block,
-        event_data[3][0][0][1] as is_long,
-        event_data[3][0][1][1] as should_unwrap_native_token,
-        event_data[3][0][2][1] as is_frozen,
-        event_data[4][0][0][1] as key,
+        event_data [0] [0] [0] [1] :: STRING AS account,
+        event_data [0] [0] [1] [1] :: STRING AS receiver,
+        event_data [0] [0] [2] [1] :: STRING AS call_back_contract,
+        event_data [0] [0] [3] [1] :: STRING AS ui_fee_receiver,
+        event_data [0] [0] [4] [1] :: STRING AS market,
+        p.symbol,
+        p.decimals,
+        p.address AS underlying_address,
+        event_data [0] [0] [5] [1] :: STRING AS initial_collateral_token,
+        event_data [0] [1] [0] [1] [0] :: STRING AS swap_path,
+        event_data [1] [0] [0] [1] :: INT AS order_type,
+        event_data [1] [0] [1] [1] AS decrease_position_swap_type,
+        event_data [1] [0] [2] [1] AS size_delta_usd,
+        event_data [1] [0] [3] [1] AS initial_collateral_delta_amount,
+        event_data [1] [0] [4] [1] AS trigger_price,
+        event_data [1] [0] [5] [1] AS acceptable_price,
+        event_data [1] [0] [6] [1] AS execution_fee,
+        event_data [1] [0] [7] [1] AS call_back_gas_limit,
+        event_data [1] [0] [8] [1] AS min_output_amount,
+        event_data [1] [0] [9] [1] :: INT AS updated_at_block,
+        event_data [3] [0] [0] [1] AS is_long,
+        event_data [3] [0] [1] [1] AS should_unwrap_native_token,
+        event_data [3] [0] [2] [1] AS is_frozen,
+        event_data [4] [0] [0] [1] AS key,
+    FROM
+        gmx_events A
+        LEFT JOIN {{ ref('silver__gmx_dim_products_v2') }}
+        p
+        ON p.market_address = event_data [0] [0] [4] [1] :: STRING
+    WHERE
+        event_name = 'OrderCreated'
+        AND event_data [1] [0] [0] [1] :: INT NOT IN (
+            7,
+            0,
+            1
+        ) --liquidation & Swap increase + decrease
+),
+contracts AS (
+    SELECT
+        contract_address,
+        token_symbol,
+        token_decimals
+    FROM
+        {{ ref('silver__contracts') }}
+    WHERE
+        contract_address IN (
+            SELECT
+                DISTINCT(initial_collateral_token)
+            FROM
+                parse_data
+            UNION
+            SELECT
+                DISTINCT(underlying_address)
+            FROM
+                parse_data
+        )
+),
+executed_orders AS (
+    SELECT
+        event_data [4] [0] [0] [1] AS key
     FROM
         gmx_events
     WHERE
-        event_name = 'OrderCreated'
-),
-executed_orders as (
-select 
-    event_data[4][0][0][1] as key
-from 
-    gmx_events
-where 
-    event_name = 'OrderExecuted'
+        event_name = 'OrderExecuted'
 )
 SELECT
-    a.block_number,
-    a.block_timestamp,
-    a.tx_hash,
-    a.origin_function_signature,
-    a.origin_from_address,
-    a.origin_to_address,
-    a.contract_address,
-    a.event_index,
+    A.block_number,
+    A.block_timestamp,
+    A.tx_hash,
+    A.origin_function_signature,
+    A.origin_from_address,
+    A.origin_to_address,
+    A.contract_address,
+    A.event_index,
+    event_name,
     account,
     receiver,
-    call_back_contract,
-    ui_fee_receiver,
     market,
-    p.symbol,
-    p.address as underlying_address,
-    event_name,
+    symbol,
+    underlying_address,
     event_name_hash,
-    msg_sender,
     topic_1,
-    topic_2,
     initial_collateral_token,
-    order_type,
+    C.token_symbol AS initial_collateral_token_symbol,
     CASE
-        WHEN e.key is not null THEN 'executed'
+        WHEN order_type = 2 THEN 'market_increase'
+        WHEN order_type = 3 THEN 'limit_increase'
+        WHEN order_type = 4 THEN 'market_decrease'
+        WHEN order_type = 5 THEN 'limit_decrease'
+        WHEN order_type = 6 THEN 'stop_loss_decrease'
+    END AS order_type,
+    CASE
+        WHEN e.key IS NOT NULL THEN 'executed'
         ELSE 'not-executed'
-    END as order_execution,
-    decrease_position_swap_type,
+    END AS order_execution,
+    decrease_position_swap_type :: INT,
     size_delta_usd AS size_delta_usd_unadj,
     size_delta_usd :: FLOAT / pow(
         10,
@@ -113,39 +150,27 @@ SELECT
     initial_collateral_delta_amount AS initial_collateral_delta_amount_unadj,
     initial_collateral_delta_amount :: FLOAT / pow(
         10,
-        6
+        C.token_decimals
     ) AS initial_collateral_delta_amount,
-    trigger_price as trigger_price_unadj,
-    trigger_price ::FLOAT / pow(
+    trigger_price AS trigger_price_unadj,
+    trigger_price :: FLOAT / pow(10, (30 - decimals)) AS trigger_price,
+    acceptable_price AS acceptable_price_unadj,
+    acceptable_price :: FLOAT / pow(10, (30 - decimals)) AS acceptable_price,
+    execution_fee AS execution_fee_unadj,
+    execution_fee :: FLOAT / pow(
         10,
-        12
-    ) as trigger_price,
-    acceptable_price as acceptable_price_unadj,
-    acceptable_price ::FLOAT / pow(
-        10,
-        12
-    ) AS acceptable_price,
-    execution_fee as execution_fee_unadj,
-    execution_fee ::FLOAT / pow(
-        10,
-        12
+        18
     ) AS execution_fee,
-    call_back_gas_limit,
-    min_output_amount,
     updated_at_block,
-    is_long,
-    should_unwrap_native_token,
-    is_frozen,
-    a.key,
-    a._log_id,
-    a._inserted_timestamp
+    is_long :: BOOLEAN,
+    should_unwrap_native_token :: BOOLEAN,
+    is_frozen :: BOOLEAN,
+    A.key,
+    A._log_id,
+    A._inserted_timestamp
 FROM
-    parse_data a
-LEFT JOIN
-    executed_orders e
-ON
-    a.key = e.key
-LEFT JOIN
-    {{ ref('silver__gmx_dim_products_v2') }} p 
-ON
-    p.market_address = a.market
+    parse_data A
+    LEFT JOIN executed_orders e
+    ON A.key = e.key
+    LEFT JOIN contracts C
+    ON C.contract_address = A.initial_collateral_token
