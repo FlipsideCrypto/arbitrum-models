@@ -71,7 +71,7 @@ There is more information on how to use dbt docs in the last section of this doc
 - [ez_nft_sales](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.nft__ez_nft_sales)
 - [ez_nft_transfers](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.nft__ez_nft_transfers)
 
-### Stats Tables (ethereum.stats)
+### Stats Tables (arbitrum.stats)
 - [ez_core_metrics_hourly](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.stats__ez_core_metrics_hourly)
 
 ## **Helpful User-Defined Functions (UDFs)**
