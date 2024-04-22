@@ -29,7 +29,7 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 ),
-parse_data AS (
+lat_flat AS (
     SELECT
         block_number,
         block_timestamp,
@@ -46,22 +46,46 @@ parse_data AS (
         msg_sender,
         topic_1,
         topic_2,
-        event_data[0][0][0][1] as market,
-        event_data[0][0][1][1] as receiver,
-        event_data[0][0][2][1] as token_in,
-        event_data[0][0][3][1] as token_out,
-        event_data[1][0][0][1] as token_in_price,
-        event_data[1][0][1][1] as token_out_price,
-        event_data[1][0][2][1] as amount_in,
-        event_data[1][0][3][1] as amount_in_after_fees,
-        event_data[1][0][4][1] as amount_out,
-        event_data[2][0][0][1] as price_impact_usd,
-        event_data[2][0][0][1] as price_impact_amount,
-        event_data[4][0][0][1] as key
+        event.value [0] :: variant AS event_data
     FROM
-        gmx_events
+        gmx_events,
+        LATERAL FLATTEN(
+            input => event_data
+        ) event
     WHERE
         event_name = 'SwapInfo'
+),
+lat_flat_2 AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
+        contract_address,
+        event_index,
+        _log_id,
+        _inserted_timestamp,
+        event_name,
+        event_name_hash,
+        msg_sender,
+        topic_1,
+        UPPER(
+            VALUE [0] :: STRING
+        ) AS key,
+        VALUE [1] :: STRING AS VALUE
+    FROM
+        lat_flat,
+        LATERAL FLATTEN (
+            input => event_data
+        )
+),
+pivot AS (
+    SELECT
+        *
+    FROM
+        lat_flat_2 pivot (MAX(VALUE) FOR key IN('MARKET', 'RECEIVER', 'TOKENIN', 'TOKENOUT', 'TOKENINPRICE', 'TOKENOUTPRICE', 'AMOUNTIN', 'AMOUNTINAFTERFEES', 'AMOUNTOUT', 'PRICEIMPACTUSD', 'PRICEIMPACTAMOUNT', 'ORDERKEY'))
 ),
 contracts AS (
     SELECT
@@ -73,14 +97,14 @@ contracts AS (
     WHERE
         contract_address IN (
             SELECT
-                DISTINCT(token_in)
+                DISTINCT("'TOKENIN'")
             FROM
-                parse_data
+                pivot
             UNION ALL
             SELECT
-                DISTINCT(token_out)
+                DISTINCT("'TOKENOUT'")
             FROM
-                parse_data
+                pivot
         )
 ),
 column_format AS (
@@ -99,28 +123,28 @@ column_format AS (
         event_name_hash,
         msg_sender,
         topic_1,
-        market,
-        receiver,
-        token_in,
-        token_in_price,
-        amount_in,
-        amount_in_after_fees,
+        "'MARKET'" AS market,
+        "'RECEIVER'" AS reciever,
+        "'TOKENIN'" AS token_in,
+        "'TOKENINPRICE'" AS token_in_price,
+        "'AMOUNTIN'" AS amount_in,
+        "'AMOUNTINAFTERFEES'" AS amount_in_after_fees,
         c1.token_symbol AS token_in_symbol,
         c1.token_decimals AS token_in_decimals,
-        token_out,
-        token_out_price,
-        amount_out,
+        "'TOKENOUT'" AS token_out,
+        "'TOKENOUTPRICE'" AS token_out_price,
+        "'AMOUNTOUT'" AS amount_out,
         c2.token_symbol AS token_out_symbol,
         c2.token_decimals AS token_out_decimals,
-        price_impact_usd,
-        price_impact_amount,
-        key
+        "'PRICEIMPACTUSD'" AS price_impact_usd,
+        "'PRICEIMPACTAMOUNT'" AS price_impact_amount,
+        "'ORDERKEY'" AS key
     FROM
-        parse_data p
+        pivot p
         LEFT JOIN contracts c1
-        ON c1.contract_address = p.token_in
+        ON c1.contract_address = p."'TOKENIN'"
         LEFT JOIN contracts c2
-        ON c2.contract_address = p.token_out
+        ON c2.contract_address = p."'TOKENOUT'"
 ),
 executed_orders AS (
     SELECT
@@ -142,7 +166,7 @@ SELECT
     market,
     p.symbol,
     p.address AS underlying_address,
-    receiver,
+    reciever,
     CASE
         WHEN e.key IS NOT NULL THEN 'executed'
         ELSE 'not-executed'

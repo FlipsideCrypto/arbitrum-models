@@ -16,7 +16,16 @@ WITH gmx_events AS (
         event_name in ('PositionDecrease')
     AND
         event_data[1][0][16][1]::INT = 7
-
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        ) - INTERVAL '12 hours'
+    FROM
+        {{ this }}
+)
+{% endif %}
 ),
 parse_event_data AS (
     SELECT
@@ -150,7 +159,9 @@ SELECT
     ) AS uncapped_base_pnl_usd,
     is_long,
     order_key,
-    position_key
+    position_key,
+    a._log_id,
+    a._inserted_timestamp
 FROM
     parse_event_data a
 LEFT JOIN 

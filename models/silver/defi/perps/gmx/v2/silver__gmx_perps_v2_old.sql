@@ -26,7 +26,7 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 ),
-parse_data AS (
+lat_flat AS (
     SELECT
         block_number,
         block_timestamp,
@@ -43,31 +43,87 @@ parse_data AS (
         msg_sender,
         topic_1,
         topic_2,
-        event_data[0][0][0][1] as account,
-        event_data[0][0][1][1] as receiver,
-        event_data[0][0][2][1] as call_back_contract,
-        event_data[0][0][3][1] as ui_fee_receiver,
-        event_data[0][0][4][1] as market,
-        event_data[0][0][5][1] as initial_collateral_token,
-        event_data[0][1][0][1][0] as swap_path,
-        event_data[1][0][0][1] as order_type,
-        event_data[1][0][1][1] as decrease_position_swap_type,
-        event_data[1][0][2][1] as size_delta_usd,
-        event_data[1][0][3][1] as initial_collateral_delta_amount,
-        event_data[1][0][4][1] as trigger_price,
-        event_data[1][0][5][1] as acceptable_price,
-        event_data[1][0][6][1] as execution_fee,
-        event_data[1][0][7][1] as call_back_gas_limit,
-        event_data[1][0][8][1] as min_output_amount,
-        event_data[1][0][9][1] as updated_at_block,
-        event_data[3][0][0][1] as is_long,
-        event_data[3][0][1][1] as should_unwrap_native_token,
-        event_data[3][0][2][1] as is_frozen,
-        event_data[4][0][0][1] as key,
+        event.value [0] :: variant AS event_data
     FROM
-        gmx_events
+        gmx_events,
+        LATERAL FLATTEN(
+            input => event_data
+        ) event
     WHERE
         event_name = 'OrderCreated'
+),
+lat_flat_2 AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
+        contract_address,
+        event_index,
+        _log_id,
+        _inserted_timestamp,
+        event_name,
+        event_name_hash,
+        msg_sender,
+        topic_1,
+        topic_2,
+        UPPER(
+            VALUE [0] :: STRING
+        ) AS key,
+        VALUE [1] :: STRING AS VALUE
+    FROM
+        lat_flat,
+        LATERAL FLATTEN (
+            input => event_data
+        )
+),
+pivot AS (
+    SELECT
+        *
+    FROM
+        lat_flat_2 pivot (MAX(VALUE) FOR key IN('ACCOUNT', 'RECEIVER', 'CALLBACKCONTRACT', 'UIFEERECEIVER', 'MARKET', 'INITIALCOLLATERALTOKEN', 'ORDERTYPE', 'DECREASEPOSITIONSWAPTYPE', 'SIZEDELTAUSD', 'INITIALCOLLATERALDELTAAMOUNT', 'TRIGGERPRICE', 'ACCEPTABLEPRICE', 'EXECUTIONFEE', 'CALLBACKGASLIMIT', 'MINOUTPUTAMOUNT', 'UPDATEDATBLOCK', 'ISLONG', 'SHOULDUNWRAPNATIVETOKEN', 'ISFROZEN', 'KEY'))
+),
+column_format AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
+        contract_address,
+        event_index,
+        _log_id,
+        _inserted_timestamp,
+        event_name,
+        event_name_hash,
+        msg_sender,
+        topic_1,
+        topic_2,
+        "'ACCOUNT'" AS account,
+        "'RECEIVER'" AS reciever,
+        "'CALLBACKCONTRACT'" AS callback_contract,
+        "'UIFEERECEIVER'" AS ui_fee_reciever,
+        "'MARKET'" AS market,
+        "'INITIALCOLLATERALTOKEN'" AS initial_collateral_token,
+        "'ORDERTYPE'" AS order_type,
+        "'DECREASEPOSITIONSWAPTYPE'" AS decrease_position_swap_type,
+        "'SIZEDELTAUSD'" AS size_delta_usd,
+        "'INITIALCOLLATERALDELTAAMOUNT'" AS initial_collateral_delta_amount,
+        "'TRIGGERPRICE'" AS trigger_price,
+        "'ACCEPTABLEPRICE'" AS acceptable_price,
+        "'EXECUTIONFEE'" execution_fee,
+        "'CALLBACKGASLIMIT'" AS callback_gas_limit,
+        "'MINOUTPUTAMOUNT'" AS min_output_amount,
+        "'UPDATEDATBLOCK'" AS updated_at_block,
+        "'ISLONG'" AS is_long,
+        "'SHOULDUNWRAPNATIVETOKEN'" AS should_unwrap_native_token,
+        "'ISFROZEN'" AS is_frozen,
+        "'KEY'" AS key
+    FROM
+        pivot
 ),
 executed_orders as (
 select 
@@ -87,9 +143,9 @@ SELECT
     a.contract_address,
     a.event_index,
     account,
-    receiver,
-    call_back_contract,
-    ui_fee_receiver,
+    reciever,
+    callback_contract,
+    ui_fee_reciever,
     market,
     p.symbol,
     p.address as underlying_address,
@@ -130,7 +186,7 @@ SELECT
         10,
         12
     ) AS execution_fee,
-    call_back_gas_limit,
+    callback_gas_limit,
     min_output_amount,
     updated_at_block,
     is_long,
@@ -140,7 +196,7 @@ SELECT
     a._log_id,
     a._inserted_timestamp
 FROM
-    parse_data a
+    column_format a
 LEFT JOIN
     executed_orders e
 ON

@@ -16,7 +16,7 @@ WITH gmx_events AS (
         event_name in ('DepositCreated','WithdrawalCreated')
 
 ),
-lat_flat AS (
+decode_data AS (
     SELECT
         block_number,
         block_timestamp,
@@ -33,64 +33,25 @@ lat_flat AS (
         msg_sender,
         topic_1,
         topic_2,
-        event.value [0] :: variant AS event_data
+        event_data[0][0][0][1] as account,
+        event_data[0][0][1][1] as receiver,
+        event_data[0][0][2][1] as call_back_contract,
+        event_data[0][0][3][1] as market,
+        event_data[0][0][4][1] as initial_long_token,
+        event_data[0][0][5][1] as initial_short_token,
+        event_data[1][0][0][1] as long_token_swap_path,
+        event_data[1][0][1][1] as short_token_swap_path,
+        event_data[2][0][0][1] as initial_long_token_amount,
+        event_data[2][0][1][1] as initial_short_token_amount,
+        event_data[2][0][2][1] as min_market_tokens,
+        event_data[2][0][3][1] as updated_at_block,
+        event_data[2][0][4][1] as execution_fee,
+        event_data[2][0][5][1] as call_back_gas_limit,
+        event_data[3][0][0][1] as should_unwrap_native_token,
+        event_data[4][0][0][1] as key
     FROM
-        gmx_events,
-        LATERAL FLATTEN(
-            input => event_data
-        ) event
-)
-,
-lat_flat_2 AS (
-    SELECT
-        block_number,
-        block_timestamp,
-        tx_hash,
-        origin_function_signature,
-        origin_from_address,
-        origin_to_address,
-        contract_address,
-        event_index,
-        _log_id,
-        _inserted_timestamp,
-        event_name,
-        event_name_hash,
-        msg_sender,
-        topic_1,
-        topic_2,        
-        UPPER(
-            VALUE [0] :: STRING
-        ) AS key,
-        VALUE [1] :: STRING AS VALUE
-    FROM
-        lat_flat,
-        LATERAL FLATTEN (
-            input => event_data
-        )
+        gmx_events
 ),
-pivot AS (
-    SELECT
-        *
-    FROM
-        lat_flat_2 pivot (MAX(VALUE) FOR key IN(
-            'ACCOUNT',
-            'RECEIVER',
-            'MARKET',
-            'CALLBACKCONTRACT',
-            'INITIALLONGTOKEN',
-            'INITIALLONGTOKENAMOUNT',
-            'INITIALSHORTTOKEN',
-            'INITIALSHORTTOKENAMOUNT',
-            'MINMARKETTOKENS',
-            'UPDATEDATBLOCK',
-            'EXECUTIONFEE',
-            'CALLBACKGASLIMIT',
-            'SHOULDUNWRAPNATIVETOKEN',
-            'KEY'
-        )
-    )
-)
-,
 contracts AS (
     SELECT
         contract_address,
@@ -101,14 +62,14 @@ contracts AS (
     WHERE
         contract_address IN (
             SELECT
-                DISTINCT("'INITIALLONGTOKEN'")
+                DISTINCT(initial_long_token)
             FROM
-                pivot
+                decode_data
             UNION ALL
             SELECT
-                DISTINCT("'INITIALSHORTTOKEN'")
+                DISTINCT(initial_short_token)
             FROM
-                pivot
+                decode_data
         )
 ),
 column_format AS (
@@ -128,34 +89,34 @@ column_format AS (
         msg_sender,
         topic_1,
         topic_2,
-        "'ACCOUNT'" AS account,
-        "'RECEIVER'" AS reciever,
-        "'MARKET'" AS market,
-        "'CALLBACKCONTRACT'" AS call_back_contract,
-        "'INITIALLONGTOKEN'" AS initial_long_token,
+        account,
+        receiver,
+        market,
+        call_back_contract,
+        initial_long_token,
         c1.token_symbol AS initial_long_token_symbol,
         c1.token_decimals AS initial_long_token_decimals,
-        "'INITIALLONGTOKENAMOUNT'" AS initial_long_token_amount,
-        "'INITIALSHORTTOKEN'" AS initial_short_token,
+        initial_long_token_amount,
+        initial_short_token,
         c2.token_symbol AS initial_short_token_symbol,
         c2.token_decimals AS initial_short_token_decimals,
-        "'INITIALSHORTTOKENAMOUNT'" AS initial_short_token_amount,
-        "'MINMARKETTOKENS'" AS min_market_tokens,
-        "'UPDATEDATBLOCK'" AS updated_block,
-        "'EXECUTIONFEE'" AS execution_fee,
-        "'CALLBACKGASLIMIT'" AS call_back_gas_limit,
-        "'SHOULDUNWRAPNATIVETOKEN'" AS should_unwrap_native_token,
-        "'KEY'" AS key
+        initial_short_token_amount,
+        min_market_tokens,
+        updated_at_block,
+        execution_fee,
+        call_back_gas_limit,
+        should_unwrap_native_token,
+        key
     FROM
-        pivot p 
+        decode_data p 
     LEFT JOIN
         contracts c1
     on
-        c1.contract_address = p."'INITIALLONGTOKEN'"
+        c1.contract_address = p.initial_long_token
     LEFT JOIN
         contracts c2
     on
-        c2.contract_address = p."'INITIALSHORTTOKEN'"
+        c2.contract_address = p.initial_short_token
 )
 SELECT
     a.block_number,
@@ -172,7 +133,7 @@ SELECT
     p.symbol,
     p.address as underlying_address,
     account,
-    reciever,
+    receiver,
     initial_long_token,
     initial_long_token_symbol,
     initial_long_token_amount as initial_long_token_amount_unadj,
@@ -188,7 +149,7 @@ SELECT
         initial_short_token_decimals
     ) AS initial_short_token_amount,
     min_market_tokens,
-    updated_block,
+    updated_at_block,
     execution_fee,
     call_back_gas_limit,
     should_unwrap_native_token,
