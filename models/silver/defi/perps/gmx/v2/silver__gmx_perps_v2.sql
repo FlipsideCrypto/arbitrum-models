@@ -130,6 +130,7 @@ SELECT
     topic_1,
     initial_collateral_token,
     C.token_symbol AS initial_collateral_token_symbol,
+    order_type as order_type_raw,
     CASE
         WHEN order_type = 2 THEN 'market_increase'
         WHEN order_type = 3 THEN 'limit_increase'
@@ -141,7 +142,7 @@ SELECT
         WHEN e.key IS NOT NULL THEN 'executed'
         ELSE 'not-executed'
     END AS order_execution,
-    decrease_position_swap_type :: INT,
+    decrease_position_swap_type :: INT as market_reduce_flag,
     size_delta_usd AS size_delta_usd_unadj,
     size_delta_usd :: FLOAT / pow(
         10,
@@ -162,12 +163,13 @@ SELECT
         18
     ) AS execution_fee,
     updated_at_block,
-    is_long :: BOOLEAN,
-    should_unwrap_native_token :: BOOLEAN,
-    is_frozen :: BOOLEAN,
+    is_long :: BOOLEAN as is_long,
+    should_unwrap_native_token :: BOOLEAN as should_unwrap_native_token,
+    is_frozen :: BOOLEAN as is_frozen,
     A.key,
     A._log_id,
-    A._inserted_timestamp
+    A._inserted_timestamp,
+    sysdate() as modified_timestamp
 FROM
     parse_data A
     LEFT JOIN executed_orders e

@@ -169,15 +169,23 @@ SELECT
     token_out_price AS token_out_price_unadj,
     token_out_price :: INT / pow(
         10,
-        token_out_decimals
+        (30-p.decimals)
     ) AS token_out_price,
     amount_out AS amount_out_unadj,
     amount_out :: INT / pow(
         10,
-        token_out_decimals
+        p.decimals
     ) AS amount_out,
-    price_impact_usd,
-    price_impact_amount,
+    price_impact_usd as price_impact_usd_unadj,
+    price_impact_usd :: INT / pow(
+        10,
+        30
+    ) AS price_impact_usd,
+    price_impact_amount AS price_impact_amount_unadj,
+    price_impact_amount ::INT /pow(
+        10,
+        30
+    ) as price_impact_amount,
     A.key,
     A._log_id,
     A._inserted_timestamp
