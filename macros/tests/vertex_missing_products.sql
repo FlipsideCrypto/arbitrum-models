@@ -27,7 +27,7 @@ from invalid_product_ids
 
 with recent_records as (
     select distinct(product_id) from  {{model}}
-    where block_timestamp >= SYSDATE() - INTERVAL '1 DAY'
+    where block_timestamp >= SYSDATE() - INTERVAL '48 HOURS'
 ),
 
 invalid_product_ids as (
