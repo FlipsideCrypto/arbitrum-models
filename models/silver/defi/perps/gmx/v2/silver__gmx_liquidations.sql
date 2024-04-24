@@ -97,8 +97,6 @@ SELECT
     a.origin_to_address,
     a.contract_address,
     a.event_index,
-    a._log_id,
-    a._inserted_timestamp,
     a.event_name,
     a.event_name_hash,
     a.msg_sender,
