@@ -6,113 +6,93 @@
     tags = ['curated','reorg']
 ) }}
 
-WITH pools AS (
+WITH base_swaps AS (
 
     SELECT
-        pool_address,
-        token0,
-        token1
-    FROM
-        {{ ref('silver_dex__univ2_pools') }}
-),
-swaps_base AS (
-    SELECT
-        block_number,
-        origin_function_signature,
-        origin_from_address,
-        origin_to_address,
-        block_timestamp,
-        tx_hash,
-        event_index,
-        contract_address,
+        *,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
-        TRY_TO_NUMBER(
-            utils.udf_hex_to_int(
-                segmented_data [0] :: STRING
-            ) :: INTEGER
-        ) AS amount0In,
-        TRY_TO_NUMBER(
-            utils.udf_hex_to_int(
-                segmented_data [1] :: STRING
-            ) :: INTEGER
-        ) AS amount1In,
-        TRY_TO_NUMBER(
-            utils.udf_hex_to_int(
-                segmented_data [2] :: STRING
-            ) :: INTEGER
-        ) AS amount0Out,
-        TRY_TO_NUMBER(
-            utils.udf_hex_to_int(
-                segmented_data [3] :: STRING
-            ) :: INTEGER
-        ) AS amount1Out,
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS sender,
-        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS tx_to,
-        token0,
-        token1,
-        _log_id,
-        _inserted_timestamp
+        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS recipient,
+        utils.udf_hex_to_int(
+            's2c',
+            segmented_data [0] :: STRING
+        ) :: FLOAT AS amount0_unadj,
+        utils.udf_hex_to_int(
+            's2c',
+            segmented_data [1] :: STRING
+        ) :: FLOAT AS amount1_unadj,
+        utils.udf_hex_to_int(
+            's2c',
+            segmented_data [2] :: STRING
+        ) :: FLOAT AS sqrtPriceX96,
+        utils.udf_hex_to_int(
+            's2c',
+            segmented_data [3] :: STRING
+        ) :: FLOAT AS liquidity,
+        utils.udf_hex_to_int(
+            's2c',
+            segmented_data [4] :: STRING
+        ) :: FLOAT AS tick
     FROM
         {{ ref('silver__logs') }}
-        INNER JOIN pools p
-        ON p.pool_address = contract_address
     WHERE
-        topics [0] :: STRING = '0xd78ad95fa46c994b6551d0da85fc275fe613ce37657fb8d5e3d130840159d822'
+        block_timestamp :: DATE > '2021-04-01'
+        AND topics [0] :: STRING = '0xc42079f94a6350d7e6235f29174924f928cc2ac818eb64fed8004e115fbcca67'
         AND tx_status = 'SUCCESS'
+        AND event_removed = 'false'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '12 hours'
+        MAX(
+            _inserted_timestamp
+        ) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
 {% endif %}
+),
+pool_data AS (
+    SELECT
+        token0_address,
+        token1_address,
+        fee,
+        fee_percent,
+        tick_spacing,
+        pool_address
+    FROM
+        {{ ref('silver_dex__ramses_pools') }}
+),
+FINAL AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        contract_address AS pool_address,
+        recipient,
+        sender,
+        fee,
+        tick,
+        tick_spacing,
+        liquidity,
+        event_index,
+        token0_address,
+        token1_address,
+        _log_id,
+        _inserted_timestamp,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
+        amount0_unadj,
+        amount1_unadj
+    FROM
+        base_swaps
+        INNER JOIN pool_data
+        ON pool_data.pool_address = base_swaps.contract_address
 )
 SELECT
-    block_number,
-    block_timestamp,
-    origin_function_signature,
-    origin_from_address,
-    origin_to_address,
-    tx_hash,
-    event_index,
-    contract_address,
-    sender,
-    tx_to,
-    amount0In,
-    amount1In,
-    amount0Out,
-    amount1Out,
-    token0,
-    token1,
-    CASE
-        WHEN amount0In <> 0
-        AND amount1In <> 0
-        AND amount0Out <> 0 THEN amount1In
-        WHEN amount0In <> 0 THEN amount0In
-        WHEN amount1In <> 0 THEN amount1In
-    END AS amount_in_unadj,
-    CASE
-        WHEN amount0Out <> 0 THEN amount0Out
-        WHEN amount1Out <> 0 THEN amount1Out
-    END AS amount_out_unadj,
-    CASE
-        WHEN amount0In <> 0
-        AND amount1In <> 0
-        AND amount0Out <> 0 THEN token1
-        WHEN amount0In <> 0 THEN token0
-        WHEN amount1In <> 0 THEN token1
-    END AS token_in,
-    CASE
-        WHEN amount0Out <> 0 THEN token0
-        WHEN amount1Out <> 0 THEN token1
-    END AS token_out,
-    'Swap' AS event_name,
-    'uniswap-v2' AS platform,
-    _log_id,
-    _inserted_timestamp
+    *
 FROM
-    swaps_base
-WHERE
-    token_in <> token_out
+    FINAL qualify(ROW_NUMBER() over(PARTITION BY _log_id
+ORDER BY
+    _inserted_timestamp DESC)) = 1

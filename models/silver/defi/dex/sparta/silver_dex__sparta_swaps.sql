@@ -13,7 +13,7 @@ WITH pools AS (
         token0,
         token1
     FROM
-        {{ ref('silver_dex__univ2_pools') }}
+        {{ ref('silver_dex__sparta_pools') }}
 ),
 swaps_base AS (
     SELECT
@@ -109,7 +109,7 @@ SELECT
         WHEN amount1Out <> 0 THEN token1
     END AS token_out,
     'Swap' AS event_name,
-    'uniswap-v2' AS platform,
+    'sparta' AS platform,
     _log_id,
     _inserted_timestamp
 FROM

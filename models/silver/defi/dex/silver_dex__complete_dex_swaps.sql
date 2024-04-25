@@ -133,6 +133,108 @@ WHERE
   )
 {% endif %}
 ),
+smardex_swaps AS (
+  SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    origin_function_signature,
+    origin_from_address,
+    origin_to_address,
+    pool_address AS contract_address,
+    NULL AS pool_name,
+    'Swap' AS event_name,
+    amount0_unadj / pow(10, COALESCE(c1.decimals, 18)) AS amount0_adjusted,
+    amount1_unadj / pow(10, COALESCE(c2.decimals, 18)) AS amount1_adjusted,
+    CASE
+      WHEN c1.decimals IS NOT NULL THEN ROUND(
+        p1.price * amount0_adjusted,
+        2
+      )
+    END AS amount0_usd,
+    CASE
+      WHEN c2.decimals IS NOT NULL THEN ROUND(
+        p2.price * amount1_adjusted,
+        2
+      )
+    END AS amount1_usd,
+    CASE
+      WHEN amount0_unadj > 0 THEN ABS(amount0_unadj)
+      ELSE ABS(amount1_unadj)
+    END AS amount_in_unadj,
+    CASE
+      WHEN amount0_unadj > 0 THEN ABS(amount0_adjusted)
+      ELSE ABS(amount1_adjusted)
+    END AS amount_in,
+    CASE
+      WHEN amount0_unadj > 0 THEN ABS(amount0_usd)
+      ELSE ABS(amount1_usd)
+    END AS amount_in_usd,
+    CASE
+      WHEN amount0_unadj < 0 THEN ABS(amount0_unadj)
+      ELSE ABS(amount1_unadj)
+    END AS amount_out_unadj,
+    CASE
+      WHEN amount0_unadj < 0 THEN ABS(amount0_adjusted)
+      ELSE ABS(amount1_adjusted)
+    END AS amount_out,
+    CASE
+      WHEN amount0_unadj < 0 THEN ABS(amount0_usd)
+      ELSE ABS(amount1_usd)
+    END AS amount_out_usd,
+    sender,
+    recipient AS tx_to,
+    event_index,
+    'smardex' AS platform,
+    'v1' AS version,
+    CASE
+      WHEN amount0_unadj > 0 THEN token0_address
+      ELSE token1_address
+    END AS token_in,
+    CASE
+      WHEN amount0_unadj < 0 THEN token0_address
+      ELSE token1_address
+    END AS token_out,
+    CASE
+      WHEN amount0_unadj > 0 THEN c1.symbol
+      ELSE c2.symbol
+    END AS symbol_in,
+    CASE
+      WHEN amount0_unadj < 0 THEN c1.symbol
+      ELSE c2.symbol
+    END AS symbol_out,
+    _log_id,
+    _inserted_timestamp
+  FROM
+    {{ ref('silver_dex__smardex_swaps') }}
+    s
+    LEFT JOIN contracts c1
+    ON c1.address = s.token0_address
+    LEFT JOIN contracts c2
+    ON c2.address = s.token1_address
+    LEFT JOIN prices p1
+    ON s.token0_address = p1.token_address
+    AND DATE_TRUNC(
+      'hour',
+      block_timestamp
+    ) = p1.hour
+    LEFT JOIN prices p2
+    ON s.token1_address = p2.token_address
+    AND DATE_TRUNC(
+      'hour',
+      block_timestamp
+    ) = p2.hour
+
+{% if is_incremental() and 'smardex_swaps' not in var('HEAL_CURATED_MODEL') %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
+    FROM
+      {{ this }}
+  )
+{% endif %}
+),
 univ3_swaps AS (
   SELECT
     block_number,
@@ -1124,58 +1226,6 @@ WHERE
   )
 {% endif %}
 ),
-smardex_swaps AS (
-  SELECT
-    block_number,
-    block_timestamp,
-    tx_hash,
-    origin_function_signature,
-    origin_from_address,
-    origin_to_address,
-    contract_address,
-    event_name,
-    c1.decimals AS decimals_in,
-    c1.symbol AS symbol_in,
-    amount_in_unadj,
-    CASE
-      WHEN decimals_in IS NULL THEN amount_in_unadj
-      ELSE (amount_in_unadj / pow(10, decimals_in))
-    END AS amount_in,
-    c2.decimals AS decimals_out,
-    c2.symbol AS symbol_out,
-    amount_out_unadj,
-    CASE
-      WHEN decimals_out IS NULL THEN amount_out_unadj
-      ELSE (amount_out_unadj / pow(10, decimals_out))
-    END AS amount_out,
-    sender,
-    tx_to,
-    event_index,
-    platform,
-    'v2' AS version,
-    token_in,
-    token_out,
-    NULL AS pool_name,
-    _log_id,
-    _inserted_timestamp
-  FROM
-    {{ ref('silver_dex__smardex_swaps') }}
-    s
-    LEFT JOIN contracts c1
-    ON s.token_in = c1.address
-    LEFT JOIN contracts c2
-    ON s.token_out = c2.address
-
-{% if is_incremental() and 'smardex_swaps' not in var('HEAL_CURATED_MODEL') %}
-WHERE
-  _inserted_timestamp >= (
-    SELECT
-      MAX(_inserted_timestamp) - INTERVAL '36 hours'
-    FROM
-      {{ this }}
-  )
-{% endif %}
-),
 dodo_v1_swaps AS (
   SELECT
     block_number,
@@ -1998,36 +2048,6 @@ all_dex_standard AS (
     _log_id,
     _inserted_timestamp
   FROM
-    smardex_swaps
-  UNION ALL
-  SELECT
-    block_number,
-    block_timestamp,
-    tx_hash,
-    origin_function_signature,
-    origin_from_address,
-    origin_to_address,
-    contract_address,
-    pool_name,
-    event_name,
-    amount_in_unadj,
-    amount_out_unadj,
-    amount_in,
-    amount_out,
-    sender,
-    tx_to,
-    event_index,
-    platform,
-    version,
-    token_in,
-    token_out,
-    symbol_in,
-    symbol_out,
-    decimals_in,
-    decimals_out,
-    _log_id,
-    _inserted_timestamp
-  FROM
     trader_joe_v1_swaps
   UNION ALL
   SELECT
@@ -2241,6 +2261,36 @@ all_dex_custom AS (
     _inserted_timestamp
   FROM
     ramses_v2_swaps
+  UNION ALL
+  SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    origin_function_signature,
+    origin_from_address,
+    origin_to_address,
+    contract_address,
+    pool_name,
+    event_name,
+    amount_in_unadj,
+    amount_in,
+    amount_in_usd,
+    amount_out_unadj,
+    amount_out,
+    amount_out_usd,
+    sender,
+    tx_to,
+    event_index,
+    platform,
+    version,
+    token_in,
+    token_out,
+    symbol_in,
+    symbol_out,
+    _log_id,
+    _inserted_timestamp
+  FROM
+    smardex_swaps
 ),
 FINAL AS (
   SELECT
