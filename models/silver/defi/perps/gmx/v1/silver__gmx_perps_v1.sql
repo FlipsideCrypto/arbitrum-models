@@ -19,7 +19,8 @@ with log_pull as (
         origin_to_address,
         CONCAT('0x', SUBSTR(topics[1] :: STRING, 27, 40)) AS account,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
-        CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40)) AS path,
+        CONCAT('0x', SUBSTR(segmented_data [11] :: STRING, 25, 40)) AS path_1,
+        CONCAT('0x', SUBSTR(segmented_data [12] :: STRING, 25, 40)) AS path_2,
         CONCAT('0x', SUBSTR(segmented_data [1] :: STRING, 25, 40)) AS index_token,
         utils.udf_hex_to_int(
                 segmented_data [2] :: STRING
@@ -57,8 +58,8 @@ SELECT
     origin_from_address,
     origin_to_address,
     account,
-    order_index,
-    path,
+    path_1,
+    path_2,
     index_token,
     amount_in,
     min_out,
