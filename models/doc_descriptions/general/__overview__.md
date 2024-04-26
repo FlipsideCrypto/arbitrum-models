@@ -36,8 +36,8 @@ There is more information on how to use dbt docs in the last section of this doc
 - [ez_decoded_event_logs](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.core__ez_decoded_event_logs)
 
 ### Price Tables (arbitrum.price)
-- [dim_asset_metadata_provider](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.price__dim_asset_metadata_provider)
-- [fact_prices_provider_hourly](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.price__fact_prices_provider_hourly)
+- [dim_asset_metadata](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.price__dim_asset_metadata)
+- [fact_prices_ohlc_hourly](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.price__fact_prices_ohlc_hourly)
 - [ez_asset_metadata](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.price__ez_asset_metadata)
 - [ez_prices_hourly](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.price__ez_prices_hourly)
 
