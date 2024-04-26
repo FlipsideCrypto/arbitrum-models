@@ -425,6 +425,34 @@ WHERE
   )
 {% endif %}
 ),
+smardex AS (
+
+SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    contract_address,
+    pool_address,
+    NULL AS fee,
+    NULL AS tick_spacing,
+    token0_address AS token0,
+    token1_address AS token1,
+    'smardex' AS platform,
+    'v1' AS version,
+    _log_id AS _id,
+    _inserted_timestamp
+FROM
+    {{ ref('silver_dex__smardex_pools') }}
+{% if is_incremental() and 'smardex' not in var('HEAL_CURATED_MODEL') %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+    FROM
+      {{ this }}
+  )
+{% endif %}
+),
 
 uni_v3 AS (
 
@@ -511,35 +539,6 @@ WHERE
 {% endif %}
 ),
 
-smardex AS (
-
-SELECT
-    block_number,
-    block_timestamp,
-    tx_hash,
-    contract_address,
-    pool_address,
-    NULL AS pool_name,
-    token0,
-    token1,
-    'uniswap-v2' AS platform,
-    'v2' AS version,
-    _log_id AS _id,
-    _inserted_timestamp
-FROM
-    {{ ref('silver_dex__smardex_pools') }}
-{% if is_incremental() and 'smardex' not in var('HEAL_CURATED_MODEL') %}
-WHERE
-  _inserted_timestamp >= (
-    SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
-    FROM
-      {{ this }}
-  )
-{% endif %}
-),
-
-
 all_pools_standard AS (
     SELECT *
     FROM camelot
@@ -569,9 +568,6 @@ all_pools_standard AS (
     FROM sparta
     UNION ALL
     SELECT *
-    FROM smardex
-    UNION ALL
-    SELECT *
     FROM trader_joe_v1
     UNION ALL
     SELECT *
@@ -587,6 +583,9 @@ all_pools_v3 AS (
     UNION ALL
     SELECT *
     FROM ramses_v2
+    UNION ALL
+    SELECT *
+    FROM smardex
     UNION ALL
     SELECT *
     FROM kyberswap_v2_elastic

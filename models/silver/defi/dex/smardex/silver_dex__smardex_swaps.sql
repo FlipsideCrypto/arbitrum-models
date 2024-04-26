@@ -21,23 +21,10 @@ WITH base_swaps AS (
             's2c',
             segmented_data [1] :: STRING
         ) :: FLOAT AS amount1_unadj,
-        utils.udf_hex_to_int(
-            's2c',
-            segmented_data [2] :: STRING
-        ) :: FLOAT AS sqrtPriceX96,
-        utils.udf_hex_to_int(
-            's2c',
-            segmented_data [3] :: STRING
-        ) :: FLOAT AS liquidity,
-        utils.udf_hex_to_int(
-            's2c',
-            segmented_data [4] :: STRING
-        ) :: FLOAT AS tick
     FROM
         {{ ref('silver__logs') }}
     WHERE
-        block_timestamp :: DATE > '2021-04-01'
-        AND topics [0] :: STRING = '0xc42079f94a6350d7e6235f29174924f928cc2ac818eb64fed8004e115fbcca67'
+        topics [0] :: STRING = '0xa4228e1eb11eb9b31069d9ed20e7af9a010ca1a02d4855cee54e08e188fcc32c'
         AND tx_status = 'SUCCESS'
         AND event_removed = 'false'
 
@@ -56,12 +43,9 @@ pool_data AS (
     SELECT
         token0_address,
         token1_address,
-        fee,
-        fee_percent,
-        tick_spacing,
         pool_address
     FROM
-        {{ ref('silver_dex__ramses_pools') }}
+        {{ ref('silver_dex__smardex_pools') }}
 ),
 FINAL AS (
     SELECT
@@ -71,10 +55,6 @@ FINAL AS (
         contract_address AS pool_address,
         recipient,
         sender,
-        fee,
-        tick,
-        tick_spacing,
-        liquidity,
         event_index,
         token0_address,
         token1_address,
