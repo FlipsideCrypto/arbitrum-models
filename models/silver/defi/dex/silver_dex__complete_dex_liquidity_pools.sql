@@ -637,6 +637,10 @@ FINAL AS (
         CASE
             WHEN platform = 'kyberswap-v2' 
                 THEN CONCAT(COALESCE(c0.symbol,CONCAT(SUBSTRING(token0, 1, 5),'...',SUBSTRING(token0, 39, 42))),'-',COALESCE(c1.symbol,CONCAT(SUBSTRING(token1, 1, 5),'...',SUBSTRING(token1, 39, 42))),' ',COALESCE(fee,0),' ',COALESCE(tick_spacing,0))
+            WHEN platform = 'ramses-v2' 
+                THEN CONCAT(COALESCE(c0.symbol,CONCAT(SUBSTRING(token0, 1, 5),'...',SUBSTRING(token0, 39, 42))),'-',COALESCE(c1.symbol,CONCAT(SUBSTRING(token1, 1, 5),'...',SUBSTRING(token1, 39, 42))),' ',COALESCE(fee,0),' ',COALESCE(tick_spacing,0))
+            WHEN platform = 'smardex' 
+                THEN CONCAT(COALESCE(c0.symbol,CONCAT(SUBSTRING(token0, 1, 5),'...',SUBSTRING(token0, 39, 42))),'-',COALESCE(c1.symbol,CONCAT(SUBSTRING(token1, 1, 5),'...',SUBSTRING(token1, 39, 42))))
             WHEN platform = 'uniswap-v3' 
                 THEN CONCAT(COALESCE(c0.symbol,CONCAT(SUBSTRING(token0, 1, 5),'...',SUBSTRING(token0, 39, 42))),'-',COALESCE(c1.symbol,CONCAT(SUBSTRING(token1, 1, 5),'...',SUBSTRING(token1, 39, 42))),' ',COALESCE(fee,0),' ',COALESCE(tick_spacing,0),' UNI-V3 LP')
         END AS pool_name,
