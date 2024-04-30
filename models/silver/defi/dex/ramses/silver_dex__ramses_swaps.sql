@@ -36,8 +36,7 @@ WITH base_swaps AS (
     FROM
         {{ ref('silver__logs') }}
     WHERE
-        block_timestamp :: DATE > '2021-04-01'
-        AND topics [0] :: STRING = '0xc42079f94a6350d7e6235f29174924f928cc2ac818eb64fed8004e115fbcca67'
+        topics [0] :: STRING = '0xc42079f94a6350d7e6235f29174924f928cc2ac818eb64fed8004e115fbcca67'
         AND tx_status = 'SUCCESS'
         AND event_removed = 'false'
 
