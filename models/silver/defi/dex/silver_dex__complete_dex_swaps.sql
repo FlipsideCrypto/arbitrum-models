@@ -104,7 +104,7 @@ ramses_v2_swaps AS (
     _log_id,
     _inserted_timestamp
   FROM
-    {{ ref('silver_dex__ramses_swaps') }}
+    {{ ref('silver_dex__ramses_v2_swaps') }}
     s
     LEFT JOIN contracts c1
     ON c1.address = s.token0_address
