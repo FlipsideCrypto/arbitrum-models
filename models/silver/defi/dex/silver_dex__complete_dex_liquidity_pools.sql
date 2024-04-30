@@ -397,6 +397,35 @@ WHERE
 {% endif %}
 ),
 
+ramses_v2 AS (
+
+SELECT
+    created_block AS block_number,
+    created_time AS block_timestamp,
+    created_tx_hash AS tx_hash,
+    contract_address,
+    pool_address,
+    fee,
+    tick_spacing,
+    token0_address AS token0,
+    token1_address AS token1,
+    'ramses-v2' AS platform,
+    'v2' AS version,
+    _log_id AS _id,
+    _inserted_timestamp
+FROM
+    {{ ref('silver_dex__ramses_v2_pools') }}
+{% if is_incremental() and 'ramses_v2' not in var('HEAL_CURATED_MODEL') %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+    FROM
+      {{ this }}
+  )
+{% endif %}
+),
+
 uni_v3 AS (
 
 SELECT
@@ -425,7 +454,6 @@ WHERE
   )
 {% endif %}
 ),
-
 uni_v2 AS (
 
 SELECT
@@ -453,7 +481,33 @@ WHERE
   )
 {% endif %}
 ),
+sparta AS (
 
+SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    contract_address,
+    pool_address,
+    NULL AS pool_name,
+    token0,
+    token1,
+    'uniswap-v2' AS platform,
+    'v2' AS version,
+    _log_id AS _id,
+    _inserted_timestamp
+FROM
+    {{ ref('silver_dex__sparta_pools') }}
+{% if is_incremental() and 'sparta' not in var('HEAL_CURATED_MODEL') %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+    FROM
+      {{ this }}
+  )
+{% endif %}
+),
 
 all_pools_standard AS (
     SELECT *
@@ -481,6 +535,9 @@ all_pools_standard AS (
     FROM uni_v2
     UNION ALL
     SELECT *
+    FROM sparta
+    UNION ALL
+    SELECT *
     FROM trader_joe_v1
     UNION ALL
     SELECT *
@@ -493,6 +550,9 @@ all_pools_standard AS (
 all_pools_v3 AS (
     SELECT *
     FROM uni_v3
+    UNION ALL
+    SELECT *
+    FROM ramses_v2
     UNION ALL
     SELECT *
     FROM kyberswap_v2_elastic
@@ -543,6 +603,8 @@ FINAL AS (
         pool_address,
         CASE
             WHEN platform = 'kyberswap-v2' 
+                THEN CONCAT(COALESCE(c0.symbol,CONCAT(SUBSTRING(token0, 1, 5),'...',SUBSTRING(token0, 39, 42))),'-',COALESCE(c1.symbol,CONCAT(SUBSTRING(token1, 1, 5),'...',SUBSTRING(token1, 39, 42))),' ',COALESCE(fee,0),' ',COALESCE(tick_spacing,0))
+            WHEN platform = 'ramses-v2' 
                 THEN CONCAT(COALESCE(c0.symbol,CONCAT(SUBSTRING(token0, 1, 5),'...',SUBSTRING(token0, 39, 42))),'-',COALESCE(c1.symbol,CONCAT(SUBSTRING(token1, 1, 5),'...',SUBSTRING(token1, 39, 42))),' ',COALESCE(fee,0),' ',COALESCE(tick_spacing,0))
             WHEN platform = 'uniswap-v3' 
                 THEN CONCAT(COALESCE(c0.symbol,CONCAT(SUBSTRING(token0, 1, 5),'...',SUBSTRING(token0, 39, 42))),'-',COALESCE(c1.symbol,CONCAT(SUBSTRING(token1, 1, 5),'...',SUBSTRING(token1, 39, 42))),' ',COALESCE(fee,0),' ',COALESCE(tick_spacing,0),' UNI-V3 LP')
