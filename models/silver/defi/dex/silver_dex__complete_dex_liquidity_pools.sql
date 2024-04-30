@@ -425,34 +425,6 @@ WHERE
   )
 {% endif %}
 ),
-smardex AS (
-
-SELECT
-    block_number,
-    block_timestamp,
-    tx_hash,
-    contract_address,
-    pool_address,
-    NULL AS fee,
-    NULL AS tick_spacing,
-    token0_address AS token0,
-    token1_address AS token1,
-    'smardex' AS platform,
-    'v1' AS version,
-    _log_id AS _id,
-    _inserted_timestamp
-FROM
-    {{ ref('silver_dex__smardex_pools') }}
-{% if is_incremental() and 'smardex' not in var('HEAL_CURATED_MODEL') %}
-WHERE
-  _inserted_timestamp >= (
-    SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
-    FROM
-      {{ this }}
-  )
-{% endif %}
-),
 
 uni_v3 AS (
 
@@ -482,8 +454,6 @@ WHERE
   )
 {% endif %}
 ),
-
-
 uni_v2 AS (
 
 SELECT
@@ -585,9 +555,6 @@ all_pools_v3 AS (
     FROM ramses_v2
     UNION ALL
     SELECT *
-    FROM smardex
-    UNION ALL
-    SELECT *
     FROM kyberswap_v2_elastic
 ),
 
@@ -639,8 +606,6 @@ FINAL AS (
                 THEN CONCAT(COALESCE(c0.symbol,CONCAT(SUBSTRING(token0, 1, 5),'...',SUBSTRING(token0, 39, 42))),'-',COALESCE(c1.symbol,CONCAT(SUBSTRING(token1, 1, 5),'...',SUBSTRING(token1, 39, 42))),' ',COALESCE(fee,0),' ',COALESCE(tick_spacing,0))
             WHEN platform = 'ramses-v2' 
                 THEN CONCAT(COALESCE(c0.symbol,CONCAT(SUBSTRING(token0, 1, 5),'...',SUBSTRING(token0, 39, 42))),'-',COALESCE(c1.symbol,CONCAT(SUBSTRING(token1, 1, 5),'...',SUBSTRING(token1, 39, 42))),' ',COALESCE(fee,0),' ',COALESCE(tick_spacing,0))
-            WHEN platform = 'smardex' 
-                THEN CONCAT(COALESCE(c0.symbol,CONCAT(SUBSTRING(token0, 1, 5),'...',SUBSTRING(token0, 39, 42))),'-',COALESCE(c1.symbol,CONCAT(SUBSTRING(token1, 1, 5),'...',SUBSTRING(token1, 39, 42))))
             WHEN platform = 'uniswap-v3' 
                 THEN CONCAT(COALESCE(c0.symbol,CONCAT(SUBSTRING(token0, 1, 5),'...',SUBSTRING(token0, 39, 42))),'-',COALESCE(c1.symbol,CONCAT(SUBSTRING(token1, 1, 5),'...',SUBSTRING(token1, 39, 42))),' ',COALESCE(fee,0),' ',COALESCE(tick_spacing,0),' UNI-V3 LP')
         END AS pool_name,
