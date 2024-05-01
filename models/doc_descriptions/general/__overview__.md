@@ -36,10 +36,10 @@ There is more information on how to use dbt docs in the last section of this doc
 - [ez_decoded_event_logs](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.core__ez_decoded_event_logs)
 
 ### Price Tables (arbitrum.price)
-- [fact_hourly_token_prices](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.price__fact_hourly_token_prices)
-- [ez_hourly_token_prices](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.price__ez_hourly_token_prices)
 - [dim_asset_metadata](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.price__dim_asset_metadata)
+- [fact_prices_ohlc_hourly](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.price__fact_prices_ohlc_hourly)
 - [ez_asset_metadata](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.price__ez_asset_metadata)
+- [ez_prices_hourly](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.price__ez_prices_hourly)
 
 ### DeFi Tables (arbitrum.defi)
 - [dim_dex_liquidity_pools](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.defi__dim_dex_liquidity_pools)
@@ -71,7 +71,7 @@ There is more information on how to use dbt docs in the last section of this doc
 - [ez_nft_sales](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.nft__ez_nft_sales)
 - [ez_nft_transfers](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.nft__ez_nft_transfers)
 
-### Stats Tables (ethereum.stats)
+### Stats Tables (arbitrum.stats)
 - [ez_core_metrics_hourly](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.stats__ez_core_metrics_hourly)
 
 ## **Helpful User-Defined Functions (UDFs)**
