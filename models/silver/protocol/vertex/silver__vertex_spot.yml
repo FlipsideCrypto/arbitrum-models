@@ -6,7 +6,7 @@ models:
           combination_of_columns:
             - _LOG_ID
       - vertex_product_level_recency:
-          filter: product_type = 'spot' AND product_id <> 0
+          filter: product_type = 'spot' AND product_id <> 0 AND block_timestamp < sysdate() - INTERVAL '2 days'
     columns:
       - name: BLOCK_NUMBER
         tests:
