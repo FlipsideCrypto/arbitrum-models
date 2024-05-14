@@ -106,7 +106,7 @@ FINAL AS (
         END AS product_type,
         CASE
             WHEN l.product_id = 0 THEN 'USDC'
-            ELSE p.ticker_id :: STRING 
+            ELSE p.ticker_id :: STRING
         END AS ticker_id,
         p.symbol :: STRING AS symbol,
         p.name :: STRING AS NAME,
@@ -131,7 +131,10 @@ FINAL AS (
         END AS health_group_symbol,
         p.taker_fee,
         p.maker_fee,
-        C.version,
+        CASE
+            WHEN C.version IS NOT NULL THEN 1
+            ELSE 2
+        END AS version,
         _inserted_timestamp,
         _log_id
     FROM
