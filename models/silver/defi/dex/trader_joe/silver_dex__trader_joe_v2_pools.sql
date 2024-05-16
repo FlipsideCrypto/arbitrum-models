@@ -35,6 +35,7 @@ WITH pool_creation AS (
             '0x8597db3ba8de6baadeda8cba4dac653e24a0e57b'
         )
         AND topics [0] :: STRING = '0x2c8d104b27c6b7f4492017a6f5cf3803043688934ebcaa6a03540beeaf976aff' --LB PairCreated
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

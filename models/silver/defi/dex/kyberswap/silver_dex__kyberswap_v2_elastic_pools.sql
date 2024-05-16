@@ -33,6 +33,7 @@ WITH pool_creation AS (
             '0xc7a590291e07b9fe9e64b86c58fd8fc764308c4a'
         ) --KyberSwap: Elastic Factory
         AND topics [0] :: STRING = '0x783cca1c0412dd0d695e784568c96da2e9c22ff989357a2e8b1d9b2b4e6b7118' --Create pool
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

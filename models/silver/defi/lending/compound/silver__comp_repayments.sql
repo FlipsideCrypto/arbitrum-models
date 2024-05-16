@@ -48,6 +48,7 @@ WITH repayments AS (
             LOWER('0xA5EDBDD9646f8dFF606d7448e414884C7d905dCA'),
             LOWER('0x9c4ec768c28520B50860ea7a15bd7213a9fF58bf')
         )
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND l._inserted_timestamp >= (
