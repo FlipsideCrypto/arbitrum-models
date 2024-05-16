@@ -3,7 +3,7 @@
   incremental_strategy = 'delete+insert',
   unique_key = ['block_number','platform','version'],
   cluster_by = ['block_timestamp::DATE'],
-  tags = ['curated','reorg']
+  tags = ['curated','reorg','heal']
 ) }}
 
 WITH contracts AS (
@@ -41,11 +41,11 @@ SELECT
 FROM
     {{ ref('silver_dex__balancer_pools') }}
 
-{% if is_incremental() and 'balancer' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'balancer' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
     FROM
       {{ this }}
   )
@@ -75,11 +75,11 @@ SELECT
     MAX(CASE WHEN token_num = 8 THEN token_address END) AS token7
 FROM
     {{ ref('silver_dex__curve_pools') }}
-{% if is_incremental() and 'curve' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'curve' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
     FROM
       {{ this }}
   )
@@ -104,11 +104,11 @@ SELECT
     _inserted_timestamp
 FROM
     {{ ref('silver_dex__camelot_pools') }}
-{% if is_incremental() and 'camelot' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'camelot' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
     FROM
       {{ this }}
   )
@@ -132,11 +132,11 @@ SELECT
     _inserted_timestamp
 FROM 
     {{ ref('silver_dex__dodo_v1_pools') }}
-{% if is_incremental() and 'dodo_v1' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'dodo_v1' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
     FROM
       {{ this }}
   )
@@ -161,11 +161,11 @@ SELECT
 FROM 
     {{ ref('silver_dex__dodo_v2_pools') }}
 WHERE token0 IS NOT NULL
-{% if is_incremental() and 'dodo_v2' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'dodo_v2' not in var('HEAL_MODELS') %}
 AND
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
     FROM
       {{ this }}
   )
@@ -189,11 +189,11 @@ SELECT
     _inserted_timestamp
 FROM
     {{ ref('silver_dex__fraxswap_pools') }}
-{% if is_incremental() and 'frax' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'frax' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
     FROM
       {{ this }}
   )
@@ -217,11 +217,11 @@ SELECT
     _inserted_timestamp
 FROM
     {{ ref('silver_dex__kyberswap_v1_dynamic_pools') }}
-{% if is_incremental() and 'kyberswap_v1_dynamic' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'kyberswap_v1_dynamic' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
     FROM
       {{ this }}
   )
@@ -245,11 +245,11 @@ SELECT
     _inserted_timestamp
 FROM
     {{ ref('silver_dex__kyberswap_v1_static_pools') }}
-{% if is_incremental() and 'kyberswap_v1_static' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'kyberswap_v1_static' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
     FROM
       {{ this }}
   )
@@ -274,11 +274,11 @@ SELECT
     _inserted_timestamp
 FROM
     {{ ref('silver_dex__kyberswap_v2_elastic_pools') }}
-{% if is_incremental() and 'kyberswap_v2_elastic' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'kyberswap_v2_elastic' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
     FROM
       {{ this }}
   )
@@ -302,11 +302,11 @@ SELECT
     _inserted_timestamp
 FROM
     {{ ref('silver_dex__sushi_pools') }}
-{% if is_incremental() and 'sushi' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'sushi' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
     FROM
       {{ this }}
   )
@@ -330,11 +330,11 @@ SELECT
     _inserted_timestamp
 FROM
     {{ ref('silver_dex__trader_joe_v1_pools') }}
-{% if is_incremental() and 'trader_joe_v1' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'trader_joe_v1' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
     FROM
       {{ this }}
   )
@@ -358,11 +358,11 @@ SELECT
     _inserted_timestamp
 FROM
     {{ ref('silver_dex__trader_joe_v2_pools') }}
-{% if is_incremental() and 'trader_joe_v2' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'trader_joe_v2' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
     FROM
       {{ this }}
   )
@@ -386,11 +386,11 @@ SELECT
     _inserted_timestamp
 FROM
     {{ ref('silver_dex__zyberswap_pools') }}
-{% if is_incremental() and 'zyberswap' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'zyberswap' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
     FROM
       {{ this }}
   )
@@ -415,11 +415,11 @@ SELECT
     _inserted_timestamp
 FROM
     {{ ref('silver_dex__ramses_v2_pools') }}
-{% if is_incremental() and 'ramses_v2' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'ramses_v2' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
     FROM
       {{ this }}
   )
@@ -444,11 +444,11 @@ SELECT
     _inserted_timestamp
 FROM
     {{ ref('silver_dex__univ3_pools') }}
-{% if is_incremental() and 'uni_v3' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'uni_v3' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
     FROM
       {{ this }}
   )
@@ -471,11 +471,11 @@ SELECT
     _inserted_timestamp
 FROM
     {{ ref('silver_dex__univ2_pools') }}
-{% if is_incremental() and 'uni_v2' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'uni_v2' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
     FROM
       {{ this }}
   )
@@ -498,11 +498,11 @@ SELECT
     _inserted_timestamp
 FROM
     {{ ref('silver_dex__sparta_pools') }}
-{% if is_incremental() and 'sparta' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'sparta' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
     FROM
       {{ this }}
   )

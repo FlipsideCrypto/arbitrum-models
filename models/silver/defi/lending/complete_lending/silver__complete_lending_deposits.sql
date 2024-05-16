@@ -1,9 +1,10 @@
+-- depends_on: {{ ref('silver__complete_token_prices') }}
 {{ config(
-  materialized = 'incremental',
-  incremental_strategy = 'delete+insert',
-  unique_key = ['block_number','platform'],
-  cluster_by = ['block_timestamp::DATE'],
-  tags = ['reorg','curated']
+    materialized = 'incremental',
+    incremental_strategy = 'delete+insert',
+    unique_key = ['block_number','platform'],
+    cluster_by = ['block_timestamp::DATE'],
+    tags = ['reorg','curated','heal']
 ) }}
 
 WITH aave AS (
@@ -30,11 +31,11 @@ WITH aave AS (
     FROM
       {{ ref('silver__aave_deposits') }}
 
-  {% if is_incremental() and 'aave' not in var('HEAL_CURATED_MODEL') %}
+  {% if is_incremental() and 'aave' not in var('HEAL_MODELS') %}
   WHERE
     _inserted_timestamp >= (
       SELECT
-        MAX(_inserted_timestamp) - INTERVAL '36 hours'
+        MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
       FROM
         {{ this }}
     )
@@ -63,11 +64,11 @@ radiant as (
   FROM
     {{ ref('silver__radiant_deposits') }}
 
-  {% if is_incremental() and 'radiant' not in var('HEAL_CURATED_MODEL') %}
+  {% if is_incremental() and 'radiant' not in var('HEAL_MODELS') %}
   WHERE
     _inserted_timestamp >= (
       SELECT
-        MAX(_inserted_timestamp) - INTERVAL '36 hours'
+        MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
       FROM
         {{ this }}
     )
@@ -96,11 +97,11 @@ comp as (
   FROM
     {{ ref('silver__comp_deposits') }}
 
-  {% if is_incremental() and 'comp' not in var('HEAL_CURATED_MODEL') %}
+  {% if is_incremental() and 'comp' not in var('HEAL_MODELS') %}
   WHERE
     _inserted_timestamp >= (
       SELECT
-        MAX(_inserted_timestamp) - INTERVAL '36 hours'
+        MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
       FROM
         {{ this }}
     )
@@ -129,11 +130,11 @@ lodestar as (
   FROM
     {{ ref('silver__lodestar_deposits') }}
 
-  {% if is_incremental() and 'lodestar' not in var('HEAL_CURATED_MODEL') %}
+  {% if is_incremental() and 'lodestar' not in var('HEAL_MODELS') %}
   WHERE
     _inserted_timestamp >= (
       SELECT
-        MAX(_inserted_timestamp) - INTERVAL '36 hours'
+        MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
       FROM
         {{ this }}
     )
@@ -162,11 +163,11 @@ dforce as (
   FROM
     {{ ref('silver__dforce_deposits') }}
 
-  {% if is_incremental() and 'dforce' not in var('HEAL_CURATED_MODEL') %}
+  {% if is_incremental() and 'dforce' not in var('HEAL_MODELS') %}
   WHERE
     _inserted_timestamp >= (
       SELECT
-        MAX(_inserted_timestamp) - INTERVAL '36 hours'
+        MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
       FROM
         {{ this }}
     )
@@ -195,11 +196,11 @@ silo as (
   FROM
     {{ ref('silver__silo_deposits') }}
 
-  {% if is_incremental() and 'aave' not in var('HEAL_CURATED_MODEL') %}
+  {% if is_incremental() and 'aave' not in var('HEAL_MODELS') %}
   WHERE
     _inserted_timestamp >= (
       SELECT
-        MAX(_inserted_timestamp) - INTERVAL '36 hours'
+        MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
       FROM
         {{ this }}
     )
