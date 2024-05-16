@@ -2,7 +2,7 @@
     materialized = 'incremental',
     full_refresh = false,
     unique_key = ['ticker_id','hour'],
-    cluster_by = ['HOUR::DATE'],
+    cluster_by = ['hour::DATE'],
     tags = 'curated'
 ) }}
 
@@ -30,10 +30,10 @@ WITH  market_stats_pull as (
     FROM
         {{ ref('silver__vertex_market_stats') }}
 {% if is_incremental() %}
-WHERE inserted_timestamp >= (
+WHERE hour > (
     SELECT
         MAX(
-            inserted_timestamp
+            hour
         )
     FROM
         {{ this }}

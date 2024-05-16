@@ -110,7 +110,6 @@ FINAL AS (
         s.product_type,
         s.quote_currency,
         s.quote_volume,
-        s.inserted_timestamp,
         t._inserted_timestamp,
     FROM
         market_stats s
@@ -150,7 +149,6 @@ SELECT
     s.product_type,
     s.quote_currency,
     s.quote_volume,
-    s.inserted_timestamp,
     t._inserted_timestamp
 FROM
     {{ this }}

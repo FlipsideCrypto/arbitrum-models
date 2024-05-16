@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    incremental_strategy = 'delete+insert',
+    full_refresh = false,
     unique_key = ['product_id','hour','price'],
     cluster_by = ['hour::DATE'],
     tags = 'curated'
@@ -25,10 +25,10 @@ WITH market_depth AS (
     FROM
         {{ ref('silver__vertex_market_depth') }}
 {% if is_incremental() %}
-WHERE inserted_timestamp >= (
+WHERE hour > (
     SELECT
         MAX(
-            inserted_timestamp
+            hour
         )
     FROM
         {{ this }}
