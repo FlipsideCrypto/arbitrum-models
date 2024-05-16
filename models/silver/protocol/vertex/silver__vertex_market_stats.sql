@@ -1,5 +1,6 @@
 {{ config(
     materialized = 'incremental',
+    incremental_strategy = 'merge',
     full_refresh = false,
     unique_key = ['ticker_id','hour'],
     cluster_by = ['HOUR::DATE'],
