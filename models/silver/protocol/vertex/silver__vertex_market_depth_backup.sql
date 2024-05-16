@@ -39,6 +39,4 @@ SELECT
     *,
     SYSDATE() AS modified_timestamp
 FROM
-    market_depth qualify(ROW_NUMBER() over(PARTITION BY ticker_id, HOUR
-ORDER BY
-    inserted_timestamp DESC NULLS LAST)) = 1
+    market_depth
