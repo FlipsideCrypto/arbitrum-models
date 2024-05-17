@@ -1,5 +1,6 @@
 {{ config(
     materialized = 'incremental',
+    incremental_strategy = 'merge',
     full_refresh = false,
     unique_key = ['ticker_id','hour'],
     cluster_by = ['HOUR::DATE'],
@@ -36,7 +37,7 @@ market_stats AS (
         f.value :quote_currency :: STRING AS quote_currency,
         f.value :quote_volume :: FLOAT AS quote_volume,
         f.key AS ticker_id,
-        SYSDATE() AS _inserted_timestamp
+        SYSDATE() AS inserted_timestamp
     FROM
         api_pull A,
         LATERAL FLATTEN(
@@ -68,7 +69,7 @@ trade_snapshot AS (
         {{ ref('silver__vertex_perps') }}
         p
     WHERE
-        block_timestamp > SYSDATE() - INTERVAL '12 hour'
+        block_timestamp >= '2024-04-04 00:00:00.000'
     GROUP BY
         1,
         2,
@@ -162,13 +163,13 @@ FROM
 )
 SELECT
     *,
-    SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     {{ dbt_utils.generate_surrogate_key(
         ['ticker_id','hour']
     ) }} AS vertex_market_stats_id,
     '{{ invocation_id }}' AS _invocation_id
 FROM
-    FINAL qualify(ROW_NUMBER() over(PARTITION BY ticker_id, HOUR
+    FINAL
+WHERE FUNDING_RATE <> 0 qualify(ROW_NUMBER() over(PARTITION BY ticker_id, HOUR
 ORDER BY
-    _inserted_timestamp DESC)) = 1
+    _inserted_timestamp DESC NULLS LAST)) = 1
