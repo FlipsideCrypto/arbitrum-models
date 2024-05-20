@@ -224,7 +224,7 @@ FINAL AS (
         stake_action,
         amount_unadj,
         amount,
-        amount * price AS amount0_usd,
+        amount * price AS amount_usd,
         symbol,
         _log_id,
         _inserted_timestamp
