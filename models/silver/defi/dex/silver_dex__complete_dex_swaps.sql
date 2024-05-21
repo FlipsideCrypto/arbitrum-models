@@ -159,12 +159,13 @@ curve AS (
     {{ ref('silver_dex__curve_swaps') }}
 
 {% if is_incremental() and 'curve' not in var('HEAL_MODELS') %}
-AND _inserted_timestamp >= (
-  SELECT
-    MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
-  FROM
-    {{ this }}
-)
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+    FROM
+      {{ this }}
+  )
 {% endif %}
 ),
 trader_joe_v1 AS (
@@ -427,7 +428,7 @@ kyberswap_v1_dynamic AS (
     _log_id,
     _inserted_timestamp
   FROM
-    {{ ref('silver_dex__kyberswap_v1_dynamic') }}
+    {{ ref('silver_dex__kyberswap_v1_dynamic_swaps') }}
 
 {% if is_incremental() and 'kyberswap_v1_dynamic' not in var('HEAL_MODELS') %}
 WHERE
