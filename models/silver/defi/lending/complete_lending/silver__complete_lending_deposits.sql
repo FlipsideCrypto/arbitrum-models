@@ -35,7 +35,7 @@ WITH aave AS (
   WHERE
     _inserted_timestamp >= (
       SELECT
-        MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+        MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
       FROM
         {{ this }}
     )
@@ -68,7 +68,7 @@ radiant as (
   WHERE
     _inserted_timestamp >= (
       SELECT
-        MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+        MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
       FROM
         {{ this }}
     )
@@ -101,7 +101,7 @@ comp as (
   WHERE
     _inserted_timestamp >= (
       SELECT
-        MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+        MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
       FROM
         {{ this }}
     )
@@ -134,7 +134,7 @@ lodestar as (
   WHERE
     _inserted_timestamp >= (
       SELECT
-        MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+        MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
       FROM
         {{ this }}
     )
@@ -167,7 +167,7 @@ dforce as (
   WHERE
     _inserted_timestamp >= (
       SELECT
-        MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+        MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
       FROM
         {{ this }}
     )
@@ -200,7 +200,7 @@ silo as (
   WHERE
     _inserted_timestamp >= (
       SELECT
-        MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+        MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
       FROM
         {{ this }}
     )
