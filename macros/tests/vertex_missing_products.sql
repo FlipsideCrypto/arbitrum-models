@@ -11,6 +11,7 @@ invalid_product_ids as (
     select distinct product_id
     from {{ ref('silver__vertex_dim_products') }}
     where product_id not in (select product_id from recent_records)
+    AND block_timestamp < sysdate() - INTERVAL '2 days'
     {% if filter %}
         AND {{ filter }}
     {% endif %}
