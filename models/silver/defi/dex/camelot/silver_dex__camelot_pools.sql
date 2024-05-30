@@ -33,6 +33,7 @@ WITH pool_creation AS (
             --PairCreated v2
             '0x91ccaa7a278130b65168c3a0c8d3bcae84cf5e43704342bd3ec0b59e59c036db'
         ) --v3
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
