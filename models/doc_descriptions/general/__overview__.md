@@ -66,6 +66,10 @@ There is more information on how to use dbt docs in the last section of this doc
 - [ez_market_stats](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.vertex__ez_market_stats)
 - [ez_staking_actions](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.vertex__ez_staking_actions)
 
+### Olas Tables (arbitrum.olas)
+- [dim_registry_metadata](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.olas__dim_registry_metadata)
+- [fact_service_event_logs](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.olas__fact_service_event_logs)
+- [ez_service_registrations](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.olas__ez_service_registrations)
 
 ### NFT Tables (arbitrum.nft)
 - [ez_nft_sales](https://flipsidecrypto.github.io/arbitrum-models/#!/model/model.arbitrum_models.nft__ez_nft_sales)
