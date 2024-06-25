@@ -37,7 +37,7 @@ WHERE
 {% else %}
     {{ ref('bronze__streamline_FR_traces') }}
 WHERE
-    _partition_by_block_id <= 5000000
+    _partition_by_block_id <= 30000000
     AND block_number > 22207817
 {% endif %}
 
