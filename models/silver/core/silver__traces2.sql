@@ -28,7 +28,17 @@ WHERE
         FROM
             {{ this }}
     )
+<<<<<<< HEAD
     AND DATA :result IS NOT NULL
+=======
+    AND (
+        SELECT
+            MAX(partition_key) + 6000000
+        FROM
+            {{ this }}
+    )
+    AND block_number > 22207817
+>>>>>>> c24ba6b4042792ae319900e97cbf649050b5e4ee
 {% else %}
     {{ ref('bronze__streamline_FR_traces') }}
 WHERE
