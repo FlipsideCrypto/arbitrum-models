@@ -23,7 +23,6 @@ WHERE
     tx.block_timestamp >= DATEADD('hour', -84, SYSDATE())
     AND tr.tx_hash IS NULL
     AND tx.to_address <> '0x000000000000000000000000000000000000006e'
-    AND tr.to_address <> '0x000000000000000000000000000000000000006e'
     AND tx.block_number >= (
         SELECT
             block_number
