@@ -131,4 +131,5 @@ FROM
 WHERE
     tr.tx_hash IS NULL
     AND tx.to_address <> '0x000000000000000000000000000000000000006e'
+    and tx.block_number > 22207817
 {% endmacro %}
