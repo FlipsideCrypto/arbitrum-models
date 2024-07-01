@@ -11,7 +11,8 @@ WITH pools AS (
     SELECT
         lb_pair,
         tokenX,
-        tokenY
+        tokenY,
+        version
     FROM
         {{ ref('silver_dex__trader_joe_v2_pools') }}
 ),
@@ -70,6 +71,7 @@ swaps_base AS (
         ) AS protocolFee1,
         tokenX,
         tokenY,
+        p.version,
         l._log_id,
         l._inserted_timestamp
     FROM
@@ -137,6 +139,7 @@ SELECT
     END AS token_out,
     'Swap' AS event_name,
     'trader-joe-v2' AS platform,
+    version,
     _log_id,
     _inserted_timestamp
 FROM
