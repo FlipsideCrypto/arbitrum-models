@@ -11,7 +11,8 @@ WITH settings AS (
     SELECT
         '2023-03-23' AS start_date,
         '0x18cd9270dbdca86d470cfb3be1b156241fffa9de' AS main_address,
-        -- '0x3f07f6439cdf7a3a034e4ecd2e8d225cc2110783', '0x00ca62445b06a9adc1879a44485b4efdcb7b75f3' AS fee_address,
+        -- new fee address '0x3f07f6439cdf7a3a034e4ecd2e8d225cc2110783',
+        -- old fee address '0x00ca62445b06a9adc1879a44485b4efdcb7b75f3'
         '0x82af49447d8a07e3bd95bd0d56f35241523fbab1' AS wrapped_native_address
 ),
 raw AS (
