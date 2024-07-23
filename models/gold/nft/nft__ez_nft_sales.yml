@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: nft__ez_nft_sales
-    description: 'This table contains NFT sale events on the Arbitrum blockchain which includes Opensea and Treasure' 
+    description: 'This table contains NFT sale events on the Arbitrum blockchain which includes Opensea, Treasure and Element' 
       
     columns:
       - name: BLOCK_NUMBER
