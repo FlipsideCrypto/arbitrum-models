@@ -3,8 +3,7 @@
     materialized = "incremental",
     incremental_strategy = 'delete+insert',
     unique_key = "block_number",
-    cluster_by = ['partition_key'],
-    full_refresh = false
+    cluster_by = ['partition_key']
 ) }}
 
 WITH bronze_traces AS (
@@ -27,8 +26,7 @@ WHERE
 WHERE
     _partition_by_block_id <= 30000000
     AND block_number <= 22207817
-    AND DATA :result IS NOT NULL
-    AND DATA :result <> '[]'
+    AND DATA :action IS NOT NULL
 {% endif %}
 
 qualify(ROW_NUMBER() over(PARTITION BY block_number, VALUE :array_index :: INT, DATA :transactionPosition :: INT
