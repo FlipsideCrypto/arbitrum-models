@@ -50,6 +50,16 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 ),
+
+products as (
+    SELECT
+        *
+    FROM
+        {{ ref('silver__vertex_dim_products') }} qualify(ROW_NUMBER() over(PARTITION BY product_id
+    ORDER BY
+        _inserted_timestamp DESC)) = 1
+),
+
 product_id_join AS (
     SELECT
         l.block_number,
@@ -83,7 +93,7 @@ product_id_join AS (
         l._inserted_timestamp
     FROM
         logs_pull l
-        LEFT JOIN {{ ref('silver__vertex_dim_products') }}
+        products
         p
         ON l.product_id = p.product_id
 ),
