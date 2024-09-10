@@ -9,7 +9,7 @@
 ) }}
 {{ fsc_evm.gold_traces_v1(
     full_reload_start_block = 30000000,
-    full_reload_blocks = 5000000,
+    full_reload_blocks = 10000000,
     full_reload_mode = true,
     arb_traces_mode = true
 ) }}
