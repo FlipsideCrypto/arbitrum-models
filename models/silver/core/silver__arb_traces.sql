@@ -23,7 +23,7 @@ WITH bronze_traces AS (
 WHERE
     1 = 2
 {% else %}
-    {{ ref('bronze__streamline_FR_traces') }}
+    {{ ref('bronze__streamline_fr_traces') }}
 WHERE
     _partition_by_block_id <= 30000000
     AND block_number <= 22207817
