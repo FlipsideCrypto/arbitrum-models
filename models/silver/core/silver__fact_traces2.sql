@@ -4,7 +4,7 @@
     unique_key = ['block_number'],
     cluster_by = "block_timestamp::date",
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
-    tags = ['traces_reload'],
+    tags = ['core','non_realtime'],
     full_refresh = false
 ) }}
 {{ fsc_evm.gold_traces_v1(
