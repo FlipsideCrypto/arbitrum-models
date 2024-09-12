@@ -5,7 +5,7 @@
     cluster_by = "block_timestamp::date",
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
     tags = ['core','non_realtime'],
-    incremental_predicates = [standard_predicate()],
+    incremental_predicates = [fsc_evm.standard_predicate()],
     full_refresh = false
 ) }}
 {{ fsc_evm.gold_traces_v1(
