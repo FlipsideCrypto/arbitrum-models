@@ -78,10 +78,7 @@ trade_snapshot AS (
 ),
 products AS (
     SELECT
-        ticker_id,
-        product_id,
-        symbol,
-        _inserted_timestamp
+        *
     FROM
         {{ ref('silver__vertex_dim_products') }}
 ),

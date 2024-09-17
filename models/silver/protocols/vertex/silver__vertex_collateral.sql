@@ -50,14 +50,6 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 ),
-
-products as (
-    SELECT
-        *
-    FROM
-        {{ ref('silver__vertex_dim_products') }}
-),
-
 product_id_join AS (
     SELECT
         l.block_number,
@@ -92,7 +84,7 @@ product_id_join AS (
     FROM
         logs_pull l
     LEFT JOIN
-        products
+        {{ ref('silver__vertex_dim_products') }}
         p
         ON l.product_id = p.product_id
 ),
