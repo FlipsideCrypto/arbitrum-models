@@ -83,8 +83,7 @@ product_id_join AS (
         l._inserted_timestamp
     FROM
         logs_pull l
-    LEFT JOIN
-        {{ ref('silver__vertex_dim_products') }}
+        LEFT JOIN {{ ref('silver__vertex_dim_products') }}
         p
         ON l.product_id = p.product_id
 ),
