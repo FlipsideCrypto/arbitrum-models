@@ -55,9 +55,7 @@ products as (
     SELECT
         *
     FROM
-        {{ ref('silver__vertex_dim_products') }} qualify(ROW_NUMBER() over(PARTITION BY product_id
-    ORDER BY
-        _inserted_timestamp DESC)) = 1
+        {{ ref('silver__vertex_dim_products') }}
 ),
 
 product_id_join AS (
@@ -93,6 +91,7 @@ product_id_join AS (
         l._inserted_timestamp
     FROM
         logs_pull l
+    LEFT JOIN
         products
         p
         ON l.product_id = p.product_id

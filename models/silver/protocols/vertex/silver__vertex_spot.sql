@@ -22,9 +22,7 @@ WITH vertex_products AS (
     FROM
         {{ ref('silver__vertex_dim_products') }}
     WHERE
-        product_type = 'spot' qualify(ROW_NUMBER() over(PARTITION BY product_id
-    ORDER BY
-        _inserted_timestamp DESC)) = 1
+        product_type = 'spot'
 ),
 logs AS (
     SELECT

@@ -15,9 +15,7 @@ WITH health_groups AS (
     FROM
         {{ ref('silver__vertex_dim_products') }}
     GROUP BY
-        ALL qualify(ROW_NUMBER() over(PARTITION BY product_id
-    ORDER BY
-        _inserted_timestamp DESC)) = 1
+        ALL
 ),
 logs AS (
     SELECT
