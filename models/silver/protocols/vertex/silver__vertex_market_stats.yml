@@ -23,7 +23,9 @@ models:
         tests:
           - not_null
       - name: SYMBOL
+          - not_null
       - name: PRODUCT_ID
+          - not_null
       - name: DISTINCT_SEQUENCE
         tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
