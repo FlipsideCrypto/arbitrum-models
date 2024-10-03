@@ -62,6 +62,7 @@ WITH router_swaps_base AS (
             '0xcdfd61a8303beb5c8dd2a6d02df8d228ce15b9f3',
             '0x9aed3a8896a85fe9a8cac52c9b402d092b629a30',
             '0xd2635bc7e4e4f63b2892ed80d0b0f9dff7eda899',
+            '0x4c4af8dbc524681930a27b2f1af5bcc8062e6fb7',
             --v2
             '0xb130a49065178465931d4f887056328cea5d723f'
         ) --v3
@@ -130,7 +131,8 @@ swaps_base AS (
             '0xeff23b4be1091b53205e35f3afcd9c7182bf3062',
             '0xb89a33227876aef02a7ebd594af9973aece2f521',
             '0x8693f9701d6db361fe9cc15bc455ef4366e39ae0',
-            '0x1f79f8a65e02f8a137ce7f79c038cc44332df448'
+            '0x1f79f8a65e02f8a137ce7f79c038cc44332df448',
+            '0xed9e3f98bbed560e66b89aac922e29d4596a9642'
         )
         AND topics [0] :: STRING IN (
             '0x74ef34e2ea7c5d9f7b7ed44e97ad44b4303416c3a660c3fb5b3bdb95a1d6abd3',
