@@ -71,6 +71,7 @@ AND tr._inserted_timestamp >= (
     FROM
         {{ this }}
 )
+AND tr._inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 native_transfers AS (
@@ -133,6 +134,7 @@ AND et._inserted_timestamp >= (
     FROM
         {{ this }}
 )
+AND et._inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 all_transfers AS (

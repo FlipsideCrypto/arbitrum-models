@@ -40,16 +40,14 @@ WITH flashloan AS (
         {{ ref('silver__logs') }}
     WHERE
         topics [0] :: STRING = '0x631042c832b07452973831137f2d73e395028b44b250dedc5abb0ee766e168ac'
-
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(
-            _inserted_timestamp
-        ) - INTERVAL '12 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 AND contract_address IN (
     LOWER('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F'),

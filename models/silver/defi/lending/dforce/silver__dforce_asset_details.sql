@@ -24,16 +24,14 @@ WITH log_pull AS (
             LOWER('0x655284bebcc6e1dffd098ec538750d43b57bc743'),
             LOWER('0xde6d6f23aabbdc9469c8907ece7c379f98e4cb75')
         )
-
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(
-            _inserted_timestamp
-        ) - INTERVAL '12 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 traces_pull AS (

@@ -29,16 +29,14 @@ WITH stake_pull AS (
     WHERE
         to_address = LOWER('0x5Be754aD77766089c4284d914F0cC37E8E3F669A')
         OR from_address = LOWER('0x5Be754aD77766089c4284d914F0cC37E8E3F669A')
-
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(
-            _inserted_timestamp
-        ) - INTERVAL '12 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 FINAL AS (

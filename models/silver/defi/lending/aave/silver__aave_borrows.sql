@@ -49,16 +49,14 @@ borrow AS (
         {{ ref('silver__logs') }}
     WHERE
         topics [0] :: STRING = '0xb3d084820fb1a9decffb176436bd02558d15fac9b0ddfed8c465bc7359d7dce0'
-
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(
-            _inserted_timestamp
-        ) - INTERVAL '12 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 AND contract_address = LOWER('0x794a61358D6845594F94dc1DB02A252b5b4814aD')
 AND tx_status = 'SUCCESS' --excludes failed txs
