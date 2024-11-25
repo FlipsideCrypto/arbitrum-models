@@ -39,16 +39,14 @@ WITH repay AS(
         {{ ref('silver__logs') }}
     WHERE
         topics [0] :: STRING = '0xa534c8dbe71f871f9f3530e97a74601fea17b426cae02e1c5aee42c96c784051'
-
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(
-            _inserted_timestamp
-        ) - INTERVAL '12 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 AND contract_address = LOWER('0x794a61358D6845594F94dc1DB02A252b5b4814aD')
 AND tx_status = 'SUCCESS' --excludes failed txs

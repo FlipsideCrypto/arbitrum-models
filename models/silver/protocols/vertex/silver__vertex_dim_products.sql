@@ -24,16 +24,14 @@ WITH logs_pull AS (
             '0x3286b0394bf1350245290b7226c92ed186bd716f28938e62dbb895298f018172',
             '0x7f26b83ff96e1f2b6a682f133852f6798a09c465da95921460cefb3847402498'
         )
-
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(
-            _inserted_timestamp
-        ) - INTERVAL '12 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 new_prod AS (
