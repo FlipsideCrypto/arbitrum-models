@@ -4,7 +4,7 @@
     unique_key = "block_number",
     cluster_by = "block_timestamp::date",
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
-    tags = ['core_delete','non_realtime_delete'],
+    tags = ['core','non_realtime'],
     incremental_predicates = [fsc_evm.standard_predicate()],
     full_refresh = false
 ) }}
