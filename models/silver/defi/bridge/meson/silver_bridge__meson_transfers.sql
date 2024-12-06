@@ -20,10 +20,14 @@ WITH token_transfers AS (
         from_address,
         to_address,
         raw_amount,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__transfers') }}
+        {{ ref('core__ez_token_transfers') }}
     WHERE
         from_address <> '0x0000000000000000000000000000000000000000'
         AND to_address = '0x25ab3efd52e6470681ce037cd546dc60726948d3'
@@ -151,13 +155,13 @@ SELECT
     bridge_address,
     sender,
     receiver,
-    CASE 
+    CASE
         WHEN origin_from_address = '0x0000000000000000000000000000000000000000' THEN sender
         ELSE origin_from_address
     END AS destination_chain_receiver,
     amount_unadj,
     destination_chain_id,
-    COALESCE(LOWER(chain),'other') AS destination_chain,
+    COALESCE(LOWER(chain), 'other') AS destination_chain,
     token_address,
     _id,
     t._inserted_timestamp

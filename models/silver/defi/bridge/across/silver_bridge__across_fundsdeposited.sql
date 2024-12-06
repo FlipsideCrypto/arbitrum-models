@@ -21,38 +21,42 @@ WITH base_evt AS (
         topics [0] :: STRING AS topic_0,
         event_name,
         TRY_TO_NUMBER(
-            decoded_flat :"amount" :: STRING
+            decoded_log :"amount" :: STRING
         ) AS amount,
         TRY_TO_NUMBER(
-            decoded_flat :"depositId" :: STRING
+            decoded_log :"depositId" :: STRING
         ) AS depositId,
-        decoded_flat :"depositor" :: STRING AS depositor,
+        decoded_log :"depositor" :: STRING AS depositor,
         TRY_TO_NUMBER(
-            decoded_flat :"destinationChainId" :: STRING
+            decoded_log :"destinationChainId" :: STRING
         ) AS destinationChainId,
-        decoded_flat :"message" :: STRING AS message,
+        decoded_log :"message" :: STRING AS message,
         TRY_TO_NUMBER(
-            decoded_flat :"originChainId" :: STRING
+            decoded_log :"originChainId" :: STRING
         ) AS originChainId,
-        decoded_flat :"originToken" :: STRING AS originToken,
+        decoded_log :"originToken" :: STRING AS originToken,
         TRY_TO_TIMESTAMP(
-            decoded_flat :"quoteTimestamp" :: STRING
+            decoded_log :"quoteTimestamp" :: STRING
         ) AS quoteTimestamp,
-        decoded_flat :"recipient" :: STRING AS recipient,
+        decoded_log :"recipient" :: STRING AS recipient,
         TRY_TO_NUMBER(
-            decoded_flat :"relayerFeePct" :: STRING
+            decoded_log :"relayerFeePct" :: STRING
         ) AS relayerFeePct,
-        decoded_flat,
+        decoded_log,
         event_removed,
-        tx_status,
-        _log_id,
-        _inserted_timestamp
+        tx_succeeded,
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         topics [0] :: STRING = '0xafc4df6845a4ab948b492800d3d8a25d538a102a2bc07cd01f1cfa097fddcff6'
         AND contract_address = '0xe35e9842fceaca96570b734083f4a58e8f7c5f2a'
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -75,9 +79,9 @@ SELECT
     topic_0,
     event_name,
     event_removed,
-    tx_status,
+    tx_succeeded,
     contract_address AS bridge_address,
-    name AS platform,
+    NAME AS platform,
     depositor AS sender,
     recipient AS receiver,
     recipient AS destination_chain_receiver,

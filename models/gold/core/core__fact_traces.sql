@@ -5,34 +5,44 @@
 ) }}
 
 SELECT
-    tx_hash,
     block_number,
     block_timestamp,
+    tx_hash,
+    1 AS tx_position,
+    -- new column
+    trace_index,
     from_address,
     to_address,
-    eth_value AS VALUE,
-    eth_value_precise_raw AS value_precise_raw,
-    eth_value_precise AS value_precise,
-    gas,
-    gas_used,
     input,
     output,
     TYPE,
-    identifier,
-    DATA,
-    tx_status,
+    '0x' AS trace_address,
+    --new column
     sub_traces,
-    trace_status,
+    DATA,
+    VALUE,
+    value_precise_raw,
+    value_precise,
+    '0x' AS value_hex,
+    --new column
+    gas,
+    gas_used,
+    '0x' AS origin_from_address,
+    -- new column
+    '0x' AS origin_to_address,
+    -- new column
+    '0x' AS origin_function_signature,
+    -- new column
+    TRUE AS trace_succeeded,
+    -- new column
     error_reason,
-    trace_index,
+    '0x' AS revert_reason,
+    -- new column
+    TRUE AS tx_succeeded,
+    -- new column
     before_evm_transfers,
     after_evm_transfers,
-    COALESCE (
-        traces_id,
-        {{ dbt_utils.generate_surrogate_key(
-            ['tx_hash', 'trace_index']
-        ) }}
-    ) AS fact_traces_id,
+    fact_traces_id,
     COALESCE(
         inserted_timestamp,
         '2000-01-01'
@@ -40,6 +50,11 @@ SELECT
     COALESCE(
         modified_timestamp,
         '2000-01-01'
-    ) AS modified_timestamp
+    ) AS modified_timestamp,
+    identifier,
+    -- deprecate
+    tx_status,
+    -- deprecate
+    trace_status -- deprecate
 FROM
-    {{ ref('silver__traces') }}
+    {{ ref('silver__fact_traces2') }}

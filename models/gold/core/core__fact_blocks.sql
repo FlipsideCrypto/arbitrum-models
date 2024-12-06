@@ -6,21 +6,34 @@
 
 SELECT
     block_number,
+    HASH AS block_hash,
+    --new
     block_timestamp,
     'mainnet' AS network,
     'arbitrum' AS blockchain,
+    -- deprecate
     tx_count,
+    SIZE,
+    miner,
+    --new
+    extra_data,
+    parent_hash,
+    gas_used,
+    gas_limit,
     difficulty,
     total_difficulty,
-    extra_data,
-    gas_limit,
-    gas_used,
-    HASH,
-    parent_hash,
-    receipts_root,
     sha3_uncles,
-    SIZE,
-    uncles as uncle_blocks,
+    uncles AS uncle_blocks,
+    nonce,
+    -- new column
+    receipts_root,
+    -- new column
+    state_root,
+    -- new column
+    transactions_root,
+    -- new column
+    logs_bloom,
+    -- new column
     OBJECT_CONSTRUCT(
         'baseFeePerGas',
         base_fee_per_gas,
@@ -61,6 +74,7 @@ SELECT
         'uncles',
         uncles
     ) AS block_header_json,
+    -- deprecate
     COALESCE (
         blocks_id,
         {{ dbt_utils.generate_surrogate_key(
@@ -88,5 +102,6 @@ SELECT
         )
     ) AS modified_timestamp
 FROM
-    {{ ref('silver__blocks') }} a 
-    LEFT JOIN {{ ref('silver__tx_count') }} d USING (block_number)
+    {{ ref('silver__blocks') }} A
+    LEFT JOIN {{ ref('silver__tx_count') }}
+    d USING (block_number)
