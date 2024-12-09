@@ -523,3 +523,21 @@ Symbol of the target asset.
 
 The staking action with the VRTX staking address
 {% enddocs %}
+
+{% docs vertex_deposit_apr %}
+
+The recorded deposit APR for the money market product in that hour.
+
+{% enddocs %}
+
+{% docs vertex_borrow_apr %}
+
+The recorded borrow APR for the money market product in that hour.
+
+{% enddocs %}
+
+{% docs vertex_tvl %}
+
+The sum total value locked for the money market product in that hour.
+
+{% enddocs %}
