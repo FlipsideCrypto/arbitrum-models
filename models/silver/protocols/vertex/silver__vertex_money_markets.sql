@@ -1,4 +1,3 @@
-
 {{ config(
     materialized = 'incremental',
     incremental_strategy = 'merge',
@@ -7,32 +6,32 @@
     tags = 'curated'
 ) }}
 
-
 WITH apr AS (
+
     SELECT
         PARSE_JSON(
             live.udf_api(
                 'https://gateway.prod.vertexprotocol.com/v2/apr'
             )
-        ):data AS response
+        ) :data AS response
 ),
 flattened AS (
-SELECT
-    DATE_TRUNC('hour', SYSDATE()) AS HOUR,
-    CONCAT(
-        f.value:symbol::string,
+    SELECT
+        DATE_TRUNC('hour', SYSDATE()) AS HOUR,
+        CONCAT(
+            f.value :symbol :: STRING,
             '_USDC'
-    ) AS ticker_id,
-    f.value:symbol::string AS symbol,
-    f.value:product_id::string AS product_id,
-    f.value:deposit_apr::float AS deposit_apr,
-    f.value:borrow_apr::float AS borrow_apr,
-    f.value:tvl::float AS tvl
-FROM
-    apr A,
-    LATERAL FLATTEN(
-        input => response
-    ) AS f
+        ) AS ticker_id,
+        f.value :symbol :: STRING AS symbol,
+        f.value :product_id :: STRING AS product_id,
+        f.value :deposit_apr :: FLOAT AS deposit_apr,
+        f.value :borrow_apr :: FLOAT AS borrow_apr,
+        f.value :tvl :: FLOAT AS tvl
+    FROM
+        apr A,
+        LATERAL FLATTEN(
+            input => response
+        ) AS f
 )
 SELECT
     HOUR,
@@ -50,6 +49,7 @@ SELECT
     '{{ invocation_id }}' AS _invocation_id
 FROM
     flattened
-WHERE product_id not in ('121','125')  qualify(ROW_NUMBER() over(PARTITION BY ticker_id, HOUR
+WHERE
+    product_id NOT IN ('121', '125') qualify(ROW_NUMBER() over(PARTITION BY ticker_id, HOUR
 ORDER BY
-    inserted_timestamp DESC )) = 1
+    inserted_timestamp DESC)) = 1
