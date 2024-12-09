@@ -1,10 +1,17 @@
-{{ config(
-    materialized = 'incremental',
-    unique_key = 'ez_money_markets_id',
-    merge_exclude_columns = ["inserted_timestamp"],
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(ticker_id,product_id,symbol), SUBSTRING(ticker_id,product_id,symbol)",
-    tags = ['curated', 'gold_vertex']
+ {{ config(
+    materialized = 'view',
+    persist_docs ={ "relation": true,
+    "columns": true },
+    meta={
+        'database_tags':{
+            'table': {
+                'PROTOCOL': 'VERTEX',
+                'PURPOSE': 'CLOB, DEX, STATS'
+            }
+        }
+    }
 ) }}
+
 
 SELECT
     hour,
@@ -19,12 +26,3 @@ SELECT
     modified_timestamp
 FROM
     {{ ref('silver__vertex_money_markets') }}
-{% if is_incremental() %}
-WHERE
-    modified_timestamp > (
-        SELECT
-            MAX(modified_timestamp)
-        FROM
-            {{ this }}
-    )
-{% endif %}
