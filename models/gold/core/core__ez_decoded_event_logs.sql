@@ -11,6 +11,7 @@ SELECT
     {# tx_position,  #} -- new column
     event_index,
     contract_address,
+    topics,
     topics [0] :: STRING AS topic_0,
     --new column
     topics [1] :: STRING AS topic_1,

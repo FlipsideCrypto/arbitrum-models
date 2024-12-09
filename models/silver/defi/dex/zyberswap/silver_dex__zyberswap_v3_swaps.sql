@@ -68,24 +68,29 @@ swaps_base AS (
             WHEN amount0 > 0 THEN token0
             ELSE token1
         END AS token_out,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        l.modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }} l
+        {{ ref('core__fact_event_logs') }}
+        l
         INNER JOIN pools p
         ON p.pool_address = contract_address
     WHERE
         topics [0] :: STRING = '0xc42079f94a6350d7e6235f29174924f928cc2ac818eb64fed8004e115fbcca67'
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND l.modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND l.modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 )
 SELECT

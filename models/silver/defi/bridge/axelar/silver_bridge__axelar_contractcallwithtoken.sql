@@ -154,7 +154,11 @@ FINAL AS (
         b.topic_0,
         b.event_name,
         b.event_removed,
-        b.tx_succeeded,
+        IFF(
+            b.tx_succeeded,
+            'SUCCESS',
+            'FAIL'
+        ) AS tx_status,
         b.contract_address AS bridge_address,
         b.name AS platform,
         b.origin_from_address AS sender,

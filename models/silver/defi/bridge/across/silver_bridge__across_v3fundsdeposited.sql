@@ -87,7 +87,11 @@ SELECT
     topic_0,
     event_name,
     event_removed,
-    tx_succeeded,
+    IFF(
+        tx_succeeded,
+        'SUCCESS',
+        'FAIL'
+    ) AS tx_status,
     contract_address AS bridge_address,
     NAME AS platform,
     depositor AS sender,
