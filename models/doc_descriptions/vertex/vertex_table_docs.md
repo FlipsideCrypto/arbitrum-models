@@ -59,3 +59,10 @@ All staking actions taken with the VRTX staking contract.
 All edge trades paired with the associated trader/subaccount.
 
 {% enddocs %}
+
+{% docs vertex_money_markets %}
+
+Vertex integrates a decentralized money market directly into its DEX, enabling borrowing and lending of crypto assets using overcollateralized lending rules. Interest rates are dynamically adjusted based on supply and demand, incentivizing liquidity provision and balancing borrowing costs. The money market operates on-chain (e.g., on Arbitrum) and is managed through Vertex’s risk engine and clearinghouse, offering users automated borrowing via portfolio margin and passive yield opportunities on idle assets. This table tracks the money market products available on Vertex on an hourly basis.
+
+
+{% enddocs %}
