@@ -25,8 +25,7 @@ WITH stake_pull AS (
         _log_id,
         _inserted_timestamp
     FROM
-        --{{ ref('silver__transfers') }}
-        arbitrum.core.ez_token_transfers
+        {{ ref('silver__transfers') }}
     WHERE
         (
             to_address = LOWER('0x5Be754aD77766089c4284d914F0cC37E8E3F669A')
