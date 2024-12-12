@@ -27,8 +27,20 @@ WITH stake_pull AS (
     FROM
         {{ ref('silver__transfers') }}
     WHERE
-        to_address = LOWER('0x5Be754aD77766089c4284d914F0cC37E8E3F669A')
-        OR from_address = LOWER('0x5Be754aD77766089c4284d914F0cC37E8E3F669A')
+        --v1 staking contract
+        (
+            to_address = LOWER('0x5Be754aD77766089c4284d914F0cC37E8E3F669A')
+            OR from_address = LOWER('0x5Be754aD77766089c4284d914F0cC37E8E3F669A')
+        )
+        --v2 staking contract
+        OR (
+            contract_address = LOWER('0x95146881b86B3ee99e63705eC87AfE29Fcc044D9')
+            AND (
+                to_address = LOWER('0x6e89C20F182b1744405603958eC5E3fd93441cc4')
+                OR from_address = LOWER('0x6e89C20F182b1744405603958eC5E3fd93441cc4')
+            )
+        )
+
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
@@ -52,6 +64,10 @@ FINAL AS (
         to_address,
         CASE
             WHEN to_address = LOWER('0x5Be754aD77766089c4284d914F0cC37E8E3F669A') THEN 'stake'
+            WHEN to_address = LOWER('0x6e89C20F182b1744405603958eC5E3fd93441cc4')
+            AND from_address = LOWER('0x5Be754aD77766089c4284d914F0cC37E8E3F669A') THEN 'migrate-stake'
+            WHEN to_address = LOWER('0x6e89C20F182b1744405603958eC5E3fd93441cc4') THEN 'stake'
+            WHEN from_address = LOWER('0x6e89C20F182b1744405603958eC5E3fd93441cc4') THEN 'withdraw/claim'
             WHEN from_address = LOWER('0x5Be754aD77766089c4284d914F0cC37E8E3F669A') THEN 'withdraw/claim'
             ELSE NULL
         END AS stake_action,
