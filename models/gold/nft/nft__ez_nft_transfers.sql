@@ -2,10 +2,7 @@
     materialized = 'view',
     persist_docs ={ "relation": true,
     "columns": true },
-    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'NFT' 
-            }
-        }
-    }
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'NFT' }} }
 ) }}
 
 SELECT
@@ -16,10 +13,12 @@ SELECT
     intra_event_index,
     event_type,
     contract_address AS nft_address,
+    contract_address,
     project_name,
     from_address AS nft_from_address,
     to_address AS nft_to_address,
     tokenId,
+    token_transfer_type,
     erc1155_value,
     COALESCE (
         nft_transfers_id,
@@ -37,4 +36,3 @@ SELECT
     ) AS modified_timestamp
 FROM
     {{ ref('silver__nft_transfers') }}
-

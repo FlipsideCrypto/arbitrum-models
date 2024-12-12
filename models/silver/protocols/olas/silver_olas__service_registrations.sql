@@ -17,20 +17,24 @@ WITH registry_evt AS (
         origin_to_address,
         contract_address,
         event_index,
-        topics [0] :: STRING AS topic_0,
-        topics [1] :: STRING AS topic_1,
-        topics [2] :: STRING AS topic_2,
-        topics [3] :: STRING AS topic_3,
+        topic_0,
+        topic_1,
+        topic_2,
+        topic_3,
         CASE
             WHEN topic_0 = '0xb34c1e02384201736eb4693b9b173306cb41bff12f15894dea5773088e9a3b1c' THEN 'CreateService'
             WHEN topic_0 = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' THEN 'Transfer'
         END AS event_name,
         DATA,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         contract_address = '0xe3607b00e75f6405248323a9417ff6b39b244b50' --Service Registry (AUTONOLAS-SERVICE-V1)
         AND topic_0 IN (
@@ -38,7 +42,7 @@ WITH registry_evt AS (
             --CreateService (for services)
             '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' --Transfer
         )
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -142,7 +146,8 @@ heal_model AS (
         t0.service_id,
         t0.config_hash,
         t0.owner_address,
-        m.multisig_address, --fill late-arriving or replace with current multisig
+        m.multisig_address,
+        --fill late-arriving or replace with current multisig
         t0._log_id,
         t0._inserted_timestamp
     FROM
