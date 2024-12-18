@@ -32,7 +32,9 @@ models:
   +on_schema_change: "append_new_columns"
 
 tests:
-  +store_failures: true # all tests
+  +schema: test
+  +store_failures: true
+  +where: "__timestamp_filter__"
 
 on-run-start:
   - "{{ create_sps() }}"
