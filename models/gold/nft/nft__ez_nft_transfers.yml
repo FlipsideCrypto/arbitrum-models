@@ -17,33 +17,35 @@ models:
       - name: INTRA_EVENT_INDEX
         description: '{{ doc("nft_intra_event_index") }}'
       - name: EVENT_TYPE
-        description: '{{ doc("nft_event_type") }}'
+        description: '{{ doc("evm_column_deprecation_notice_nft_event_type") }}'
       - name: NFT_ADDRESS
-        description: '{{ doc("nft_nft_address") }}'
+        description: '{{ doc("evm_column_deprecation_notice_nft_nft_address") }}'
       - name: CONTRACT_ADDRESS
         description: '{{ doc("nft_nft_address") }}'
       - name: PROJECT_NAME
-        description: '{{ doc("nft_project_name") }}'
+        description: '{{ doc("evm_column_deprecation_notice_nft_project_name") }}'
       - name: NAME
         description: '{{ doc("nft_project_name") }}'
       - name: NFT_FROM_ADDRESS
-        description: '{{ doc("nft_nft_from_address") }}'
+        description: '{{ doc("evm_column_deprecation_notice_nft_nft_from_address") }}'
       - name: NFT_TO_ADDRESS
-        description: '{{ doc("nft_nft_to_address") }}'
+        description: '{{ doc("evm_column_deprecation_notice_nft_nft_to_address") }}'
       - name: FROM_ADDRESS
         description: '{{ doc("nft_nft_from_address") }}'
       - name: TO_ADDRESS
         description: '{{ doc("nft_nft_to_address") }}'
       - name: TOKENID
-        description: '{{ doc("nft_tokenid") }}'
+        description: '{{ doc("evm_column_deprecation_notice_nft_tokenid") }}'
       - name: TOKEN_ID
         description: '{{ doc("nft_tokenid") }}'
       - name: ERC1155_VALUE
-        description: '{{ doc("nft_erc1155_value") }}'
+        description: '{{ doc("evm_column_deprecation_notice_nft_erc1155_value") }}'
       - name: QUANTITY
-        description: '{{ doc("nft_erc1155_value") }}'
+        description: '{{ doc("nft_quantity") }}'
       - name: TOKEN_STANDARD
         description: '{{ doc("nft_token_standard") }}'
+      - name: IS_MINT
+        description: '{{ doc("nft_is_mint") }}'
       - name: ORIGIN_FROM_ADDRESS
         description: '{{ doc("nft_origin_from") }}'
       - name: ORIGIN_TO_ADDRESS
