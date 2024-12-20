@@ -54,6 +54,8 @@ SELECT
     ) AS modified_timestamp,
     block_hash,
     -- deprecate
-    tx_status AS status -- deprecate
+    tx_status AS status,
+    -- deprecate
+    POSITION -- deprecate
 FROM
     {{ ref('silver__transactions') }}

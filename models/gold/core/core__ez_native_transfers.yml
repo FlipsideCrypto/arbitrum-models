@@ -15,7 +15,11 @@ models:
       - name: TRACE_INDEX
         description: '{{ doc("arb_trace_index") }}'
       - name: IDENTIFIER
-        description: '{{ doc("arb_traces_identifier") }}'
+        description: '{{ doc("evm_column_deprecation_notice_identifier") }}'
+      - name: TRACE_ADDRESS
+        description: '{{ doc("evm_trace_address") }}'
+      - name: TYPE
+        description: '{{ doc("evm_traces_type") }}'
       - name: ORIGIN_FROM_ADDRESS
         description: '{{ doc("arb_origin_from") }}'
       - name: ORIGIN_TO_ADDRESS
@@ -33,10 +37,10 @@ models:
       - name: AMOUNT_PRECISE
         description: '{{ doc("precise_amount_adjusted") }}'
       - name: AMOUNT_USD
-        description: '{{ doc("arb_eth_amount_usd") }}' 
+        description: '{{ doc("arb_eth_amount_usd") }}'
       - name: EZ_NATIVE_TRANSFERS_ID
-        description: '{{ doc("pk") }}'   
+        description: '{{ doc("pk") }}'
       - name: INSERTED_TIMESTAMP
-        description: '{{ doc("inserted_timestamp") }}'   
+        description: '{{ doc("inserted_timestamp") }}'
       - name: MODIFIED_TIMESTAMP
         description: '{{ doc("modified_timestamp") }}'

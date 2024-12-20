@@ -29,10 +29,7 @@ SELECT
         WHEN tx_status = 'SUCCESS' THEN TRUE
         ELSE FALSE
     END AS tx_succeeded,
-    tx_status,
-    -- deprecate
-    _log_id,
-    -- deprecate
+    -- new column
     COALESCE (
         logs_id,
         {{ dbt_utils.generate_surrogate_key(
@@ -46,6 +43,9 @@ SELECT
     COALESCE(
         modified_timestamp,
         '2000-01-01'
-    ) AS modified_timestamp
+    ) AS modified_timestamp,
+    tx_status,
+    -- deprecate
+    _log_id -- deprecate
 FROM
     {{ ref('silver__logs') }}

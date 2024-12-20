@@ -1,7 +1,10 @@
 {{ config(
-    materialized = 'view',
-    persist_docs ={ "relation": true,
-    "columns": true }
+    materialized = 'incremental',
+    incremental_strategy = 'delete+insert',
+    unique_key = 'block_number',
+    cluster_by = ['block_timestamp::DATE'],
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(trace_address, from_address, to_address)",
+    tags = ['non_realtime','reorg']
 ) }}
 
 SELECT
@@ -10,9 +13,9 @@ SELECT
     tx_hash,
     tx_position,
     trace_index,
-    '0x' AS trace_address,
-    -- new
-    '0x' AS TYPE,
+    identifier, --deprecate
+    trace_address, --new column
+    TYPE, --new column
     from_address,
     to_address,
     amount,
@@ -35,22 +38,7 @@ SELECT
     COALESCE(
         modified_timestamp,
         '2000-01-01'
-    ) AS modified_timestamp,
-    concat_ws(
-        '-',
-        block_number,
-        tx_position,
-        CONCAT(
-            TYPE,
-            '_',
-            trace_address
-        )
-    ) AS _call_id,
-    -- deprecate
-    CONCAT(
-        TYPE,
-        '_',
-        trace_address
-    ) AS identifier --deprecate
+    ) AS modified_timestamp
+  
 FROM
     {{ ref('silver__native_transfers') }}

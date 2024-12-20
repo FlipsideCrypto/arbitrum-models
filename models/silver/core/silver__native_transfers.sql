@@ -15,6 +15,7 @@ WITH eth_base AS (
         block_timestamp,
         identifier, --deprecate 
         trace_address, --new column
+        type, --new column
         from_address, 
         to_address,
         value,
@@ -85,6 +86,7 @@ SELECT
     block_timestamp,
     identifier, --deprecate 
     trace_address, --new column
+    type, --new column
     origin_from_address,
     origin_to_address,
     origin_function_signature,
