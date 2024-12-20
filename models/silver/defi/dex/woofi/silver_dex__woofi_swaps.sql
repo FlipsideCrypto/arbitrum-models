@@ -153,7 +153,7 @@ swaps_base AS (
             FROM
                 router_swaps_base
         )
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
