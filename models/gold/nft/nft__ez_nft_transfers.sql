@@ -23,8 +23,8 @@ SELECT
     contract_address, -- new
     tokenId, -- deprecate
     erc1155_value, -- deprecate
-    coalesce(erc1155_value, 0) as quantity, -- new
     tokenid as token_id, -- new
+    coalesce(erc1155_value, 0) as quantity, -- new
     token_standard, -- new 
     project_name, -- deprecate 
     project_name as name, -- new

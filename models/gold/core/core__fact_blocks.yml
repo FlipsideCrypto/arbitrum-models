@@ -47,7 +47,7 @@ models:
       - name: UNCLE_BLOCKS
         description: '{{ doc("evm_uncle_blocks") }}'
       - name: BLOCK_HEADER_JSON
-        description: '{{ doc("evm_column_deprecation_notice_blockchain") }}'
+        description: '{{ doc("evm_column_deprecation_notice_block_header_json") }}'
       - name: FACT_BLOCKS_ID
         description: '{{ doc("evm_pk") }}'
       - name: INSERTED_TIMESTAMP
