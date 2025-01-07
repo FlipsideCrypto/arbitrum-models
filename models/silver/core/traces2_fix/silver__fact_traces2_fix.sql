@@ -29,11 +29,11 @@ FROM
     ) }}
 
     {% set batch_id = result.columns [0] [0] %}
-    {% if batch_id > 586 %}
-        {{ exceptions.raise_compiler_error("Processing complete - reached max batch_id of 586") }}
+    {% if batch_id > 293 %}
+        {{ exceptions.raise_compiler_error("Processing complete - reached max batch_id of 293") }}
     {% endif %}
 
-    {% set block_size = 500000 %}
+    {% set block_size = 1000000 %}
     {% set block_start = 1 + (
         batch_id - 1
     ) * block_size %}
