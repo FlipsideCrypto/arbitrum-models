@@ -32,12 +32,17 @@ WITH liquidation AS(
             origin_to_address,
             contract_address
         ) AS lending_pool_contract,
-        _log_id,
-        _inserted_timestamp
+        modified_timestamp AS _inserted_timestamp,
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         topics [0] :: STRING = '0xe76026d190f8c969db64638eaf9bc7087a3758e7fe58c017135a5051b4d7c4f8'
+
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
@@ -51,7 +56,7 @@ AND contract_address IN (
     LOWER('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F'),
     LOWER('0xF4B1486DD74D07706052A33d31d7c0AAFD0659E1')
 )
-AND tx_status = 'SUCCESS' --excludes failed txs
+AND tx_succeeded
 ),
 atoken_meta AS (
     SELECT

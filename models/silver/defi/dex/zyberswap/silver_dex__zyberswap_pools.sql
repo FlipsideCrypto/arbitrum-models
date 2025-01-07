@@ -17,10 +17,14 @@ WITH pool_creation AS (
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS token0,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS token1,
         CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40)) AS pool_address,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref ('silver__logs') }}
+        {{ ref ('core__fact_event_logs') }}
     WHERE
         contract_address IN (
             '0xac2ee06a14c52570ef3b9812ed240bce359772e7',
@@ -32,7 +36,7 @@ WITH pool_creation AS (
             --PairCreated v2
             '0x91ccaa7a278130b65168c3a0c8d3bcae84cf5e43704342bd3ec0b59e59c036db'
         ) --v3
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

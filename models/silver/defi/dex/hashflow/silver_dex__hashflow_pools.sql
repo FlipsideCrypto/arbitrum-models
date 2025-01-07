@@ -13,10 +13,19 @@ WITH contract_deployments AS (
         block_timestamp,
         from_address AS deployer_address,
         to_address AS contract_address,
-        _call_id,
-        _inserted_timestamp
+        concat_ws(
+            '-',
+            block_number,
+            tx_position,
+            CONCAT(
+                TYPE,
+                '_',
+                trace_address
+            )
+        ) AS _call_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
     WHERE
         from_address IN (
             '0xe43632337d3f9a52ffd098fe71a57cc5961c041f',
@@ -24,8 +33,8 @@ WITH contract_deployments AS (
             '0x75fb2ab4d5b0de8b1a1acdc9124887d35d459084'
         )
         AND TYPE ILIKE 'create%'
-        AND tx_status = 'SUCCESS'
-        AND trace_status = 'SUCCESS'
+        AND tx_succeeded
+        AND trace_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

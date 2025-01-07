@@ -28,10 +28,14 @@ WITH pool_creation AS (
             WHEN contract_address = '0xb43120c4745967fa9b93e79c149e66b0f2d6fe0c' THEN 'v2.2'
             ELSE 'v2.1'
         END AS version,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         contract_address IN (
             '0x1886d09c9ade0c5db822d85d21678db67b6c2982',
@@ -45,7 +49,7 @@ WITH pool_creation AS (
             '0xb43120c4745967fa9b93e79c149e66b0f2d6fe0c' --v2.2
         )
         AND topics [0] :: STRING = '0x2c8d104b27c6b7f4492017a6f5cf3803043688934ebcaa6a03540beeaf976aff' --LB PairCreated
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

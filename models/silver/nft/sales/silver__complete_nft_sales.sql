@@ -781,7 +781,19 @@ SELECT
     nft_address,
     project_name,
     erc1155_value,
+    COALESCE(
+        erc1155_value,
+        0
+    ) AS quantity,
+    -- new
+    IFF(
+        erc1155_value IS NULL,
+        'erc721',
+        'erc1155'
+    ) AS token_standard -- new
     tokenId,
+    tokenid AS token_id,
+    -- new
     currency_symbol,
     currency_address,
     total_price_raw,

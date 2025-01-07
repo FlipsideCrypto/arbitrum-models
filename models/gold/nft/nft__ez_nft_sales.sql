@@ -25,8 +25,11 @@ SELECT
     buyer_address,
     nft_address,
     project_name,
-    tokenId,
-    erc1155_value,
+    tokenId, -- deprecate
+    token_id, -- new 
+    erc1155_value, --deprecate
+    quantity, -- new
+    token_standard, -- new
     currency_symbol,
     currency_address,
     price,

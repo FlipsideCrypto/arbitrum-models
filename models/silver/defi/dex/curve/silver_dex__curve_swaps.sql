@@ -13,20 +13,20 @@ WITH pool_meta AS (
         pool_name,
         token_address,
         pool_symbol AS symbol,
-        token_id::INTEGER AS token_id,
-        token_type::STRING AS token_type
+        token_id :: INTEGER AS token_id,
+        token_type :: STRING AS token_type
     FROM
         {{ ref('silver_dex__curve_pools') }}
 ),
-
 pools AS (
-    SELECT 
+    SELECT
         DISTINCT pool_address,
         pool_name
-    FROM pool_meta
-    QUALIFY (ROW_NUMBER() OVER (PARTITION BY pool_address ORDER BY pool_name ASC NULLS LAST)) = 1
+    FROM
+        pool_meta qualify (ROW_NUMBER() over (PARTITION BY pool_address
+    ORDER BY
+        pool_name ASC nulls last)) = 1
 ),
-
 curve_base AS (
     SELECT
         block_number,
@@ -45,22 +45,35 @@ curve_base AS (
         pool_name,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS sender,
-        TRY_TO_NUMBER(utils.udf_hex_to_int(
-            segmented_data [0] :: STRING
-        )) AS sold_id,
-        TRY_TO_NUMBER(utils.udf_hex_to_int(
-            segmented_data [1] :: STRING
-        )) AS tokens_sold,
-        TRY_TO_NUMBER(utils.udf_hex_to_int(
-            segmented_data [2] :: STRING
-        )) AS bought_id,
-        TRY_TO_NUMBER(utils.udf_hex_to_int(
-            segmented_data [3] :: STRING
-        )) AS tokens_bought,
-        _log_id,
-        _inserted_timestamp
+        TRY_TO_NUMBER(
+            utils.udf_hex_to_int(
+                segmented_data [0] :: STRING
+            )
+        ) AS sold_id,
+        TRY_TO_NUMBER(
+            utils.udf_hex_to_int(
+                segmented_data [1] :: STRING
+            )
+        ) AS tokens_sold,
+        TRY_TO_NUMBER(
+            utils.udf_hex_to_int(
+                segmented_data [2] :: STRING
+            )
+        ) AS bought_id,
+        TRY_TO_NUMBER(
+            utils.udf_hex_to_int(
+                segmented_data [3] :: STRING
+            )
+        ) AS tokens_bought,
+        CONCAT(
+            l.tx_hash :: STRING,
+            '-',
+            l.event_index :: STRING
+        ) AS _log_id,
+        l.modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }} l
+        {{ ref('core__fact_event_logs') }}
+        l
         INNER JOIN pools p
         ON p.pool_address = l.contract_address
     WHERE
@@ -69,33 +82,54 @@ curve_base AS (
             '0xb2e76ae99761dc136e598d4a629bb347eccb9532a5f8bbd72e18467c3c34cc98',
             '0xd013ca23e77a65003c2c659c5442c00c805371b7fc1ebd4c206c41d1536bd90b'
         )
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND l.modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND l.modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
-
 token_exchange AS (
-
-SELECT
-	_log_id,
-    MAX(CASE WHEN sold_id = token_id THEN token_address END) AS token_in,
-    MAX(CASE WHEN bought_id = token_id THEN token_address END) AS token_out,
-    MAX(CASE WHEN sold_id = token_id THEN symbol END) AS symbol_in,
-    MAX(CASE WHEN bought_id = token_id THEN symbol END) AS symbol_out
-FROM curve_base t
-LEFT JOIN pool_meta p ON p.pool_address = t.pool_address AND (p.token_id = t.sold_id OR p.token_id = t.bought_id)
-WHERE token_type = 'coins'
-GROUP BY 1
+    SELECT
+        _log_id,
+        MAX(
+            CASE
+                WHEN sold_id = token_id THEN token_address
+            END
+        ) AS token_in,
+        MAX(
+            CASE
+                WHEN bought_id = token_id THEN token_address
+            END
+        ) AS token_out,
+        MAX(
+            CASE
+                WHEN sold_id = token_id THEN symbol
+            END
+        ) AS symbol_in,
+        MAX(
+            CASE
+                WHEN bought_id = token_id THEN symbol
+            END
+        ) AS symbol_out
+    FROM
+        curve_base t
+        LEFT JOIN pool_meta p
+        ON p.pool_address = t.pool_address
+        AND (
+            p.token_id = t.sold_id
+            OR p.token_id = t.bought_id
+        )
+    WHERE
+        token_type = 'coins'
+    GROUP BY
+        1
 ),
-
 token_transfers AS (
     SELECT
         tx_hash,
@@ -108,7 +142,7 @@ token_transfers AS (
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS from_address,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS to_address
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         topics [0] :: STRING = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
         AND tx_hash IN (
@@ -120,13 +154,13 @@ token_transfers AS (
         AND CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) <> '0x0000000000000000000000000000000000000000'
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 from_transfers AS (
@@ -147,49 +181,52 @@ to_transfers AS (
     FROM
         token_transfers
 ),
-
 ready_pool_info AS (
-
-SELECT
-	s.block_number,
-    s.block_timestamp,
-    s.tx_hash,
-    s.origin_function_signature,
-    s.origin_from_address,
-    s.origin_from_address AS tx_to,
-    s.origin_to_address,
-    event_index,
-    event_name,
-    pool_address,
-    pool_address AS contract_address,
-    pool_name,
-    sender,
-    sold_id,
-    tokens_sold,
-    COALESCE(sold.token_address,e.token_in) AS token_in,
-    e.symbol_in AS symbol_in,
-    bought_id,
-    tokens_bought,
-    COALESCE(bought.token_address,e.token_out) AS token_out,
-    e.symbol_out AS symbol_out,
-    s._log_id,
-    _inserted_timestamp
-FROM
-    curve_base s
-    LEFT JOIN token_exchange e ON s._log_id = e._log_id
-    LEFT JOIN from_transfers sold
-    ON tokens_sold = sold.amount
-    AND s.tx_hash = sold.tx_hash
-    LEFT JOIN to_transfers bought
-    ON tokens_bought = bought.amount
-    AND s.tx_hash = bought.tx_hash
-WHERE
-	tokens_sold <> 0
-qualify(ROW_NUMBER() over(PARTITION BY s._log_id
+    SELECT
+        s.block_number,
+        s.block_timestamp,
+        s.tx_hash,
+        s.origin_function_signature,
+        s.origin_from_address,
+        s.origin_from_address AS tx_to,
+        s.origin_to_address,
+        event_index,
+        event_name,
+        pool_address,
+        pool_address AS contract_address,
+        pool_name,
+        sender,
+        sold_id,
+        tokens_sold,
+        COALESCE(
+            sold.token_address,
+            e.token_in
+        ) AS token_in,
+        e.symbol_in AS symbol_in,
+        bought_id,
+        tokens_bought,
+        COALESCE(
+            bought.token_address,
+            e.token_out
+        ) AS token_out,
+        e.symbol_out AS symbol_out,
+        s._log_id,
+        _inserted_timestamp
+    FROM
+        curve_base s
+        LEFT JOIN token_exchange e
+        ON s._log_id = e._log_id
+        LEFT JOIN from_transfers sold
+        ON tokens_sold = sold.amount
+        AND s.tx_hash = sold.tx_hash
+        LEFT JOIN to_transfers bought
+        ON tokens_bought = bought.amount
+        AND s.tx_hash = bought.tx_hash
+    WHERE
+        tokens_sold <> 0 qualify(ROW_NUMBER() over(PARTITION BY s._log_id
     ORDER BY
-        _inserted_timestamp DESC)) = 1  
+        _inserted_timestamp DESC)) = 1
 )
-
 SELECT
     block_number,
     block_timestamp,
