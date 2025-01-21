@@ -13,7 +13,7 @@ SELECT
     event_index,
     intra_event_index,
     token_transfer_type, -- new
-    iff(from_address = '0x0000000000000000000000000000000000000000', true, false) as is_mint, -- new
+    iff(from_address = '0x0000000000000000000000000000000000000000', TRUE, FALSE) as is_mint, -- new
     event_type, -- deprecate 
     from_address AS nft_from_address, -- deprecate
     to_address AS nft_to_address, -- deprecate
@@ -23,11 +23,11 @@ SELECT
     contract_address, -- new
     tokenId, -- deprecate
     erc1155_value, -- deprecate
-    tokenid as token_id, -- new
-    coalesce(erc1155_value, 0) as quantity, -- new
+    tokenid AS token_id, -- new
+    coalesce(erc1155_value, '1') ::STRING AS quantity, -- new
     token_standard, -- new 
     project_name, -- deprecate 
-    project_name as name, -- new
+    project_name AS name, -- new
     origin_function_signature, --new
     origin_from_address, --new
     origin_to_address, --new

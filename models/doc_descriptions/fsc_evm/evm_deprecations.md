@@ -52,6 +52,12 @@ This column is being removed for standardization purposes. Please remove or upda
 
 {% enddocs %}
 
+{% docs evm_column_deprecation_notice_inserted_timestamp %}
+
+This column is being removed for standardization purposes. Please remove or update your queries with `_inserted_timestamp` by February 3, 2025.
+
+{% enddocs %}
+
 {% docs evm_column_deprecation_notice_blockchain %}
 
 This column is being removed for standardization purposes. Please remove from your queries by February 3, 2025.
