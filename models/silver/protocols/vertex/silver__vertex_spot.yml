@@ -5,8 +5,6 @@ models:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - _LOG_ID
-      - vertex_product_level_recency:
-          filter: product_type = 'spot' AND product_id NOT IN (0,48,125,121)
     columns:
       - name: BLOCK_NUMBER
         tests:
