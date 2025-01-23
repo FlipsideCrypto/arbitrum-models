@@ -24,6 +24,7 @@ WITH log_pull AS (
             LOWER('0x655284bebcc6e1dffd098ec538750d43b57bc743'),
             LOWER('0xde6d6f23aabbdc9469c8907ece7c379f98e4cb75')
         )
+
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
@@ -39,7 +40,7 @@ traces_pull AS (
         from_address AS token_address,
         to_address AS underlying_asset
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
     WHERE
         tx_hash IN (
             SELECT

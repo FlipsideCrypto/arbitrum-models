@@ -78,7 +78,7 @@ eth_payment AS (
         tx_hash,
         from_address,
         to_address,
-        eth_value,
+        VALUE AS eth_value,
         trace_index,
         IFF(
             to_address = '0xdb6ab450178babcf0e467c1f3b436050d907e233',
@@ -99,11 +99,11 @@ eth_payment AS (
             ELSE NULL
         END AS intra_tx_grouping_raw
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
     WHERE
         block_timestamp :: DATE >= '2021-11-01'
         AND from_address = '0x09986b4e255b3c548041a30a2ee312fe176731c2'
-        AND eth_value > 0
+        AND VALUE > 0
         AND identifier != 'CALL_ORIGIN'
         AND TYPE != 'DELEGATECALL'
         AND trace_status = 'SUCCESS'
@@ -118,13 +118,13 @@ eth_payment AS (
         )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 eth_payment_intra_fill AS (
