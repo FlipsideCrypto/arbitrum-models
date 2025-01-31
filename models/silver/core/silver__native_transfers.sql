@@ -43,8 +43,8 @@ WITH eth_base AS (
         {{ ref('core__fact_traces') }}
     WHERE
         VALUE > 0
-        AND tx_status = 'SUCCESS'
-        AND trace_status = 'SUCCESS'
+        AND tx_succeeded
+        AND trace_succeeded
         AND TYPE NOT IN (
             'DELEGATECALL',
             'STATICCALL'
