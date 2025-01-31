@@ -1,0 +1,38 @@
+version: 2
+models:
+  - name: silver_dex__sushi_swaps_v3
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - _LOG_ID
+    columns:
+      - name: BLOCK_NUMBER
+        tests:
+          - not_null
+      - name: BLOCK_TIMESTAMP
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+      - name: POOL_ADDRESS
+        tests:
+          - not_null
+      - name: RECIPIENT
+        tests:
+          - not_null
+      - name: SENDER
+        tests:
+          - not_null
+      - name: TOKEN0_ADDRESS
+        tests:
+          - not_null
+      - name: TOKEN1_ADDRESS
+        tests:
+          - not_null
+      - name: AMOUNT0_UNADJ
+        tests:
+          - not_null
+      - name: AMOUNT1_UNADJ
+        tests:
+          - not_null
