@@ -88,6 +88,7 @@ SELECT
     contract_address,
     pool_address,
     recipient,
+    recipient AS tx_to,
     sender,
     fee,
     tick,
@@ -97,6 +98,22 @@ SELECT
     token1_address,
     amount0_unadj,
     amount1_unadj,
+    CASE
+      WHEN amount0_unadj > 0 THEN ABS(amount0_unadj)
+      ELSE ABS(amount1_unadj)
+    END AS amount_in_unadj,
+    CASE
+      WHEN amount0_unadj < 0 THEN ABS(amount0_unadj)
+      ELSE ABS(amount1_unadj)
+    END AS amount_out_unadj,
+    CASE
+      WHEN amount0_unadj > 0 THEN token0_address
+      ELSE token1_address
+    END AS token_in,
+    CASE
+      WHEN amount0_unadj < 0 THEN token0_address
+      ELSE token1_address
+    END AS token_out,
     _log_id,
     modified_timestamp
 FROM
