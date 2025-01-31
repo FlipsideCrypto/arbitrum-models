@@ -26,7 +26,9 @@ SELECT
     has_decimal,
     has_price,
     _log_id,
+    --deprecate
     _inserted_timestamp,
+    --deprecate
     COALESCE (
         transfers_id,
         {{ dbt_utils.generate_surrogate_key(

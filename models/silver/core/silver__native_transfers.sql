@@ -14,9 +14,13 @@ WITH eth_base AS (
         block_number,
         block_timestamp,
         identifier,
+        trace_address,
+        --new column
+        TYPE,
+        --new column
         from_address,
         to_address,
-        VALUE AS eth_value,
+        VALUE,
         concat_ws(
             '-',
             block_number,
@@ -28,10 +32,13 @@ WITH eth_base AS (
             )
         ) AS _call_id,
         modified_timestamp AS _inserted_timestamp,
-        value_precise_raw AS eth_value_precise_raw,
-        value_precise AS eth_value_precise,
+        value_precise_raw,
+        value_precise,
         tx_position,
-        trace_index
+        trace_index,
+        origin_from_address,
+        origin_to_address,
+        origin_function_signature
     FROM
         {{ ref('core__fact_traces') }}
     WHERE
@@ -51,54 +58,30 @@ AND modified_timestamp >= (
         {{ this }}
 )
 {% endif %}
-),
-tx_table AS (
-    SELECT
-        block_number,
-        tx_hash,
-        from_address AS origin_from_address,
-        to_address AS origin_to_address,
-        origin_function_signature
-    FROM
-        {{ ref('silver__transactions') }}
-    WHERE
-        tx_hash IN (
-            SELECT
-                DISTINCT tx_hash
-            FROM
-                eth_base
-        )
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp) - INTERVAL '72 hours'
-    FROM
-        {{ this }}
-)
-{% endif %}
 )
 SELECT
-    tx_hash AS tx_hash,
-    block_number AS block_number,
-    block_timestamp AS block_timestamp,
-    identifier AS identifier,
-    origin_from_address,
-    origin_to_address,
-    origin_function_signature,
+    block_number,
+    block_timestamp,
+    tx_hash,
+    tx_position,
+    trace_index,
+    identifier,
+    trace_address,
+    TYPE,
     from_address,
     to_address,
-    eth_value AS amount,
-    eth_value_precise_raw AS amount_precise_raw,
-    eth_value_precise AS amount_precise,
+    VALUE AS amount,
+    value_precise_raw AS amount_precise_raw,
+    value_precise AS amount_precise,
     ROUND(
-        eth_value * price,
+        VALUE * price,
         2
     ) AS amount_usd,
     _call_id,
-    _inserted_timestamp,
-    tx_position,
-    trace_index,
+    A._inserted_timestamp,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
     {{ dbt_utils.generate_surrogate_key(
         ['tx_hash', 'trace_index']
     ) }} AS native_transfers_id,
@@ -114,7 +97,3 @@ FROM
         A.block_timestamp
     ) = HOUR
     AND p.token_address = '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'
-    JOIN tx_table USING (
-        tx_hash,
-        block_number
-    )
