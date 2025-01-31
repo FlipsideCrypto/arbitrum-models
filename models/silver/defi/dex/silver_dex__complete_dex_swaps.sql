@@ -407,6 +407,40 @@ WHERE
   )
 {% endif %}
 ),
+gmx_v2 AS (
+  SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    origin_function_signature,
+    origin_from_address,
+    origin_to_address,
+    contract_address,
+    event_name,
+    amount_in_unadj,
+    amount_out_unadj,
+    token_in,
+    token_out,
+    sender,
+    tx_to,
+    event_index,
+    platform,
+    'v2' AS version,
+    _log_id,
+    modified_timestamp as _inserted_timestamp
+  FROM
+    {{ ref('silver_dex__gmx_v2_swaps') }}
+
+{% if is_incremental() and 'gmx_v2' not in var('HEAL_MODELS') %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+    FROM
+      {{ this }}
+  )
+{% endif %}
+),
 kyberswap_v1_dynamic AS (
   SELECT
     block_number,
@@ -543,6 +577,40 @@ WHERE
   )
 {% endif %}
 ),
+pancakeswap_v3 AS (
+  SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    origin_function_signature,
+    origin_from_address,
+    origin_to_address,
+    contract_address,
+    event_name,
+    amount_in_unadj,
+    amount_out_unadj,
+    token_in,
+    token_out,
+    sender,
+    tx_to,
+    event_index,
+    platform,
+    'v3' AS version,
+    _log_id,
+    modified_timestamp as _inserted_timestamp
+  FROM
+    {{ ref('silver_dex__pancakeswap_v3_swaps') }}
+
+{% if is_incremental() and 'pancakeswap_v3' not in var('HEAL_MODELS') %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+    FROM
+      {{ this }}
+  )
+{% endif %}
+),
 sushi AS (
   SELECT
     block_number,
@@ -568,6 +636,41 @@ sushi AS (
     {{ ref('silver_dex__sushi_swaps') }}
 
 {% if is_incremental() and 'sushi' not in var('HEAL_MODELS') %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+    FROM
+      {{ this }}
+  )
+{% endif %}
+),
+sushi_v3 AS (
+  SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    origin_function_signature,
+    origin_from_address,
+    origin_to_address,
+    contract_address,
+    event_name,
+    amount_in_unadj,
+    amount_out_unadj,
+    token_in,
+    token_out,
+    sender,
+    tx_to,
+    event_index,
+    'Swap' as event_name,
+    'sushiswap-v3' as platform,
+    'v3' AS version,
+    _log_id,
+    modified_timestamp as _inserted_timestamp
+  FROM
+    {{ ref('silver_dex__sushi_swaps_v3') }}
+
+{% if is_incremental() and 'sushi_v3' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -636,6 +739,40 @@ sparta AS (
     {{ ref('silver_dex__sparta_swaps') }}
 
 {% if is_incremental() and 'sparta' not in var('HEAL_MODELS') %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+    FROM
+      {{ this }}
+  )
+{% endif %}
+),
+dexalot AS (
+  SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    origin_function_signature,
+    origin_from_address,
+    origin_to_address,
+    contract_address,
+    event_name,
+    amount_in_unadj,
+    amount_out_unadj,
+    token_in,
+    token_out,
+    sender,
+    tx_to,
+    event_index,
+    platform,
+    'v1' AS version,
+    _log_id,
+    modified_timestamp as _inserted_timestamp
+  FROM
+    {{ ref('silver_dex__dexalot_swaps') }}
+
+{% if is_incremental() and 'dexalot' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -781,6 +918,40 @@ WHERE
   )
 {% endif %}
 ),
+maverick_v2 AS (
+  SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    origin_function_signature,
+    origin_from_address,
+    origin_to_address,
+    contract_address,
+    event_name,
+    amount_in_unadj,
+    amount_out_unadj,
+    token_in,
+    token_out,
+    sender,
+    tx_to,
+    event_index,
+    platform,
+    'v2' AS version,
+    _log_id,
+    modified_timestamp as _inserted_timestamp
+  FROM
+    {{ ref('silver_dex__maverick_v2_swaps') }}
+
+{% if is_incremental() and 'maverick_v2' not in var('HEAL_MODELS') %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+    FROM
+      {{ this }}
+  )
+{% endif %}
+),
 zyberswap_v2 AS (
   SELECT
     block_number,
@@ -899,6 +1070,11 @@ all_dex AS (
     *
   FROM
     gmx
+    UNION ALL
+  SELECT
+    *
+  FROM
+    gmx_v2
   UNION ALL
   SELECT
     *
@@ -918,7 +1094,22 @@ all_dex AS (
   SELECT
     *
   FROM
+    maverick_v2
+    UNION ALL
+  SELECT
+    *
+  FROM
+    pancakeswap_v3
+  UNION ALL
+  SELECT
+    *
+  FROM
     sushi
+    UNION ALL
+  SELECT
+    *
+  FROM
+    sushi_v3
   UNION ALL
   SELECT
     *

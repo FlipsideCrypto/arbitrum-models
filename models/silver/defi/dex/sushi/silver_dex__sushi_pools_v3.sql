@@ -27,7 +27,7 @@ WITH created_pools AS (
         ) :: INTEGER AS tick_spacing,
         CONCAT('0x', SUBSTR(segmented_data [1] :: STRING, 25, 40)) AS pool_address,
         _log_id,
-        _inserted_timestamp
+        modified_timestamp
     FROM
         {{ ref('silver__logs') }}
     WHERE
@@ -36,13 +36,13 @@ WITH created_pools AS (
         AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '12 hours'
+        MAX(modified_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 initial_info AS (
@@ -56,7 +56,7 @@ initial_info AS (
             init_tick
         ) AS init_price_1_0_unadj,
         _log_id,
-        _inserted_timestamp
+        modified_timestamp
     FROM
         {{ ref('silver__logs') }}
     WHERE
@@ -64,13 +64,13 @@ initial_info AS (
         AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '12 hours'
+        MAX(modified_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 FINAL AS (
@@ -93,7 +93,7 @@ FINAL AS (
             0
         ) AS init_tick,
         p._log_id,
-        p._inserted_timestamp
+        p.modified_timestamp
     FROM
         created_pools p
         LEFT JOIN initial_info i
@@ -113,8 +113,8 @@ SELECT
     pool_address,
     init_tick,
     _log_id,
-    _inserted_timestamp
+    modified_timestamp
 FROM
     FINAL qualify(ROW_NUMBER() over(PARTITION BY pool_address
 ORDER BY
-    _inserted_timestamp DESC)) = 1
+    modified_timestamp DESC)) = 1
