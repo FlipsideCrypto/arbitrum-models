@@ -783,7 +783,7 @@ SELECT
     erc1155_value,
     COALESCE(
         erc1155_value,
-        0
+        '1'
     ) AS quantity,
     -- new
     IFF(
