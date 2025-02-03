@@ -15,10 +15,10 @@ SELECT
     origin_to_address,
     contract_address,
     event_index,
-    topics [0] :: STRING AS topic_0,
-    topics [1] :: STRING AS topic_1,
-    topics [2] :: STRING AS topic_2,
-    topics [3] :: STRING AS topic_3,
+    topic_0,
+    topic_1,
+    topic_2,
+    topic_3,
     'CreateMultisigWithAgents' AS event_name,
     DATA,
     regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
@@ -28,8 +28,12 @@ SELECT
         )
     ) AS id,
     CONCAT('0x', SUBSTR(topic_2, 27, 40)) AS multisig_address,
-    _log_id,
-    _inserted_timestamp,
+    CONCAT(
+        tx_hash :: STRING,
+        '-',
+        event_index :: STRING
+    ) AS _log_id,
+    modified_timestamp AS _inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(
         ['tx_hash','event_index']
     ) }} AS create_service_multisigs_id,
@@ -37,11 +41,11 @@ SELECT
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
 FROM
-    {{ ref('silver__logs') }}
+    {{ ref('core__fact_event_logs') }}
 WHERE
     contract_address = '0xe3607b00e75f6405248323a9417ff6b39b244b50' --Service Registry (AUTONOLAS-SERVICE-V1)
     AND topic_0 = '0x2d53f895cd5faf3cddba94a25c2ced2105885b5b37450ff430ffa3cbdf332c74' --CreateMultisigWithAgents
-    AND tx_status = 'SUCCESS'
+    AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
