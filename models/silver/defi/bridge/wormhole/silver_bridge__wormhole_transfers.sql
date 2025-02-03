@@ -50,9 +50,9 @@ WITH token_transfers AS (
             segmented_data [5] :: STRING
         ) AS nonce,
         CONCAT(
-            tx_hash :: STRING,
+            tr.tx_hash :: STRING,
             '-',
-            event_index :: STRING
+            tr.event_index :: STRING
         ) AS _log_id,
         tr.modified_timestamp AS _inserted_timestamp
     FROM
@@ -119,12 +119,12 @@ native_transfers AS (
         ) AS nonce,
         concat_ws(
             '-',
-            block_number,
-            tx_position,
+            et.block_number,
+            et.tx_position,
             CONCAT(
-                TYPE,
+                et.type,
                 '_',
-                trace_address
+                et.trace_address
             )
         ) AS _call_id,
         et.modified_timestamp AS _inserted_timestamp

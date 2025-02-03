@@ -73,14 +73,17 @@ swaps_base AS (
                 40
             )
         ) AS receiver_address,
-        l._log_id,
-        l._inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
         l
-    INNER JOIN pools p
-    ON
-        l.contract_address = p.pool_address
+        INNER JOIN pools p
+        ON l.contract_address = p.pool_address
     WHERE
         l.topics [0] :: STRING = '0xc2c0245e056d5fb095f04cd6373bc770802ebd1e6c918eb78fdef843cdb37b0f' --dodoswap
         AND trader_address NOT IN (
@@ -89,7 +92,7 @@ swaps_base AS (
             FROM
                 proxies
         )
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
