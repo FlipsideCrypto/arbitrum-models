@@ -73,7 +73,7 @@ base_sales AS (
             '-',
             event_index :: STRING
         ) AS _log_id,
-        _inserted_timestamp
+        modified_timestamp AS _inserted_timestamp
     FROM
         raw_logs
 ),
