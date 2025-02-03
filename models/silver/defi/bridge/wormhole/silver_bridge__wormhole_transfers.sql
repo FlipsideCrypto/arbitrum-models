@@ -49,12 +49,16 @@ WITH token_transfers AS (
         utils.udf_hex_to_int(
             segmented_data [5] :: STRING
         ) AS nonce,
-        _log_id,
-        tr._inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        tr.modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__transfers') }}
+        {{ ref('core__ez_token_transfers') }}
         tr
-        INNER JOIN {{ ref('silver__transactions') }}
+        INNER JOIN {{ ref('core__fact_transactions') }}
         tx
         ON tr.block_number = tx.block_number
         AND tr.tx_hash = tx.tx_hash
@@ -65,13 +69,13 @@ WITH token_transfers AS (
         AND destination_chain_id <> 0
 
 {% if is_incremental() %}
-AND tr._inserted_timestamp >= (
+AND tr.modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND tr._inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND tr.modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 native_transfers AS (
@@ -113,12 +117,21 @@ native_transfers AS (
         utils.udf_hex_to_int(
             segmented_data [3] :: STRING
         ) AS nonce,
-        _call_id,
-        et._inserted_timestamp
+        concat_ws(
+            '-',
+            block_number,
+            tx_position,
+            CONCAT(
+                TYPE,
+                '_',
+                trace_address
+            )
+        ) AS _call_id,
+        et.modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__native_transfers') }}
+        {{ ref('core__ez_native_transfers') }}
         et
-        INNER JOIN {{ ref('silver__transactions') }}
+        INNER JOIN {{ ref('core__fact_transactions') }}
         tx
         ON et.block_number = tx.block_number
         AND et.tx_hash = tx.tx_hash
@@ -128,13 +141,13 @@ native_transfers AS (
         AND destination_chain_id <> 0
 
 {% if is_incremental() %}
-AND et._inserted_timestamp >= (
+AND et.modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND et._inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND et.modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 all_transfers AS (
@@ -213,23 +226,61 @@ SELECT
     token_address,
     destination_recipient_address,
     --hex address on the destination chain, requires decoding for non-EVM - more info: https://docs.wormhole.com/wormhole/blockchain-environments/environments
-    CASE 
+    CASE
         WHEN destination_chain = 'solana' THEN utils.udf_hex_to_base58(destination_recipient_address)
-        WHEN destination_chain IN ('injective','sei') 
-            THEN utils.udf_hex_to_bech32(destination_recipient_address,SUBSTR(destination_chain,1,3))
-        WHEN destination_chain IN ('osmosis','xpla') 
-            THEN utils.udf_hex_to_bech32(destination_recipient_address,SUBSTR(destination_chain,1,4))
-        WHEN destination_chain IN ('terra','terra2','evmos') 
-            THEN utils.udf_hex_to_bech32(destination_recipient_address,SUBSTR(destination_chain,1,5))
-        WHEN destination_chain IN ('cosmoshub','kujira') 
-            THEN utils.udf_hex_to_bech32(destination_recipient_address,SUBSTR(destination_chain,1,6))
-        WHEN destination_chain IN ('near')
-            THEN near_address
-        WHEN destination_chain IN ('algorand')
-            THEN utils.udf_hex_to_algorand(destination_recipient_address)
-        WHEN destination_chain IN ('polygon')
-            THEN SUBSTR(destination_recipient_address,1,42)
-        ELSE destination_recipient_address 
+        WHEN destination_chain IN (
+            'injective',
+            'sei'
+        ) THEN utils.udf_hex_to_bech32(
+            destination_recipient_address,
+            SUBSTR(
+                destination_chain,
+                1,
+                3
+            )
+        )
+        WHEN destination_chain IN (
+            'osmosis',
+            'xpla'
+        ) THEN utils.udf_hex_to_bech32(
+            destination_recipient_address,
+            SUBSTR(
+                destination_chain,
+                1,
+                4
+            )
+        )
+        WHEN destination_chain IN (
+            'terra',
+            'terra2',
+            'evmos'
+        ) THEN utils.udf_hex_to_bech32(
+            destination_recipient_address,
+            SUBSTR(
+                destination_chain,
+                1,
+                5
+            )
+        )
+        WHEN destination_chain IN (
+            'cosmoshub',
+            'kujira'
+        ) THEN utils.udf_hex_to_bech32(
+            destination_recipient_address,
+            SUBSTR(
+                destination_chain,
+                1,
+                6
+            )
+        )
+        WHEN destination_chain IN ('near') THEN near_address
+        WHEN destination_chain IN ('algorand') THEN utils.udf_hex_to_algorand(destination_recipient_address)
+        WHEN destination_chain IN ('polygon') THEN SUBSTR(
+            destination_recipient_address,
+            1,
+            42
+        )
+        ELSE destination_recipient_address
     END AS destination_chain_receiver,
     _id,
     _inserted_timestamp
