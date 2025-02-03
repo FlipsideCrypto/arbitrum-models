@@ -25,8 +25,14 @@ SELECT
     buyer_address,
     nft_address,
     project_name,
-    tokenId,
-    erc1155_value,
+    tokenId, -- deprecate
+    tokenid as token_id, --new
+    erc1155_value, -- deprecate 
+    COALESCE(erc1155_value, '1') :: STRING AS quantity, --new
+    CASE
+        WHEN erc1155_value IS NULL THEN 'erc721'
+        ELSE 'erc1155'
+    END AS token_standard, --new
     currency_symbol,
     currency_address,
     price,

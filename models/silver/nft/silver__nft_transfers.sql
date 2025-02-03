@@ -10,20 +10,28 @@
 WITH base AS (
 
     SELECT
-        _log_id,
         block_number,
-        tx_hash,
         block_timestamp,
+        tx_hash,
+        {#tx_position,#}
         event_index,
         contract_address,
         topics,
         DATA,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
-        TO_TIMESTAMP_NTZ(_inserted_timestamp) AS _inserted_timestamp
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
-        tx_status = 'SUCCESS'
+        tx_succeeded
         AND (
             (
                 topics [0] :: STRING = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
@@ -63,7 +71,11 @@ erc721s AS (
         ) :: STRING AS token_id,
         NULL AS erc1155_value,
         TO_TIMESTAMP_NTZ(_inserted_timestamp) AS _inserted_timestamp,
-        event_index
+        event_index,
+        {#tx_position,#}
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address
     FROM
         base
     WHERE
@@ -88,7 +100,11 @@ transfer_singles AS (
             segmented_data [1] :: STRING
         ) :: STRING AS erc1155_value,
         TO_TIMESTAMP_NTZ(_inserted_timestamp) AS _inserted_timestamp,
-        event_index
+        event_index,
+        {#tx_position,#}
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address
     FROM
         base
     WHERE
@@ -111,7 +127,11 @@ transfer_batch_raw AS (
         ) AS tokenid_length,
         tokenid_length AS quantity_length,
         _log_id,
-        TO_TIMESTAMP_NTZ(_inserted_timestamp) AS _inserted_timestamp
+        TO_TIMESTAMP_NTZ(_inserted_timestamp) AS _inserted_timestamp,
+        {#tx_position,#}
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address
     FROM
         base
     WHERE
@@ -149,7 +169,11 @@ flattened AS (
                 quantity_indextag_end
             ) THEN 'quantity'
             ELSE NULL
-        END AS label
+        END AS label,
+        {#tx_position,#}
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address
     FROM
         transfer_batch_raw,
         LATERAL FLATTEN (
@@ -176,7 +200,11 @@ tokenid_list AS (
             event_index
             ORDER BY
                 INDEX ASC
-        ) AS tokenid_order
+        ) AS tokenid_order,
+        {#tx_position,#}
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address
     FROM
         flattened
     WHERE
@@ -214,7 +242,11 @@ transfer_batch_final AS (
         contract_address,
         t.tokenId AS token_id,
         q.quantity AS erc1155_value,
-        tokenid_order AS intra_event_index
+        tokenid_order AS intra_event_index,
+        {#tx_position,#}
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address
     FROM
         tokenid_list t
         INNER JOIN quantity_list q
@@ -226,6 +258,7 @@ all_transfers AS (
     SELECT
         block_number,
         tx_hash,
+        {#tx_position,#}
         block_timestamp,
         contract_address,
         from_address,
@@ -242,13 +275,17 @@ all_transfers AS (
             contract_address,
             '-',
             token_id
-        ) AS _log_id
+        ) AS _log_id,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address
     FROM
         erc721s
     UNION ALL
     SELECT
         block_number,
         tx_hash,
+        {#tx_position,#}
         block_timestamp,
         contract_address,
         from_address,
@@ -265,7 +302,10 @@ all_transfers AS (
             contract_address,
             '-',
             token_id
-        ) AS _log_id
+        ) AS _log_id,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address
     FROM
         transfer_singles
     WHERE
@@ -274,6 +314,7 @@ all_transfers AS (
     SELECT
         block_number,
         tx_hash,
+        {#tx_position,#}
         block_timestamp,
         contract_address,
         from_address,
@@ -292,7 +333,10 @@ all_transfers AS (
             token_id,
             '-',
             intra_event_index
-        ) AS _log_id
+        ) AS _log_id,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address
     FROM
         transfer_batch_final
     WHERE
@@ -303,6 +347,7 @@ transfer_base AS (
         block_number,
         block_timestamp,
         tx_hash,
+        {#tx_position,#}
         event_index,
         intra_event_index,
         contract_address,
@@ -316,6 +361,9 @@ transfer_base AS (
             ELSE 'other'
         END AS event_type,
         token_transfer_type,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
         A._log_id,
         A._inserted_timestamp
     FROM
@@ -333,6 +381,7 @@ heal_model AS (
         block_number,
         block_timestamp,
         tx_hash,
+        {#tx_position,#}
         event_index,
         intra_event_index,
         contract_address,
@@ -343,6 +392,9 @@ heal_model AS (
         erc1155_value,
         event_type,
         token_transfer_type,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
         _log_id,
         t._inserted_timestamp
     FROM
@@ -383,6 +435,7 @@ heal_model AS (
             block_number,
             block_timestamp,
             tx_hash,
+            {#tx_position,#}
             event_index,
             intra_event_index,
             contract_address,
@@ -393,6 +446,9 @@ heal_model AS (
             erc1155_value,
             event_type,
             token_transfer_type,
+            origin_function_signature,
+            origin_from_address,
+            origin_to_address,
             _log_id,
             A._inserted_timestamp,
             {{ dbt_utils.generate_surrogate_key(
@@ -412,6 +468,7 @@ SELECT
     block_number,
     block_timestamp,
     tx_hash,
+    {#tx_position,#}
     event_index,
     intra_event_index,
     contract_address,
@@ -422,6 +479,9 @@ SELECT
     erc1155_value,
     event_type,
     token_transfer_type,
+    origin_function_signature,
+    origin_from_address,
+    origin_to_address,
     _log_id,
     _inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(
@@ -435,7 +495,30 @@ FROM
 {% endif %}
 )
 SELECT
-    *
+    block_number,
+    block_timestamp,
+    tx_hash,
+    {#tx_position,#}
+    event_index,
+    intra_event_index,
+    contract_address,
+    project_name,
+    from_address,
+    to_address,
+    tokenId,
+    erc1155_value,
+    event_type,
+    token_transfer_type,
+    {#origin_function_signature,
+    origin_from_address,
+    origin_to_address,
+    #} -- new , pending event logs
+    _log_id,
+    _inserted_timestamp,
+    nft_transfers_id,
+    inserted_timestamp,
+    modified_timestamp,
+    _invocation_id
 FROM
     FINAL qualify ROW_NUMBER() over (
         PARTITION BY _log_id

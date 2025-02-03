@@ -11,7 +11,7 @@ WITH raw_logs AS (
     SELECT
         *
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         block_timestamp :: DATE >= '2021-11-01'
         AND contract_address IN (
@@ -22,13 +22,13 @@ WITH raw_logs AS (
         AND event_name IN ('ItemSold', 'BidAccepted')
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 base_sales AS (
@@ -37,22 +37,22 @@ base_sales AS (
         event_index,
         event_name,
         contract_address,
-        decoded_flat,
+        decoded_log,
         COALESCE(
-            decoded_flat :bidType :: STRING,
+            decoded_log :bidType :: STRING,
             NULL
         ) AS auction_bid_type,
         COALESCE(
-            decoded_flat :buyer :: STRING,
-            decoded_flat :bidder :: STRING
+            decoded_log :buyer :: STRING,
+            decoded_log :bidder :: STRING
         ) AS buyer_address,
-        decoded_flat :seller :: STRING AS seller_address,
-        decoded_flat :nftAddress :: STRING AS nft_address,
-        decoded_flat :tokenId :: STRING AS tokenId,
-        decoded_flat :quantity :: STRING AS quantity,
-        decoded_flat :pricePerItem :: INT * quantity AS total_price_raw,
+        decoded_log :seller :: STRING AS seller_address,
+        decoded_log :nftAddress :: STRING AS nft_address,
+        decoded_log :tokenId :: STRING AS tokenId,
+        decoded_log :quantity :: STRING AS quantity,
+        decoded_log :pricePerItem :: INT * quantity AS total_price_raw,
         COALESCE (
-            decoded_flat :paymentToken :: STRING,
+            decoded_log :paymentToken :: STRING,
             '0x539bde0d7dbd336b79148aa742883198bbf60342'
         ) AS currency_address,
         -- for v2 there's a 3 month period where certain txs does not have a payment token field in the logs but it's confirmed to be all MAGIC tokens as payment. For v1 , all are magic tokens
@@ -68,7 +68,11 @@ base_sales AS (
         origin_function_signature,
         origin_from_address,
         origin_to_address,
-        _log_id,
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
         _inserted_timestamp
     FROM
         raw_logs
@@ -104,9 +108,9 @@ eth_payment AS (
         block_timestamp :: DATE >= '2021-11-01'
         AND from_address = '0x09986b4e255b3c548041a30a2ee312fe176731c2'
         AND VALUE > 0
-        AND identifier != 'CALL_ORIGIN'
+        AND trace_address != 'ORIGIN'
         AND TYPE != 'DELEGATECALL'
-        AND trace_status = 'SUCCESS'
+        AND trace_succeeded
         AND tx_hash IN (
             SELECT
                 tx_hash
@@ -340,7 +344,7 @@ token_payment_raw AS (
             ELSE NULL
         END AS intra_tx_grouping_raw
     FROM
-        {{ ref('silver__transfers') }}
+        {{ ref('core__ez_token_transfers') }}
     WHERE
         block_timestamp :: DATE >= '2021-11-01'
         AND contract_address IN (
@@ -361,13 +365,13 @@ token_payment_raw AS (
         )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 token_payment_intra_fill AS (
@@ -590,7 +594,7 @@ nft_address_type AS (
         contract_address AS nft_address,
         token_transfer_type
     FROM
-        {{ ref('silver__nft_transfers') }}
+        {{ ref('nft__ez_nft_transfers') }}
     WHERE
         block_timestamp :: DATE >= '2021-11-01'
         AND contract_address IN (
@@ -601,7 +605,7 @@ nft_address_type AS (
         )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
@@ -623,7 +627,7 @@ tx_data AS (
         tx_fee,
         input_data
     FROM
-        {{ ref('silver__transactions') }}
+        {{ ref('core__fact_transactions') }}
     WHERE
         block_timestamp :: DATE >= '2021-11-01'
         AND tx_hash IN (
@@ -634,13 +638,13 @@ tx_data AS (
         )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 )
 SELECT
