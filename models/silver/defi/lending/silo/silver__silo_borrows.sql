@@ -27,26 +27,30 @@ WITH borrows AS(
             segmented_data [1] :: STRING
         ) :: INTEGER AS collateral_only,
         p.token_address AS silo_market,
-        l._log_id,
-        l._inserted_timestamp
+        l.modified_timestamp AS _inserted_timestamp,
+        CONCAT(
+            l.tx_hash :: STRING,
+            '-',
+            l.event_index :: STRING
+        ) AS _log_id
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
         l
         INNER JOIN {{ ref('silver__silo_pools') }}
         p
         ON l.contract_address = p.silo_address
     WHERE
         topics [0] :: STRING = '0x312a5e5e1079f5dda4e95dbbd0b908b291fd5b992ef22073643ab691572c5b52'
-        AND tx_status = 'SUCCESS' --excludes failed txs
+        AND tx_succeeded
 
 {% if is_incremental() %}
-AND l._inserted_timestamp >= (
+AND l.modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND l._inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND l.modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 )
 SELECT

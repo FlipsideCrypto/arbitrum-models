@@ -40,10 +40,14 @@ lodestar_redemptions AS (
         ) :: INTEGER AS redeemed_itoken_raw,
         CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40)) AS redeemer,
         'Lodestar' AS platform,
-        _inserted_timestamp,
-        _log_id
+        modified_timestamp AS _inserted_timestamp,
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         contract_address IN (
             SELECT
@@ -52,7 +56,8 @@ lodestar_redemptions AS (
                 asset_details
         )
         AND topics [0] :: STRING = '0xe5b754fb1abb7f01b499791d0b820ae3b6af3424ac1c59768edb53f4ec31a929'
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
+
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
@@ -87,7 +92,7 @@ lodestar_combine AS (
         b._inserted_timestamp
     FROM
         lodestar_redemptions b
-        LEFT JOIN asset_details c
+        LEFT JOIN asset_details C
         ON b.itoken = C.itoken_address
 )
 SELECT
