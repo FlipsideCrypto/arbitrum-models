@@ -23,11 +23,9 @@ SELECT
     aggregator_name,
     seller_address,
     buyer_address,
-    nft_address,
-    project_name,
-    tokenId, -- deprecate
+    nft_address as contract_address, -- new 
+    project_name as name, -- new
     tokenid as token_id, --new
-    erc1155_value, -- deprecate 
     COALESCE(erc1155_value, '1') :: STRING AS quantity, --new
     CASE
         WHEN erc1155_value IS NULL THEN 'erc721'
@@ -61,6 +59,10 @@ SELECT
     COALESCE(
         modified_timestamp,
         '2000-01-01'
-    ) AS modified_timestamp
+    ) AS modified_timestamp,
+    tokenId, -- deprecate
+    erc1155_value, -- deprecate 
+    project_name, -- deprecate
+    nft_address -- deprecate
 FROM
     {{ ref('silver__complete_nft_sales') }}

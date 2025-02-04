@@ -141,3 +141,63 @@ This column is being deprecated for standardization purposes. Please remove from
 This column is being deprecated for standardization purposes. Please remove from your queries by February 28, 2025.
 
 {% enddocs %}
+
+{% docs evm_column_deprecation_notice_token_price %}
+
+This column is being deprecated for standardization purposes. Please remove from your queries by February 28, 2025.
+
+{% enddocs %}
+
+{% docs evm_column_deprecation_notice_has_decimal %}
+
+This column is being deprecated for standardization purposes. Please remove from your queries by February 28, 2025.
+
+{% enddocs %}
+
+{% docs evm_column_deprecation_notice_has_price %}
+
+This column is being deprecated for standardization purposes. Please remove from your queries by February 28, 2025.
+
+{% enddocs %}
+
+{%docs evm_column_deprecation_notice_tokenid %}
+
+This column is being deprecated for standardization purposes. Please update your queries to use the `token_id` column instead by February 28, 2025.
+
+{% enddocs %}
+
+{%docs evm_column_deprecation_notice_erc1155_value %}
+
+This column is being deprecated for standardization purposes. Please remove from your queries by February 28, 2025.
+
+{% enddocs %}
+
+{%docs evm_column_deprecation_notice_nft_address %}
+
+This column is being deprecated for standardization purposes. Please update your queries to use the `contract_address` column instead by February 28, 2025.
+
+{% enddocs %}
+
+{%docs evm_column_deprecation_notice_project_name %}
+
+This column is being deprecated for standardization purposes. Please update your queries to use the `name` column instead by February 28, 2025.
+
+{% enddocs %}
+
+{%docs evm_column_deprecation_notice_event_type %}
+
+This column is being deprecated for standardization purposes. Please remove from your queries by February 28, 2025.
+
+{% enddocs %}
+
+{%docs evm_column_deprecation_notice_nft_from_address %}
+
+This column is being deprecated for standardization purposes. Please update your queries to use the `from_address` column instead by February 28, 2025.
+
+{% enddocs %}
+
+{%docs evm_column_deprecation_notice_nft_to_address %}
+
+This column is being deprecated for standardization purposes. Please update your queries to use the `to_address` column instead by February 28, 2025.
+
+{% enddocs %}

@@ -10,7 +10,6 @@ SELECT
     tx_hash,
     tx_position,
     trace_index,
-    identifier,
     trace_address,
     -- new column
     TYPE,
@@ -24,19 +23,9 @@ SELECT
     origin_from_address,
     origin_to_address,
     origin_function_signature,
-    COALESCE (
-        native_transfers_id,
-        {{ dbt_utils.generate_surrogate_key(
-            ['tx_hash', 'trace_index']
-        ) }}
-    ) AS ez_native_transfers_id,
-    COALESCE(
-        inserted_timestamp,
-        '2000-01-01'
-    ) AS inserted_timestamp,
-    COALESCE(
-        modified_timestamp,
-        '2000-01-01'
-    ) AS modified_timestamp
+    native_transfers_id AS ez_native_transfers_id,
+    inserted_timestamp,
+    modified_timestamp,
+    identifier -- deprecate
 FROM
     {{ ref('silver__native_transfers') }}

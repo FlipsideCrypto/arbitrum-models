@@ -117,3 +117,15 @@ The trace address for this trace.
 The reason for the revert, if available.
 
 {% enddocs %}
+
+{% docs evm_trace_address %}
+
+The trace address for this trace.
+
+{% enddocs %}
+
+{% docs evm_trace_type %}
+
+The type of internal transaction. Common trace types are `CALL`, `DELEGATECALL`, and `STATICCALL`.
+
+{% enddocs %}

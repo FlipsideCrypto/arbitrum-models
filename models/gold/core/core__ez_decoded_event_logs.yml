@@ -68,7 +68,7 @@ models:
       - name: TX_SUCCEEDED
         description: '{{ doc("arb_tx_status") }}'
       - name: EZ_DECODED_EVENT_LOGS_ID
-        description: '{{ doc("pk") }}'
+        description: '{{ doc("evm_pk") }}'
       - name: INSERTED_TIMESTAMP
         description: '{{ doc("inserted_timestamp") }}'
       - name: MODIFIED_TIMESTAMP

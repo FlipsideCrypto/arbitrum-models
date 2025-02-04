@@ -573,3 +573,15 @@ The url of the image for this tokenId.
 The concatenation of NFT address and tokenId.
 
 {% enddocs %}
+
+{% docs evm_nft_quantity %}
+
+The number of NFTs transferred in this transaction. If it is an ERC1155, there can be multiple NFTs transferred in a single transaction. If it is an ERC721, this will be 1.
+
+{% enddocs %}
+
+{% docs evm_nft_token_standard %}
+
+The token standard of the NFT.
+
+{% enddocs %}
