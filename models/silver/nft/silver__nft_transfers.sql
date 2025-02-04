@@ -498,7 +498,7 @@ SELECT
     block_number,
     block_timestamp,
     tx_hash,
-    {#tx_position,#}
+    {#tx_position,#} -- new , pending event logs
     event_index,
     intra_event_index,
     contract_address,
@@ -512,7 +512,7 @@ SELECT
     {#origin_function_signature,
     origin_from_address,
     origin_to_address,
-    #} -- new , pending event logs
+    #} -- new
     _log_id,
     _inserted_timestamp,
     nft_transfers_id,
