@@ -106,12 +106,6 @@ The reason for the trace failure, if any.
 
 {% enddocs %}
 
-{% docs evm_trace_address %}
-
-The trace address for this trace.
-
-{% enddocs %}
-
 {% docs evm_revert_reason %}
 
 The reason for the revert, if available.
