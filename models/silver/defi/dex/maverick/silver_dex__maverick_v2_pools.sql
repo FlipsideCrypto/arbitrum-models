@@ -6,7 +6,8 @@
 ) }}
 
 WITH created_pools AS (
-   SELECT
+
+    SELECT
         block_number,
         block_timestamp,
         tx_hash,
@@ -37,27 +38,35 @@ WITH created_pools AS (
                 segmented_data [4] :: STRING
             )
         ) AS tickSpacing,
-       TRY_TO_NUMBER(
+        TRY_TO_NUMBER(
             utils.udf_hex_to_int(
                 's2c',
                 segmented_data [5] :: STRING
             )
-        ) AS lookback, -- lookback period
-       TRY_TO_NUMBER(
+        ) AS lookback,
+        -- lookback period
+        TRY_TO_NUMBER(
             utils.udf_hex_to_int(
                 's2c',
                 segmented_data [6] :: STRING
             )
-        ) AS activetick, -- pool type (static/right/left/both/all)
-        concat('0x',
-            substr(
-                segmented_data [7] :: STRING, 25, 40
-                )
+        ) AS activetick,
+        -- pool type (static/right/left/both/all)
+        CONCAT(
+            '0x',
+            SUBSTR(
+                segmented_data [7] :: STRING,
+                25,
+                40
+            )
         ) AS tokenA,
-        concat('0x',
-            substr(
-                segmented_data [8] :: STRING, 25, 40
-                )
+        CONCAT(
+            '0x',
+            SUBSTR(
+                segmented_data [8] :: STRING,
+                25,
+                40
+            )
         ) AS tokenB,
         TRY_TO_NUMBER(
             utils.udf_hex_to_int(
@@ -65,9 +74,16 @@ WITH created_pools AS (
                 segmented_data [9] :: STRING
             )
         ) AS kinds,
-       CONCAT('0x', SUBSTR(segmented_data [10] :: STRING, 25, 40)) AS accessor, -- null if permissionless pool
-
-       CASE
+        CONCAT(
+            '0x',
+            SUBSTR(
+                segmented_data [10] :: STRING,
+                25,
+                40
+            )
+        ) AS accessor,
+        -- null if permissionless pool
+        CASE
             WHEN tx_status = 'SUCCESS' THEN TRUE
             ELSE FALSE
         END AS tx_succeeded,
@@ -80,7 +96,7 @@ WITH created_pools AS (
     FROM
         {{ ref('silver__logs') }}
     WHERE
-        contract_address = lower('0x0A7e848Aca42d879EF06507Fca0E7b33A0a63c1e') --factory
+        contract_address = LOWER('0x0A7e848Aca42d879EF06507Fca0E7b33A0a63c1e') --factory
         AND topics [0] :: STRING = '0x848331e408557f4b7eb6561ca1c18a3ac43004fbe64b8b5bce613855cfdf22d2' --paircreated
         AND tx_succeeded
 
@@ -93,33 +109,26 @@ AND modified_timestamp >= (
 )
 AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
-),
-
-FINAL AS (
-    SELECT
-        block_number,
-        block_timestamp,
-        tx_hash,
-        contract_address,
-        pool_address, 
-        protocolFeeRatio AS protocol_fee_ratio,
-        feeAin,
-        feeBin,
-        tickspacing AS tick_spacing,
-        lookback,
-        activetick,
-        tokenA,
-        tokenB,
-        kinds,
-        accessor,
-        _log_id,
-        modified_timestamp
-    FROM
-        created_pools
 )
 SELECT
-    *
+    block_number,
+    block_timestamp,
+    tx_hash,
+    contract_address,
+    pool_address,
+    protocolFeeRatio AS protocol_fee_ratio,
+    feeAin,
+    feeBin,
+    tickspacing AS tick_spacing,
+    lookback,
+    activetick,
+    tokenA,
+    tokenB,
+    kinds,
+    accessor,
+    _log_id,
+    modified_timestamp
 FROM
-    FINAL qualify(ROW_NUMBER() over(PARTITION BY pool_address
+    created_pools qualify(ROW_NUMBER() over(PARTITION BY pool_address
 ORDER BY
     modified_timestamp DESC)) = 1

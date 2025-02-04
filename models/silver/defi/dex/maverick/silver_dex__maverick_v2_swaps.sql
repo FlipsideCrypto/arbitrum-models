@@ -12,10 +12,9 @@ WITH pools AS (
         pool_address,
         tokenA,
         tokenB
-FROM
-    {{ ref('silver_dex__maverick_v2_pools') }}
+    FROM
+        {{ ref('silver_dex__maverick_v2_pools') }}
 ),
-
 swaps_base AS (
     SELECT
         l.block_number,
@@ -59,12 +58,12 @@ swaps_base AS (
             ) = 0 THEN FALSE
             ELSE TRUE
         END AS exactOutput,
-       TRY_TO_NUMBER(
+        TRY_TO_NUMBER(
             utils.udf_hex_to_int(
                 's2c',
                 l_segmented_data [5] :: STRING
             )
-        ) AS activetick, 
+        ) AS activetick,
         TRY_TO_NUMBER(
             utils.udf_hex_to_int(
                 l_segmented_data [6] :: STRING
@@ -88,8 +87,9 @@ swaps_base AS (
         ) AS _log_id,
         modified_timestamp
     FROM
-        {{ ref('silver__logs') }} l
-    INNER JOIN pools
+        {{ ref('core__fact_event_logs') }}
+        l
+        INNER JOIN pools
         ON l.contract_address = pool_address
     WHERE
         l.topics [0] :: STRING = '0x103ed084e94a44c8f5f6ba8e3011507c41063177e29949083c439777d8d63f60' --Swap
@@ -104,9 +104,7 @@ AND modified_timestamp >= (
 )
 AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
-
 )
-        
 SELECT
     block_number,
     block_timestamp,
@@ -116,7 +114,7 @@ SELECT
     origin_to_address,
     event_index,
     contract_address,
-    contract_address as pool_address,
+    contract_address AS pool_address,
     sender_address AS sender,
     recipient_address AS tx_to,
     tokenAin AS token_A_in,
