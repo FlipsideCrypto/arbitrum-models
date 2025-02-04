@@ -25,6 +25,7 @@ SELECT
     nonce,
     POSITION AS tx_position,
     -- new
+    input_data,
     gas_price AS gas_price_bid,
     effective_gas_price AS gas_price_paid,
     gas AS gas_limit,
@@ -32,12 +33,11 @@ SELECT
     cumulative_gas_used,
     max_fee_per_gas,
     max_priority_fee_per_gas,
-    input_data,
+    l1_block_number,
+    gas_used_for_l1,
     r,
     s,
     v,
-    l1_block_number,
-    gas_used_for_l1,
     COALESCE (
         transactions_id,
         {{ dbt_utils.generate_surrogate_key(
