@@ -56,7 +56,7 @@ WITH swaps_base AS (
         ) AS _log_id,
         l.modified_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
         l
         INNER JOIN {{ ref('silver_dex__sushi_pools_v3') }}
         p
