@@ -7,6 +7,7 @@
 ) }}
 
 WITH pools AS (
+
     SELECT
         pool_address,
         token0_address,
@@ -16,7 +17,6 @@ WITH pools AS (
     FROM
         {{ ref('silver_dex__pancakeswap_v3_pools') }}
 ),
-
 base_swaps AS (
     SELECT
         l.block_number,
@@ -104,7 +104,8 @@ base_swaps AS (
         ) AS _log_id,
         l.modified_timestamp
     FROM
-        {{ ref('core__fact_event_logs') }} l
+        {{ ref('core__fact_event_logs') }}
+        l
         INNER JOIN pools p
         ON l.contract_address = pool_address
     WHERE
@@ -122,7 +123,6 @@ AND modified_timestamp >= (
 AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 )
-
 SELECT
     block_number,
     block_timestamp,
@@ -130,14 +130,14 @@ SELECT
     origin_function_signature,
     origin_from_address,
     origin_to_address,
-    'pancakeswap-v3' as platform,
-    'v3'as version,
+    'pancakeswap-v3' AS platform,
+    'v3' AS version,
     contract_address,
     contract_address AS pool_address,
     sender_address AS sender,
     recipient_address AS tx_to,
     event_index,
-    'Swap' as event_name,
+    'Swap' AS event_name,
     amount0,
     amount1,
     sqrtPriceX96,

@@ -94,7 +94,7 @@ WITH created_pools AS (
         ) AS _log_id,
         modified_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         contract_address = LOWER('0x0A7e848Aca42d879EF06507Fca0E7b33A0a63c1e') --factory
         AND topics [0] :: STRING = '0x848331e408557f4b7eb6561ca1c18a3ac43004fbe64b8b5bce613855cfdf22d2' --paircreated
