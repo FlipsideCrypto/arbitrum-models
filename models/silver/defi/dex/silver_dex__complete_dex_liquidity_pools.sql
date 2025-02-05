@@ -412,8 +412,8 @@ sushi_v3 AS (
     NULL AS pool_name,
     fee,
     tick_spacing,
-    token0_address as token0,
-    token1_address as token1,
+    token0_address AS token0,
+    token1_address AS token1,
     NULL AS token2,
     NULL AS token3,
     NULL AS token4,
@@ -423,7 +423,7 @@ sushi_v3 AS (
     'sushiswap-v3' AS platform,
     'v3' AS version,
     _log_id AS _id,
-    modified_timestamp as _inserted_timestamp
+    modified_timestamp AS _inserted_timestamp
   FROM
     {{ ref('silver_dex__sushi_pools_v3') }}
 
@@ -690,10 +690,11 @@ maverick_v2 AS (
     contract_address,
     pool_address,
     NULL AS pool_name,
-    NULL AS fee, -- passing null as maverick uses feeA and feeB
+    NULL AS fee,
+    -- passing null as maverick uses feeA and feeB
     tick_spacing,
-    tokenA as token0,
-    tokenB as token1,
+    tokenA AS token0,
+    tokenB AS token1,
     NULL AS token2,
     NULL AS token3,
     NULL AS token4,
@@ -703,7 +704,7 @@ maverick_v2 AS (
     'maverick-v2' AS platform,
     'v2' AS version,
     _log_id AS _id,
-    modified_timestamp as _inserted_timestamp
+    modified_timestamp AS _inserted_timestamp
   FROM
     {{ ref('silver_dex__maverick_v2_pools') }}
 
@@ -725,10 +726,10 @@ pancakeswap_v3 AS (
     contract_address,
     pool_address,
     NULL AS pool_name,
-    fee, 
+    fee,
     tick_spacing,
-    token0_address as token0,
-    token1_address as token1,
+    token0_address AS token0,
+    token1_address AS token1,
     NULL AS token2,
     NULL AS token3,
     NULL AS token4,
@@ -738,7 +739,7 @@ pancakeswap_v3 AS (
     'pancakeswap-v3' AS platform,
     'v3' AS version,
     _log_id AS _id,
-    modified_timestamp as _inserted_timestamp
+    modified_timestamp AS _inserted_timestamp
   FROM
     {{ ref('silver_dex__pancakeswap_v3_pools') }}
 
@@ -787,7 +788,7 @@ all_pools AS (
     *
   FROM
     sushi
-    UNION ALL
+  UNION ALL
   SELECT
     *
   FROM
@@ -842,12 +843,12 @@ all_pools AS (
     *
   FROM
     curve
-  UNION ALL 
+  UNION ALL
   SELECT
     *
   FROM
     maverick_v2
-  UNION ALL 
+  UNION ALL
   SELECT
     *
   FROM
@@ -866,7 +867,9 @@ complete_lps AS (
       AND platform IN (
         'uniswap-v3',
         'kyberswap-v2',
-        'ramses-v2'
+        'ramses-v2',
+        'pancakeswap-v3',
+        'sushiswap-v3'
       ) THEN CONCAT(
         COALESCE(
           c0.token_symbol,
@@ -891,6 +894,8 @@ complete_lps AS (
           WHEN platform = 'uniswap-v3' THEN ' UNI-V3 LP'
           WHEN platform = 'kyberswap-v2' THEN ''
           WHEN platform = 'ramses-v2' THEN ''
+          WHEN platform = 'pancakeswap-v3' THEN ''
+          WHEN platform = 'sushiswap-v3' THEN ''
         END
       )
       WHEN pool_name IS NULL

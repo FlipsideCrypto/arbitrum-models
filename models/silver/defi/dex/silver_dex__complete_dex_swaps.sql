@@ -654,7 +654,7 @@ sushi_v3 AS (
     origin_from_address,
     origin_to_address,
     contract_address,
-    event_name,
+    'Swap' as event_name,
     amount_in_unadj,
     amount_out_unadj,
     token_in,
@@ -662,7 +662,6 @@ sushi_v3 AS (
     sender,
     tx_to,
     event_index,
-    'Swap' as event_name,
     'sushiswap-v3' as platform,
     'v3' AS version,
     _log_id,
@@ -1091,6 +1090,11 @@ all_dex AS (
   FROM
     kyberswap_v2_elastic
   UNION ALL
+  SELECT
+    *
+  FROM
+    dexalot
+    UNION ALL
   SELECT
     *
   FROM
