@@ -14,13 +14,9 @@ WITH eth_base AS (
         block_number,
         block_timestamp,
         identifier,
-        trace_address,
-        --new column
-        TYPE,
-        --new column
         from_address,
         to_address,
-        VALUE,
+        VALUE AS eth_value,
         concat_ws(
             '-',
             block_number,
@@ -32,8 +28,8 @@ WITH eth_base AS (
             )
         ) AS _call_id,
         modified_timestamp AS _inserted_timestamp,
-        value_precise_raw,
-        value_precise,
+        value_precise_raw AS eth_value_precise_raw,
+        value_precise AS eth_value_precise,
         tx_position,
         trace_index,
         origin_from_address,
@@ -60,28 +56,26 @@ AND modified_timestamp >= (
 {% endif %}
 )
 SELECT
+    tx_hash,
     block_number,
     block_timestamp,
-    tx_hash,
-    tx_position,
-    trace_index,
     identifier,
-    trace_address,
-    TYPE,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
     from_address,
     to_address,
-    VALUE AS amount,
-    value_precise_raw AS amount_precise_raw,
-    value_precise AS amount_precise,
+    eth_value AS amount,
+    eth_value_precise_raw AS amount_precise_raw,
+    eth_value_precise AS amount_precise,
     ROUND(
-        VALUE * price,
+        eth_value * price,
         2
     ) AS amount_usd,
     _call_id,
     A._inserted_timestamp,
-    origin_from_address,
-    origin_to_address,
-    origin_function_signature,
+    tx_position,
+    trace_index,
     {{ dbt_utils.generate_surrogate_key(
         ['tx_hash', 'trace_index']
     ) }} AS native_transfers_id,

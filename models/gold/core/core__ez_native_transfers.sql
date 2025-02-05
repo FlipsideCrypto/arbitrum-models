@@ -10,10 +10,6 @@ SELECT
     tx_hash,
     tx_position,
     trace_index,
-    trace_address,
-    -- new column
-    TYPE,
-    -- new column
     from_address,
     to_address,
     amount,
