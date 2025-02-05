@@ -14,10 +14,6 @@ models:
         description: '{{ doc("arb_tx_position") }}'
       - name: TRACE_INDEX
         description: '{{ doc("arb_trace_index") }}'
-      - name: TRACE_ADDRESS
-        description: '{{ doc("evm_trace_address") }}'
-      - name: TYPE
-        description: '{{ doc("evm_trace_type") }}'
       - name: IDENTIFIER
         description: '{{ doc("evm_column_deprecation_notice_identifier") }}'
       - name: ORIGIN_FROM_ADDRESS
