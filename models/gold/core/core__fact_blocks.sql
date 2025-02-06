@@ -21,7 +21,7 @@ SELECT
     sha3_uncles,
     uncles AS uncle_blocks,
     nonce,-- new column
-    receipts_root, -- new column
+    receipts_root, 
     state_root, -- new column
     transactions_root, -- new column
     logs_bloom, -- new column

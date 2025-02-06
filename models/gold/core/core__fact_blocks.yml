@@ -12,6 +12,10 @@ models:
         description: '{{ doc("evm_network") }}'
       - name: BLOCKCHAIN
         description: '{{ doc("evm_column_deprecation_notice_blockchain") }}'
+      - name: MINER
+        description: '{{ doc("evm_miner") }}'
+      - name: NONCE
+        description: '{{ doc("evm_blocks_nonce") }}'
       - name: TX_COUNT
         description: '{{ doc("evm_tx_count") }}'
       - name: DIFFICULTY
@@ -27,7 +31,7 @@ models:
       - name: BLOCK_HASH
         description: '{{ doc("evm_blocks_hash") }}'
       - name: HASH
-        description: '{{ doc("evm_column_deprecation_notice_blockchain") }}'
+        description: '{{ doc("evm_column_deprecation_notice_hash") }}'
       - name: PARENT_HASH
         description: '{{ doc("evm_parent_hash") }}'
       - name: RECEIPTS_ROOT
