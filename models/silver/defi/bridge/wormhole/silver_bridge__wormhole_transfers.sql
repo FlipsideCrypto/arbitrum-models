@@ -89,7 +89,6 @@ native_transfers AS (
         et.from_address,
         et.to_address,
         amount_precise_raw,
-        identifier,
         regexp_substr_all(SUBSTR(input_data, 11, len(input_data)), '.{64}') AS segmented_data,
         TRY_TO_NUMBER(
             utils.udf_hex_to_int(
@@ -117,15 +116,10 @@ native_transfers AS (
         utils.udf_hex_to_int(
             segmented_data [3] :: STRING
         ) AS nonce,
-        concat_ws(
+        CONCAT(
+            et.tx_hash :: STRING,
             '-',
-            et.block_number,
-            et.tx_position,
-            CONCAT(
-                et.type,
-                '_',
-                et.trace_address
-            )
+            et.trace_index :: STRING
         ) AS _call_id,
         et.modified_timestamp AS _inserted_timestamp
     FROM

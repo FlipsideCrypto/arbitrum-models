@@ -610,19 +610,18 @@ SELECT
     error_reason,
     revert_reason,
     tx_succeeded,
+    {{ dbt_utils.generate_surrogate_key(
+        ['tx_hash', 'trace_index']
+    ) }} AS fact_traces_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
     identifier,
     --deprecate
     DATA,
     --deprecate
     tx_status,
     --deprecate
-    trace_status,
-    --deprecate
-    {{ dbt_utils.generate_surrogate_key(
-        ['tx_hash', 'trace_index']
-    ) }} AS fact_traces_id,
-    SYSDATE() AS inserted_timestamp,
-    SYSDATE() AS modified_timestamp
+    trace_status --deprecate
 FROM
     all_traces qualify(ROW_NUMBER() over(PARTITION BY block_number, tx_position, trace_index
 ORDER BY

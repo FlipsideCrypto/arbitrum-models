@@ -54,19 +54,9 @@ native_transfers AS (
         to_address,
         amount_precise_raw,
         CONCAT(
-            TYPE,
-            '_',
-            trace_address
-        ) AS identifier,
-        concat_ws(
+            tx_hash :: STRING,
             '-',
-            block_number,
-            tx_position,
-            CONCAT(
-                TYPE,
-                '_',
-                trace_address
-            )
+            trace_index :: STRING
         ) AS _call_id,
         modified_timestamp AS _inserted_timestamp
     FROM
