@@ -73,6 +73,7 @@ product_id_join AS (
         CASE
             WHEN p.symbol = 'USDC' THEN '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8'
             WHEN p.symbol = 'WETH' THEN '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'
+            when p.symbol = 'wstETH' then '0x5979d7b546e38e414f7e9822514be443a4800529'
             WHEN p.symbol = 'WBTC' THEN '0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f'
             WHEN p.symbol = 'ARB' THEN '0x912ce59144191c1204e64559fe8253a0e49e6548'
             WHEN p.symbol = 'USDT' THEN '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9'
