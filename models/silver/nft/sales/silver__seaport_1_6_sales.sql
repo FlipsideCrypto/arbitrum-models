@@ -24,7 +24,7 @@ raw_decoded_logs AS (
         decoded_log :orderHash :: STRING AS orderhash,
         tx_hash || '-' || decoded_log :orderHash AS tx_hash_orderhash
     FROM
-        {{ ref('core__ez_decoded_event_logs') }}
+        {{ ref('silver__decoded_logs') }}
     WHERE
         block_timestamp :: DATE >= '2024-03-15'
         AND contract_address = '0x0000000000000068f116a894984e2db1123eb395'

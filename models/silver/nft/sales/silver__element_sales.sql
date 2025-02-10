@@ -73,7 +73,7 @@ raw AS (
         ) AS _log_id,
         modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('core__ez_decoded_event_logs') }}
+        {{ ref('silver__decoded_logs') }}
     WHERE
         block_timestamp :: DATE >= (
             SELECT

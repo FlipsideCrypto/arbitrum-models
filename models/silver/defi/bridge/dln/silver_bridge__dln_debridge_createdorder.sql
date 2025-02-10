@@ -74,7 +74,7 @@ WITH base_evt AS (
         ) AS _log_id,
         modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('core__ez_decoded_event_logs') }}
+        {{ ref('silver__decoded_logs') }}
     WHERE
         topics [0] :: STRING = '0xfc8703fd57380f9dd234a89dce51333782d49c5902f307b02f03e014d18fe471' --CreatedOrder
         AND contract_address = '0xef4fb24ad0916217251f553c0596f8edc630eb66' --Dln: Source

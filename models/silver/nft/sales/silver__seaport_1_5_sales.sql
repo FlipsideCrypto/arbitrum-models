@@ -24,7 +24,7 @@ raw_decoded_logs AS (
         decoded_log :orderHash :: STRING AS orderhash,
         tx_hash || '-' || decoded_log :orderHash AS tx_hash_orderhash
     FROM
-        {{ ref('core__ez_decoded_event_logs') }}
+        {{ ref('silver__decoded_logs') }}
     WHERE
         block_timestamp :: DATE >= '2023-05-01'
         AND block_number >= 86564958
@@ -66,7 +66,7 @@ raw_logs AS (
             NULL
         ) AS order_hash
     FROM
-        {{ ref('core__fact_event_logs') }}
+        {{ ref('silver__decoded_logs') }}
     WHERE
         block_timestamp :: DATE >= '2023-05-01'
         AND block_number >= 86564958

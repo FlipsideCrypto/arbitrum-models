@@ -72,7 +72,7 @@ tokens_registered AS (
         ) AS _log_id,
         modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('core__ez_decoded_event_logs') }}
+        {{ ref('silver__decoded_logs') }}
     WHERE
         topics [0] :: STRING = '0xf5847d3f2197b16cdcd2098ec95d0905cd1abdaf415f07bb7cef2bba8ac5dec4' --TokensRegistered
         AND contract_address = '0xba12222222228d8ba445958a75a0704d566bf2c8'

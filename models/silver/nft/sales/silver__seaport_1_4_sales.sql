@@ -22,7 +22,7 @@ raw_decoded_logs AS (
     SELECT
         *
     FROM
-        {{ ref('core__ez_decoded_event_logs') }}
+        {{ ref('silver__decoded_logs') }}
     WHERE
         block_number >= 65853745
         AND contract_address = '0x00000000000001ad428e4906ae43d8f9852d0dd6'

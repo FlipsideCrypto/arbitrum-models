@@ -46,7 +46,7 @@ WITH base_evt AS (
         ) AS _log_id,
         modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('core__ez_decoded_event_logs') }}
+        {{ ref('silver__decoded_logs') }}
     WHERE
         topics [0] :: STRING = '0x7e50569d26be643bda7757722291ec66b1be66d8283474ae3fab5a98f878a7a2'
         AND contract_address = '0xe432150cce91c13a887f7d836923d5597add8e31'
@@ -103,7 +103,7 @@ native_gas_paid AS (
         ) AS _log_id,
         modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('core__ez_decoded_event_logs') }}
+        {{ ref('silver__decoded_logs') }}
     WHERE
         topics [0] :: STRING = '0x999d431b58761213cf53af96262b67a069cbd963499fd8effd1e21556217b841'
         AND contract_address = '0x2d5d7d31f671f86c782533cc367f14109a082712'

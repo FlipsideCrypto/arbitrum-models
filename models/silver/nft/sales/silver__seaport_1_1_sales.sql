@@ -63,7 +63,7 @@ decoded AS (
             ELSE NULL
         END AS trade_type
     FROM
-        {{ ref('core__ez_decoded_event_logs') }}
+        {{ ref('silver__decoded_logs') }}
     WHERE
         block_number >= 17137162
         AND contract_address = '0x00000000006c3852cbef3e08e8df289169ede581'
