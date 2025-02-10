@@ -4,7 +4,7 @@
     incremental_strategy = 'delete+insert',
     cluster_by = "block_timestamp::date",
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(ez_decoded_event_logs_id, contract_name, contract_address)",
-    tags = ['gold_decoded_logs']
+    tags = ['decoded_logs']
 ) }}
 
 SELECT
