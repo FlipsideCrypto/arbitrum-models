@@ -1,7 +1,10 @@
-{{ config(
-    materialized = 'view',
-    persist_docs ={ "relation": true,
-    "columns": true }
+{{ config (
+    materialized = "incremental",
+    unique_key = "ez_decoded_event_logs_id",
+    incremental_strategy = 'delete+insert',
+    cluster_by = "block_timestamp::date",
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(ez_decoded_event_logs_id, contract_name, contract_address)",
+    tags = ['gold_decoded_logs']
 ) }}
 
 SELECT
@@ -46,3 +49,16 @@ FROM
     {{ ref('silver__decoded_logs') }}
     l
     LEFT JOIN {{ ref('silver__contracts') }} C USING (contract_address)
+WHERE 1=1
+
+    {% if is_incremental() %}
+    AND l.modified_timestamp > (
+        SELECT
+            COALESCE(
+                MAX(modified_timestamp),
+                '2000-01-01'::TIMESTAMP
+            )
+        FROM
+            {{ this }}
+    )
+    {% endif %}
