@@ -32,12 +32,17 @@ WITH deposits AS(
             origin_to_address,
             contract_address
         ) AS lending_pool_contract,
-        _log_id,
-        _inserted_timestamp
+        modified_timestamp AS _inserted_timestamp,
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         topics [0] :: STRING = '0xde6857219544bb5b7746f48ed30be6386fefc61b2f864cacf559893bf50fd951'
+
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
@@ -51,7 +56,7 @@ AND contract_address IN (
     LOWER('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F'),
     LOWER('0xF4B1486DD74D07706052A33d31d7c0AAFD0659E1')
 )
-AND tx_status = 'SUCCESS'
+AND tx_succeeded
 AND radiant_market <> LOWER('0xA130A97c841ffA12CFb5E3AEA503fD5825a39bA6') --weird one supply token deposit, just excluding as causing errors up in complete tables
 ),
 atoken_meta AS (

@@ -20,10 +20,14 @@ WITH token_transfers AS (
         from_address,
         to_address,
         raw_amount,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__transfers') }}
+        {{ ref('core__ez_token_transfers') }}
     WHERE
         from_address <> '0x0000000000000000000000000000000000000000'
         AND to_address = '0x25ab3efd52e6470681ce037cd546dc60726948d3'
@@ -40,30 +44,28 @@ AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 ),
 native_transfers AS (
     SELECT
-        et.block_number,
-        et.block_timestamp,
-        et.tx_hash,
-        tx.from_address AS origin_from_address,
-        tx.to_address AS origin_to_address,
-        tx.origin_function_signature,
-        et.from_address,
-        et.to_address,
+        block_number,
+        block_timestamp,
+        tx_hash,
+        origin_from_address,
+        origin_to_address,
+        origin_function_signature,
+        from_address,
+        to_address,
         amount_precise_raw,
-        identifier,
-        _call_id,
-        et._inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            trace_index :: STRING
+        ) AS _call_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__native_transfers') }}
-        et
-        INNER JOIN {{ ref('silver__transactions') }}
-        tx
-        ON et.block_number = tx.block_number
-        AND et.tx_hash = tx.tx_hash
+        {{ ref('core__ez_native_transfers') }}
     WHERE
-        et.to_address = '0x25ab3efd52e6470681ce037cd546dc60726948d3'
+        to_address = '0x25ab3efd52e6470681ce037cd546dc60726948d3'
 
 {% if is_incremental() %}
-AND et._inserted_timestamp >= (
+AND _inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
@@ -120,14 +122,18 @@ dst_info AS (
         tx_hash,
         topics [1] :: STRING AS encoded_data,
         SUBSTR(RIGHT(encoded_data, 12), 1, 4) AS destination_chain_id,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         contract_address = '0x25ab3efd52e6470681ce037cd546dc60726948d3'
         AND topics [0] :: STRING = '0x5ce4019f772fda6cb703b26bce3ec3006eb36b73f1d3a0eb441213317d9f5e9d'
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -151,13 +157,13 @@ SELECT
     bridge_address,
     sender,
     receiver,
-    CASE 
+    CASE
         WHEN origin_from_address = '0x0000000000000000000000000000000000000000' THEN sender
         ELSE origin_from_address
     END AS destination_chain_receiver,
     amount_unadj,
     destination_chain_id,
-    COALESCE(LOWER(chain),'other') AS destination_chain,
+    COALESCE(LOWER(chain), 'other') AS destination_chain,
     token_address,
     _id,
     t._inserted_timestamp

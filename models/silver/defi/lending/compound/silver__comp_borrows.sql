@@ -32,10 +32,14 @@ WITH borrow AS (
         C.underlying_asset_address,
         C.underlying_asset_symbol,
         'arbitrum' AS blockchain,
-        _log_id,
-        l._inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        l.modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
         l
         LEFT JOIN {{ ref('silver__comp_asset_details') }} C
         ON asset = C.compound_market_address
@@ -45,16 +49,16 @@ WITH borrow AS (
             LOWER('0xA5EDBDD9646f8dFF606d7448e414884C7d905dCA'),
             LOWER('0x9c4ec768c28520B50860ea7a15bd7213a9fF58bf')
         )
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
-AND l._inserted_timestamp >= (
+AND l.modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND l._inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND l.modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 )
 SELECT
