@@ -26,7 +26,13 @@
     "confirm_blocks": {
         "method": 'eth_getBlockByNumber',
         "method_params": 'ARRAY_CONSTRUCT(utils.udf_int_to_hex(block_number), FALSE)'
-    }
+    },
+    "arbtrace_block": {
+        "method": 'arbtrace_block',
+        "method_params": "ARRAY_CONSTRUCT(utils.udf_int_to_hex(block_number), OBJECT_CONSTRUCT('tracer', 'callTracer', 'timeout', '120s'))",
+        "exploded_key": ['result'],
+        "lambdas": 2
+    },
 } -%}
 
 {%- set rpc_config = rpc_config_details[model_name.lower()] -%}
