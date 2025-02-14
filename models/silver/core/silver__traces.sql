@@ -1,4 +1,4 @@
--- depends_on: {{ ref('bronze__streamline_traces') }}
+-- depends_on: {{ ref('bronze__traces') }}
 {{ config (
     materialized = "incremental",
     incremental_strategy = 'delete+insert',
@@ -25,7 +25,7 @@ WITH bronze_traces AS (
     FROM
 
 {% if is_incremental() and not full_reload_mode %}
-{{ ref('bronze__streamline_traces') }}
+{{ ref('bronze__traces') }}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -35,7 +35,7 @@ WHERE
     )
     AND DATA :result IS NOT NULL
     AND block_number > 22207817 {% elif is_incremental() and full_reload_mode %}
-    {{ ref('bronze__streamline_fr_traces') }}
+    {{ ref('bronze__traces_fr') }}
 WHERE
     {% if use_partition_key %}
         partition_key BETWEEN (
@@ -66,7 +66,7 @@ WHERE
     {% endif %}
     AND block_number > 22207817
 {% else %}
-    {{ ref('bronze__streamline_fr_traces') }}
+    {{ ref('bronze__traces_fr') }}
 WHERE
     _partition_by_block_id <= 30000000
     AND block_number > 22207817

@@ -1,52 +1,99 @@
-{{ config (
-    materialized = "view",
-    post_hook = if_data_call_function(
-        func = "{{this.schema}}.udf_bulk_get_traces(object_construct('sql_source', '{{this.identifier}}', 'external_table', 'debug_traceBlockByNumber', 'sql_limit', {{var('sql_limit','150000')}}, 'producer_batch_size', {{var('producer_batch_size','75000')}}, 'worker_batch_size', {{var('worker_batch_size','75000')}}, 'batch_call_limit', {{var('batch_call_limit','1')}}))",
-        target = "{{this.schema}}.{{this.identifier}}"
-    ),
-    tags = ['streamline_core_history']
+{# Set variables #}
+{%- set model_name = 'ARBTRACE_BLOCK' -%}
+{%- set model_type = 'HISTORY' -%}
+
+{%- set default_vars = set_default_variables_streamline(model_name, model_type) -%}
+
+{# Set up parameters for the streamline process. These will come from the vars set in dbt_project.yml #}
+
+{%- set streamline_params = set_streamline_parameters(
+    model_name=model_name,
+    model_type=model_type
+) -%}
+
+{%- set node_url = default_vars['node_url'] -%}
+{%- set node_secret_path = default_vars['node_secret_path'] -%}
+{%- set model_quantum_state = default_vars['model_quantum_state'] -%}
+{%- set sql_limit = streamline_params['sql_limit'] -%}
+{%- set testing_limit = default_vars['testing_limit'] -%}
+{%- set order_by_clause = default_vars['order_by_clause'] -%}
+{%- set new_build = default_vars['new_build'] -%}
+{%- set method_params = streamline_params['method_params'] -%}
+{%- set method = streamline_params['method'] -%}
+
+{# Log configuration details #}
+{{ log_streamline_details(
+    model_name=model_name,
+    model_type=model_type,
+    node_url=node_url,
+    model_quantum_state=model_quantum_state,
+    sql_limit=sql_limit,
+    testing_limit=testing_limit,
+    order_by_clause=order_by_clause,
+    new_build=new_build,
+    streamline_params=streamline_params,
+    method_params=method_params,
+    method=method
 ) }}
 
-WITH blocks AS (
+{# Set up dbt configuration #}
+{{ config (
+    materialized = "view",
+    post_hook = fsc_utils.if_data_call_function_v2(
+        func = 'streamline.udf_bulk_rest_api_v2',
+        target = "{{this.schema}}.{{this.identifier}}",
+        params = streamline_params
+    ),
+    enabled = false,
+    tags = ['streamline_arbtrace_block_history']
+) }}
 
-    SELECT
-        block_number
-    FROM
-        {{ ref("streamline__blocks") }}
-    WHERE
-        block_number <= 22207817
+{# Main query starts here #}
+{# Identify blocks that need processing #}
+WITH to_do AS (
+    SELECT block_number
+    FROM {{ ref("streamline__blocks") }}
+    WHERE 
+    block_number IS NOT NULL
+    AND block_number <= 22207817
+
     EXCEPT
-    SELECT
-        block_number
-    FROM
-        {{ ref("streamline__complete_debug_traceBlockByNumber") }}
-    WHERE
-        block_number <= 22207817
+
+    SELECT block_number
+    FROM {{ ref("streamline__traces_complete") }}
+    WHERE block_number <= 22207817
+),
+ready_blocks AS (
+    SELECT block_number
+    FROM to_do
+
+    {% if testing_limit is not none %}
+        LIMIT {{ testing_limit }} 
+    {% endif %}
 )
+
+{# Generate API requests for each block #}
 SELECT
-    PARSE_JSON(
-        CONCAT(
-            '{"jsonrpc": "2.0",',
-            '"method": "arbtrace_block", "params":["',
-            REPLACE(
-                concat_ws(
-                    '',
-                    '0x',
-                    to_char(
-                        block_number :: INTEGER,
-                        'XXXXXXXX'
-                    )
-                ),
-                ' ',
-                ''
-            ),
-            '",{"tracer": "callTracer","timeout": "15s"}',
-            '],"id":"',
-            block_number :: INTEGER,
-            '"}'
-        )
+    block_number,
+    ROUND(block_number, -3) AS partition_key,
+    live.udf_api(
+        'POST',
+        '{{ node_url }}',
+        OBJECT_CONSTRUCT(
+            'Content-Type', 'application/json',
+            'fsc-quantum-state', '{{ model_quantum_state }}'
+        ),
+        OBJECT_CONSTRUCT(
+            'id', block_number,
+            'jsonrpc', '2.0',
+            'method', '{{ method }}',
+            'params', {{ method_params }}
+        ),
+        '{{ node_secret_path }}'
     ) AS request
 FROM
-    blocks
-ORDER BY
-    block_number ASC
+    ready_blocks
+    
+{{ order_by_clause }}
+
+LIMIT {{ sql_limit }}
