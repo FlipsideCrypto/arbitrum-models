@@ -103,6 +103,7 @@ vars:
   ## REQUIRED
   GLOBAL_PROD_DB_NAME: 'arbitrum' 
   GLOBAL_NODE_SECRET_PATH: 'Vault/prod/arbitrum/quicknode/mainnet'
+  GLOBAL_NODE_URL: '{service}/{Authentication}'
   GLOBAL_BLOCKS_PER_HOUR: 14200 
   GLOBAL_USES_STREAMLINE_V1: True
   GLOBAL_USES_SINGLE_FLIGHT_METHOD: True
