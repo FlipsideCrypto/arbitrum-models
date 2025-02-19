@@ -88,7 +88,7 @@ vars:
 
     prod:
       API_INTEGRATION: AWS_ARBITRUM_API_PROD_V2
-      EXTERNAL_FUNCTION_URI: ocxki95j57.execute-api.us-east-1.amazonaws.com/prod/
+      EXTERNAL_FUNCTION_URI: 8lgeisjz2j.execute-api.us-east-1.amazonaws.com/prod/
       ROLES:
         - AWS_LAMBDA_ARBITRUM_API
         - INTERNAL_DEV
