@@ -1,4 +1,4 @@
--- depends_on: {{ ref('bronze__streamline_traces') }}
+-- depends_on: {{ ref('bronze__traces') }}
 {{ config (
     materialized = "incremental",
     incremental_strategy = 'delete+insert',
@@ -13,21 +13,21 @@ WITH bronze_traces AS (
         DATA :transactionPosition :: INT as tx_position,
         DATA,
         VALUE,
-        _partition_by_block_id AS partition_key,
+        partition_key,
         id,
         _inserted_timestamp
     FROM
 
 {% if is_incremental() %}
 
-{{ ref('bronze__streamline_traces') }}
+{{ ref('bronze__traces') }}
 
 WHERE
     1 = 2
 {% else %}
-    {{ ref('bronze__streamline_fr_traces') }}
+    {{ ref('bronze__traces_fr') }}
 WHERE
-    _partition_by_block_id <= 22210000
+    partition_key <= 22210000
     AND block_number <= 22207817
     AND IFNULL(IS_OBJECT(DATA :action), FALSE)
 {% endif %}

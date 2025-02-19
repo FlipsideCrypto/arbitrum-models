@@ -1,4 +1,4 @@
--- depends_on: {{ ref('bronze__streamline_traces') }}
+-- depends_on: {{ ref('bronze__traces') }}
 {{ config (
     materialized = "incremental",
     incremental_strategy = 'delete+insert',
@@ -8,24 +8,19 @@
     full_refresh = false,
     tags = ['core','non_realtime']
 ) }}
-{# {{ fsc_evm.silver_traces_v1(
-full_reload_start_block = 30000000,
-full_reload_blocks = 10000000,
-arb_traces_mode = TRUE
-) }}
-#}
+
 WITH bronze_traces AS (
 
     SELECT
         block_number,
-        _partition_by_block_id AS partition_key,
+        partition_key,
         VALUE :array_index :: INT AS tx_position,
         DATA :result AS full_traces,
         _inserted_timestamp
     FROM
 
 {% if is_incremental() and not full_reload_mode %}
-{{ ref('bronze__streamline_traces') }}
+{{ ref('bronze__traces') }}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -35,7 +30,7 @@ WHERE
     )
     AND DATA :result IS NOT NULL
     AND block_number > 22207817 {% elif is_incremental() and full_reload_mode %}
-    {{ ref('bronze__streamline_fr_traces') }}
+    {{ ref('bronze__traces_fr') }}
 WHERE
     {% if use_partition_key %}
         partition_key BETWEEN (
@@ -51,24 +46,24 @@ WHERE
                 {{ this }}
         )
     {% else %}
-        _partition_by_block_id BETWEEN (
+        partition_key BETWEEN (
             SELECT
-                MAX(_partition_by_block_id) - 100000
+                MAX(partition_key) - 100000
             FROM
                 {{ this }}
         )
         AND (
             SELECT
-                MAX(_partition_by_block_id) + 10000000
+                MAX(partition_key) + 10000000
             FROM
                 {{ this }}
         )
     {% endif %}
     AND block_number > 22207817
 {% else %}
-    {{ ref('bronze__streamline_fr_traces') }}
+    {{ ref('bronze__traces_fr') }}
 WHERE
-    _partition_by_block_id <= 30000000
+    partition_key <= 30000000
     AND block_number > 22207817
 {% endif %}
 
