@@ -86,13 +86,13 @@ vars:
         - AWS_LAMBDA_ARBITRUM_API
         - INTERNAL_DEV
 
-    # prod:
-    #   API_INTEGRATION: AWS_ARBITRUM_API_PROD_V2
-    #   EXTERNAL_FUNCTION_URI: <insert_uri>.execute-api.us-east-1.amazonaws.com/prod/
-    #   ROLES:
-    #     - AWS_LAMBDA_ARBITRUM_API
-    #     - INTERNAL_DEV
-    #     - DBT_CLOUD_ARBITRUM
+    prod:
+      API_INTEGRATION: AWS_ARBITRUM_API_PROD_V2
+      EXTERNAL_FUNCTION_URI: ocxki95j57.execute-api.us-east-1.amazonaws.com/prod/
+      ROLES:
+        - AWS_LAMBDA_ARBITRUM_API
+        - INTERNAL_DEV
+        - DBT_CLOUD_ARBITRUM
 
 #### STREAMLINE 2.0 END ####
 
