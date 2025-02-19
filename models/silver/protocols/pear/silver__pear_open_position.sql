@@ -57,8 +57,8 @@ select
     l.modified_timestamp as _inserted_timestamp,
     l.ez_decoded_event_logs_id,
     {{ dbt_utils.generate_surrogate_key(
-        ['l.tx_hash', 'l.quote_id']
-    ) }} AS pear_perps_id,
+        ['tx_hash', 'quoteId']
+    ) }} AS pear_open_position_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
