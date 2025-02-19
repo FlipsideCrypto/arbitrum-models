@@ -6,7 +6,8 @@
     tags = ['curated','reorg']
 ) }}
 
-with decoded_logs as (
+WITH decoded_logs AS (
+
     SELECT
         tx_hash,
         block_number,
@@ -17,30 +18,39 @@ with decoded_logs as (
         event_name,
         decoded_log,
         topic_0,
-        decoded_log:quoteId as quote_id,
-        decoded_log:partyA as partyA,
-        decoded_log:partyB as partyB,
-        decoded_log:openedPrice*pow(10,-18) as openedPrice,
-        decoded_log:filledAmount*pow(10,-18) as filledAmount,
-        filledAmount*openedPrice as tx_vol_usd,
+        decoded_log :quoteId AS quote_id,
+        decoded_log :closeId AS close_id,
+        decoded_log :partyA AS partyA,
+        decoded_log :partyB AS partyB,
+        decoded_log :quoteStatus AS quoteStatus,
+        decoded_log :closedPrice * pow(
+            10,
+            -18
+        ) AS closedPrice,
+        decoded_log :filledAmount * pow(
+            10,
+            -18
+        ) AS filledAmount,
+        filledAmount * closedPrice AS tx_vol_usd,
         modified_timestamp,
         ez_decoded_event_logs_id
     FROM
         arbitrum.core.ez_decoded_event_logs
     WHERE
         contract_address = LOWER('0x8f06459f184553e5d04f07f868720bdacab39395')
-        AND topic_0 = '0xa50f98254710514f60327a4e909cd0be099a62f316299907ef997f3dc4d1cda5'
-    {% if is_incremental() %}
-    AND modified_timestamp >= (
-        SELECT
-            MAX(modified_timestamp) - INTERVAL '12 hours'
-        FROM
-            {{ this }}
-    )
-    AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
-    {% endif %}
+        AND topic_0 = '0xfa7483d69b899cf16df47cc736ab853f88135f704980d7d358a9746aead7a321' -- fill close position
+        AND tx_succeeded
+{% if is_incremental() %}
+AND modified_timestamp >= (
+    SELECT
+        MAX(modified_timestamp) - INTERVAL '12 hours'
+    FROM
+        {{ this }}
 )
-select 
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
+{% endif %}
+)
+SELECT
     l.tx_hash,
     l.block_number,
     l.block_timestamp,
@@ -49,16 +59,18 @@ select
     l.origin_to_address,
     l.topic_0,
     quote_id,
+    close_id,
     partyA,
     partyB,
-    openedPrice,
+    quoteStatus,
+    closedPrice,
     filledAmount,
     tx_vol_usd,
-    l.modified_timestamp as _inserted_timestamp,
+    l.modified_timestamp AS _inserted_timestamp,
     l.ez_decoded_event_logs_id,
     {{ dbt_utils.generate_surrogate_key(
-        ['tx_hash', 'quoteId']
-    ) }} AS pear_open_position_id,
+        ['l.tx_hash', 'l.quote_id']
+    ) }} AS pear_perps_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
