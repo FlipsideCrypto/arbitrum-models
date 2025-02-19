@@ -13,7 +13,7 @@ WITH bronze_traces AS (
         DATA :transactionPosition :: INT as tx_position,
         DATA,
         VALUE,
-        _partition_by_block_id AS partition_key,
+        partition_key,
         id,
         _inserted_timestamp
     FROM
@@ -27,7 +27,7 @@ WHERE
 {% else %}
     {{ ref('bronze__traces_fr') }}
 WHERE
-    _partition_by_block_id <= 22210000
+    partition_key <= 22210000
     AND block_number <= 22207817
     AND IFNULL(IS_OBJECT(DATA :action), FALSE)
 {% endif %}
