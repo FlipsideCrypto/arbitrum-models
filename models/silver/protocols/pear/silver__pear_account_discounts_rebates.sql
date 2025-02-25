@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
-    unique_key = ['user_address'],
+    unique_key = ['month', 'user_address'],
     tags = ['curated']
 ) }}
 
@@ -47,10 +47,15 @@ fee_tiers AS (
     ) as t (stake_requirement, discount_rate)
 )
 
-SELECT 
+SELECT
+    date_trunc('month', sysdate()) as month,
     c.user_address,
     c.staked_amount,
     COALESCE(MAX(f.discount_rate), 0) as fee_discount_rate,
+    NULL AS monthly_volume,
+    NULL as rebate_percentage,
+    NULL as rebate_tier,
+    NULL AS estimated_rebate_amount,
     SYSDATE() as inserted_timestamp,
     SYSDATE() as modified_timestamp,
     '{{ invocation_id }}' as _invocation_id,
@@ -60,5 +65,5 @@ SELECT
 FROM current_stakes c
 LEFT JOIN fee_tiers f 
     ON c.staked_amount >= f.stake_requirement
-GROUP BY 1,2
+GROUP BY 1,2,3
 ORDER BY c.staked_amount DESC
