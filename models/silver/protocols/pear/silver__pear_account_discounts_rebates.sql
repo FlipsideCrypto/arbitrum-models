@@ -44,6 +44,16 @@ fee_tiers AS (
         (1000000, 0.40),
         (2500000, 0.50)
     ) as t (stake_requirement, discount_rate)
+),
+
+vol_tier as (
+    SELECT *
+    FROM (VALUES
+        ('3',1000000, 0.05),
+        ('2',3000000, 0.10),
+        ('1',10000000, 0.15),
+        ('platinum',20000000, 0.30)
+    ) as t (rebate_tier, monthly_vol_requirement, rebate_rate)
 )
 
 SELECT
@@ -51,9 +61,16 @@ SELECT
     c.user_address,
     c.staked_amount,
     COALESCE(MAX(f.discount_rate), 0) as fee_discount_rate,
+    COALESCE(MAX(v.rebate_rate), 0) as vol_rebate_rate,
     NULL AS monthly_volume,
     NULL as rebate_percentage,
-    NULL as rebate_tier,
+    CASE 
+        WHEN monthly_volume >= 20000000 THEN 'platinum'
+        WHEN monthly_volume >= 10000000 THEN '1'
+        WHEN monthly_volume >= 3000000 THEN '2'
+        WHEN monthly_volume >= 1000000 THEN '3'
+    ELSE NULL
+    END AS rebate_tier,
     NULL AS estimated_rebate_amount,
     SYSDATE() as inserted_timestamp,
     SYSDATE() as modified_timestamp,
@@ -64,5 +81,7 @@ SELECT
 FROM current_stakes c
 LEFT JOIN fee_tiers f 
     ON c.staked_amount >= f.stake_requirement
+LEFT JOIN vol_tier v 
+    ON monthly_volume >= v.monthly_vol_requirement
 GROUP BY 1,2,3
 ORDER BY c.staked_amount DESC
