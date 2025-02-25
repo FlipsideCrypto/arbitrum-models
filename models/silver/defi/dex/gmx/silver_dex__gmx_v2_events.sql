@@ -17,6 +17,7 @@ WITH decoded_logs AS (
         origin_to_address,
         contract_address,
         topics,
+        DATA,
         event_index,
         decoded_log,
         CONCAT(
@@ -56,6 +57,7 @@ SELECT
     origin_to_address,
     contract_address,
     topics,
+    DATA,
     event_index,
     _log_id,
     modified_timestamp,
