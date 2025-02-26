@@ -14,7 +14,7 @@ WITH decoded_logs AS (
         {{ ref('silver__decoded_logs') }}
     WHERE
         topics [0] :: STRING IN ('0x468a25a7ba624ceea6e540ad6f49171b52495b648417ae91bca21676d8a24dc5','0x137a44067c8961cd7e1d876f4754a5a3a75989b4552f1843fc69c3b372def160')
-        AND origin_to_address IN ('0x7c68c7866a64fa2160f78eeae12217ffbf871fa8','0x352f684ab9e97a6321a13cf03a61316b681d9fd2','0x9e0521c3dbb18e849f4955087e065e5c9c879917')
+        {# AND origin_to_address IN ('0x7c68c7866a64fa2160f78eeae12217ffbf871fa8','0x352f684ab9e97a6321a13cf03a61316b681d9fd2','0x9e0521c3dbb18e849f4955087e065e5c9c879917') #}
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

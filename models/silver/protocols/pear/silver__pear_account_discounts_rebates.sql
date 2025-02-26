@@ -45,14 +45,16 @@ fee_tiers AS (
         (2500000, 0.50)
     ) as t (stake_requirement, discount_rate)
 ),
+-- look into accumulated claims vs unaccummulated claims --maybe make claimed stakes
 
+-- fact table for referrals or as a referred by 
 vol_tier as (
     SELECT *
     FROM (VALUES
         ('3',1000000, 0.05),
         ('2',3000000, 0.10),
         ('1',10000000, 0.15),
-        ('platinum',20000000, 0.30)
+        ('platinum',20000000, 0.18)
     ) as t (rebate_tier, monthly_vol_requirement, rebate_rate)
 )
 
