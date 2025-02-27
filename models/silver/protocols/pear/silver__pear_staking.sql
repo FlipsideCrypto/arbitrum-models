@@ -41,6 +41,16 @@ WITH logs_pull AS (
             '0x4139253da630b62761fa266dd3ef78ee3a1a13aa977ced7176f27084cba40265' -- compound
         )
         AND tx_succeeded
+
+{% if is_incremental() %}
+AND modified_timestamp >= (
+    SELECT
+        MAX(modified_timestamp) - INTERVAL '12 hours'
+    FROM
+        {{ this }}
+)
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
+{% endif %}
 ),
 unstaked AS (
     SELECT
