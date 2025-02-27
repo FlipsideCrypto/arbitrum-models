@@ -32,13 +32,13 @@ WITH sendquote AS (
         AND tx_succeeded
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '12 hours'
+        MAX(modified_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 sort_liquidate AS (
@@ -88,13 +88,13 @@ sort_liquidate AS (
         AND tx_succeeded
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '12 hours'
+        MAX(modified_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 setsymbolprice AS (
@@ -126,13 +126,13 @@ setsymbolprice AS (
         AND tx_succeeded
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '12 hours'
+        MAX(modified_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 combine AS (
@@ -162,7 +162,7 @@ combine AS (
         q.symbolId,
         liquidatedAmount * price AS liquidatedAmount_usd,
         _log_id,
-        modified_timestamp
+        --modified_timestamp
     FROM
         sort_liquidate l
         LEFT JOIN sendquote q USING(quoteId)
@@ -197,8 +197,17 @@ SELECT
     symbolId AS symbol_id,
     liquidatedAmount_usd,
     _log_id,
-    C.modified_timestamp
+    --C.modified_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['C.tx_hash','event_index']
+    ) }} AS symmio_liquidation_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     combine C
     LEFT JOIN {{ ref('silver_perps__symmio_dim_products') }}
     ON product_id = symbol_id
+qualify(ROW_NUMBER() over(PARTITION BY _log_id
+ORDER BY
+    modified_timestamp DESC)) = 1
