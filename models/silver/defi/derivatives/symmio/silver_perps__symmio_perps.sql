@@ -15,6 +15,8 @@ with pear_events as (
         origin_to_address,
         contract_address,
         event_name,
+        event_index,
+        origin_function_signature,
         decoded_log,
         topic_0,
         modified_timestamp,
@@ -50,6 +52,8 @@ send_quotes as (
         origin_to_address,
         contract_address,
         event_name,
+        event_index,
+        origin_function_signature,
         decoded_log,
         topic_0,
         decoded_log:cva::decimal(38,0)/1e18 as cva,
@@ -84,6 +88,8 @@ open_positions as (
         origin_to_address,
         contract_address,
         event_name,
+        event_index,
+        origin_function_signature,
         decoded_log,
         topic_0,
         decoded_log:filledAmount::decimal(38,0)/1e18 as filled_amount,
@@ -108,6 +114,8 @@ quote_status as (
         l.origin_to_address,
         l.contract_address,
         l.event_name,
+        l.event_index,
+        l.origin_function_signature,
         l.decoded_log,
         l.topic_0,
         l.symbol_id as product_id,
@@ -136,7 +144,7 @@ quote_status as (
         l.ez_decoded_event_logs_id
     FROM
         send_quotes l
-    LEFT JOIN {{ ref('silver__pear_dim_products') }} p
+    LEFT JOIN {{ ref('silver_perps__symmio_dim_products') }} p
         ON l.symbol_id = p.product_id
     LEFT JOIN open_positions o
         ON l.quote_id = o.quote_id
@@ -150,6 +158,8 @@ quote_status as (
         l.origin_to_address,
         l.contract_address,
         l.event_name,
+        l.event_index,
+        l.origin_function_signature,
         l.decoded_log,
         l.topic_0,
         l.product_id,
@@ -194,6 +204,8 @@ request_close_position as (
         origin_to_address,
         contract_address,
         event_name,
+        event_index,
+        origin_function_signature,
         decoded_log,
         topic_0,
         decoded_log:closeId::integer as close_id,
@@ -222,6 +234,8 @@ fill_close_position as (
         origin_to_address,
         contract_address,
         event_name,
+        event_index,
+        origin_function_signature,
         decoded_log,
         topic_0,
         decoded_log:closeId::integer as close_id,
@@ -248,34 +262,38 @@ close_status as (
         r.origin_to_address,
         r.contract_address,
         r.event_name,
+        r.event_index,
+        r.origin_function_signature,
         r.decoded_log,
         r.topic_0,
-        NULL as product_id, -- Could be joined from quote_status if needed
+        q.product_id as product_id,
         CASE 
             WHEN f.filled_amount is not null THEN 'filled' 
             ELSE 'unfilled' 
         END as status,
-        NULL as cva,
+        q.cva,
         r.deadline,
-        NULL as lf,
-        NULL as market_price,
+        q.lf,
+        q.market_price,
         r.order_type,
         r.party_a,
-        NULL as party_amm,
-        NULL as party_bmm,
-        NULL as party_bs_white_list,
-        NULL as position_type,
+        q.party_amm,
+        q.party_bmm,
+        q.party_bs_white_list,
+        q.position_type,
         r.close_price as price,
         r.quantity_to_close as quantity,
         f.filled_amount,
         f.closed_price,
         r.quote_id,
-        NULL as trading_fee,
-        NULL as product_name,
+        q.trading_fee,
+        q.product_name as product_name,
         r.modified_timestamp as _inserted_timestamp,
         r.ez_decoded_event_logs_id
     FROM
         request_close_position r
+    LEFT JOIN quote_status q
+        ON r.quote_id = q.quote_id
     LEFT JOIN fill_close_position f
         ON r.quote_id = f.quote_id
         AND r.close_id = f.close_id
@@ -289,6 +307,8 @@ close_status as (
         l.origin_to_address,
         l.contract_address,
         l.event_name,
+        l.event_index,
+        l.origin_function_signature,
         l.decoded_log,
         l.topic_0,
         l.product_id,
@@ -332,6 +352,8 @@ SELECT
     origin_to_address,
     contract_address,
     event_name,
+    event_index,
+    origin_function_signature,
     decoded_log,
     topic_0,
     product_id,
@@ -375,6 +397,8 @@ SELECT
     origin_to_address,
     contract_address,
     event_name,
+    event_index,
+    origin_function_signature,
     decoded_log,
     topic_0,
     product_id,

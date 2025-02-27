@@ -11,7 +11,7 @@ WITH gmx_events AS (
     SELECT
         *
     FROM
-        {{ ref('silver__gmx_events_v2') }}
+        {{ ref('silver_perps__gmxv2_events') }}
     WHERE
         event_name IN (
             'OrderCreated',
@@ -72,7 +72,7 @@ parse_data AS (
         event_data [4] [0] [0] [1] AS key,
     FROM
         gmx_events A
-        LEFT JOIN {{ ref('silver__gmx_dim_products_v2') }}
+        LEFT JOIN {{ ref('silver_perps__gmxv2_dim_products') }}
         p
         ON p.market_address = event_data [0] [0] [4] [1] :: STRING
     WHERE

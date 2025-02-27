@@ -200,5 +200,5 @@ SELECT
     C.modified_timestamp
 FROM
     combine C
-    LEFT JOIN {{ ref('silver__symmio_dim_products') }}
+    LEFT JOIN {{ ref('silver_perps__symmio_dim_products') }}
     ON product_id = symbol_id

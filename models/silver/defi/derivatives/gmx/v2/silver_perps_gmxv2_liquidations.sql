@@ -11,7 +11,7 @@ WITH gmx_events AS (
     SELECT
         *
     FROM
-        {{ ref('silver__gmx_events_v2') }}
+        {{ ref('silver_perps__gmxv2_events') }}
     WHERE 
         event_name in ('PositionDecrease')
     AND
@@ -167,6 +167,6 @@ LEFT JOIN
 ON
     c.contract_address = a.collateral_token
 LEFT JOIN
-    {{ ref('silver__gmx_dim_products_v2') }} p 
+    {{ ref('silver_perps__gmxv2_dim_products') }} p 
 ON
     p.market_address = a.market
