@@ -129,7 +129,7 @@ SELECT
     size_delta_amount AS size_delta_amount_unadj,
     size_delta_amount :: FLOAT / pow(
         10,
-        C.token_decimals
+        p.decimals
     ) AS size_delta_amount,
     collateral_delta_amount AS collateral_delta_amount_unadj,
     collateral_delta_amount :: INT / pow(
