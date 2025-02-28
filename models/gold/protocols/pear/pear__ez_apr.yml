@@ -5,6 +5,24 @@ models:
     columns:
       - name: DAY
         description: '{{ doc("pear_day") }}'
+      - name: DAILY_FEE_UNADJ
+        description: '{{ doc("pear_fee_amount_unadj") }}'
       - name: DAILY_FEE
         description: '{{ doc("pear_daily_fee") }}'
+      - name: DAILY_FEE_USD
+        description: '{{ doc("pear_amount_usd") }}'
+      - name: FEE_SYMBOL
+        description: '{{ doc("pear_symbol") }}'
+      - name: DAILY_FEE_PER_TOKEN_UNADJ
+        description: '{{ doc("pear_fee_amount_unadj") }}'
+      - name: DAILY_FEE_PER_TOKEN
+        description: '{{ doc("pear_fee_amount") }}'
+      - name: APR
+        description: '{{ doc("pear_apr") }}'
+      - name: EZ_APR_ID
+        description: '{{ doc("pk") }}'
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}'
       # ... continue for all columns 
