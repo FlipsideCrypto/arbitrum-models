@@ -119,7 +119,7 @@ SELECT
     execution_price AS execution_price_unadj,
     execution_price :: FLOAT / pow(
         10,
-        30
+        (30 - decimals)
     ) AS execution_price,
     size_delta_usd AS size_delta_usd_unadj,
     size_delta_usd :: FLOAT / pow(
