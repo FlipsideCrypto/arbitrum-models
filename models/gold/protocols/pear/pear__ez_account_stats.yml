@@ -1,0 +1,10 @@
+version: 2
+models:
+  - name: pear__ez_account_stats
+    description: '{{ doc("pear_ez_account_stats") }}'
+    columns:
+      - name: TRADER
+        description: '{{ doc("pear_trader") }}'
+      - name: FIRST_TRADE_TIMESTAMP
+        description: '{{ doc("pear_first_trade_timestamp") }}'
+      # ... continue for all columns 

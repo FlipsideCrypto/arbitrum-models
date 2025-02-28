@@ -1,13 +1,18 @@
 version: 2
+
 models:
   - name: silver__pear_account_stats
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - trader
     columns:
-      - name: SUBACCOUNT
-        tests:
-          - not_null
       - name: TRADER
         tests:
           - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+
       - name: FIRST_TRADE_TIMESTAMP
         tests:
           - not_null
@@ -15,6 +20,7 @@ models:
               column_type_list:
                 - TIMESTAMP_LTZ
                 - TIMESTAMP_NTZ
+
       - name: LAST_TRADE_TIMESTAMP
         tests:
           - not_null
@@ -22,91 +28,98 @@ models:
               column_type_list:
                 - TIMESTAMP_LTZ
                 - TIMESTAMP_NTZ
+
       - name: ACCOUNT_AGE
         tests:
+          - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - NUMBER
                 - FLOAT
+
       - name: TRADE_COUNT
         tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER
-                - FLOAT
-      - name: PERP_TRADES
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+      - name: TRADE_COUNT_MTD
         tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER
-                - FLOAT
-      - name: SPOT_TRADES
-        tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER
-                - FLOAT
-      - name: LONG_COUNT
-        tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER
-                - FLOAT
-      - name: SHORT_COUNT
-        tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER
-                - FLOAT
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
       - name: TOTAL_USD_VOLUME
         tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER
-                - FLOAT
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+      - name: TOTAL_USD_VOLUME_MTD
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+      - name: AVG_USD_TRADE_SIZE
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
       - name: TOTAL_FEE_AMOUNT
         tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER
-                - FLOAT
-      - name: TOTAL_BASE_DELTA_AMOUNT
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+      - name: CURRENT_REBATE_RATE
         tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER
-                - FLOAT
-      - name: TOTAL_QUOTE_DELTA_AMOUNT
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 0.18
+
+      - name: CURRENT_REBATE_TIER
         tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER
-                - FLOAT
-      - name: TOTAL_LIQUIDATION_AMOUNT
+          - dbt_expectations.expect_column_values_to_be_in_set:
+              value_set: ['platinum', '1', '2', '3', null]
+
+      - name: ESTIMATED_REBATE_AMOUNT
         tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER
-                - FLOAT
-      - name: TOTAL_LIQUIDATION_AMOUNT_QUOTE
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+      - name: MOST_RECENT_STAKED_AMOUNT
         tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER
-                - FLOAT
-      - name: TOTAL_LIQUIDATION_AMOUNT_COUNT
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+      - name: CURRENT_FEE_DISCOUNT_RATE
         tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 0.50
+
+      - name: PEAR_ACCOUNT_ID
+        tests:
+          - unique
+          - not_null
+
+      - name: _INSERTED_TIMESTAMP
+        tests:
+          - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
-                - NUMBER
-                - FLOAT
+                - TIMESTAMP_LTZ
+                - TIMESTAMP_NTZ
+
       - name: MODIFIED_TIMESTAMP
         tests:
           - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
               interval: 1
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - TIMESTAMP_LTZ
-                - TIMESTAMP_NTZ

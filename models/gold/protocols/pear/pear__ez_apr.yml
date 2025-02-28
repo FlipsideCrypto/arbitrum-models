@@ -1,0 +1,10 @@
+version: 2
+models:
+  - name: pear__ez_apr
+    description: '{{ doc("pear_ez_apr") }}'
+    columns:
+      - name: DAY
+        description: '{{ doc("pear_day") }}'
+      - name: DAILY_FEE
+        description: '{{ doc("pear_daily_fee") }}'
+      # ... continue for all columns 

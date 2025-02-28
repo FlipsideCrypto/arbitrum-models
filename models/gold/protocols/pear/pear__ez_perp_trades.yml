@@ -1,0 +1,55 @@
+version: 2
+models:
+  - name: pear__ez_perp_trades
+    description: '{{ doc("pear_ez_perp_trades") }}'
+    columns:
+      - name: BLOCK_NUMBER
+        description: '{{ doc("arb_block_number") }}'
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("arb_block_timestamp") }}'
+      - name: TX_HASH
+        description: '{{ doc("arb_logs_tx_hash") }}'
+      - name: CONTRACT_ADDRESS
+        description: '{{ doc("arb_logs_contract_address") }}'
+      - name: EVENT_NAME
+        description: '{{ doc("arb_event_name") }}'
+      - name: EVENT_INDEX
+        description: '{{ doc("arb_event_index") }}'
+      - name: ORIGIN_FUNCTION_SIGNATURE
+        description: '{{ doc("nft_origin_sig") }}'
+      - name: ORIGIN_FROM_ADDRESS
+        description: '{{ doc("arb_origin_from") }}'
+      - name: ORIGIN_TO_ADDRESS
+        description: '{{ doc("arb_origin_to") }}'
+      - name: TRADER
+        description: '{{ doc("pear_trader") }}'
+      - name: TRADE_TYPE
+        description: '{{ doc("pear_trade_type") }}'
+      - name: PLATFORM
+        description: '{{ doc("pear_platform") }}'
+      - name: SYMBOL
+        description: '{{ doc("pear_symbol") }}'
+      - name: MARKET_TYPE
+        description: '{{ doc("pear_market_type") }}'
+      - name: IS_TAKER
+        description: '{{ doc("pear_is_taker") }}'
+      - name: PRICE_AMOUNT_UNADJ
+        description: '{{ doc("pear_price_amount_unadj") }}'
+      - name: PRICE_AMOUNT
+        description: '{{ doc("pear_price_amount") }}'
+      - name: AMOUNT_UNADJ
+        description: '{{ doc("pear_amount_unadj") }}'
+      - name: AMOUNT
+        description: '{{ doc("pear_amount") }}'
+      - name: AMOUNT_USD
+        description: '{{ doc("pear_amount_usd") }}'
+      - name: FEE_AMOUNT_UNADJ
+        description: '{{ doc("pear_fee_amount_unadj") }}'
+      - name: FEE_AMOUNT
+        description: '{{ doc("pear_fee_amount") }}'
+      - name: EZ_PERP_TRADES_ID
+        description: '{{ doc("pk") }}'
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 

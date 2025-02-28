@@ -230,7 +230,7 @@ FINAL AS (
         user_address,
         amount,
         reward_token,
-        --modified_timestamp,
+        modified_timestamp,
         _log_id
     FROM
         unstaked
@@ -246,7 +246,7 @@ FINAL AS (
         user_address,
         amount,
         reward_token,
-        --modified_timestamp,
+        modified_timestamp,
         _log_id
     FROM
         staked
@@ -262,7 +262,7 @@ FINAL AS (
         user_address,
         amount,
         reward_token,
-        --modified_timestamp,
+        modified_timestamp,
         _log_id
     FROM
         claims
@@ -278,13 +278,24 @@ FINAL AS (
         user_address,
         amount,
         reward_token,
-        --modified_timestamp,
+        modified_timestamp,
         _log_id
     FROM
         compound_split
 )
 SELECT
-    *,
+    block_timestamp,
+    tx_hash,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    contract_address,
+    action,
+    user_address,
+    amount,
+    reward_token,
+    modified_timestamp as _inserted_timestamp,
+    _log_id,
     {{ dbt_utils.generate_surrogate_key(
         ['_log_id']
     ) }} AS pear_staking_id,
@@ -294,4 +305,4 @@ SELECT
 FROM
     FINAL qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
-    modified_timestamp DESC)) = 1
+    _inserted_timestamp DESC)) = 1
