@@ -3,7 +3,7 @@
     incremental_strategy = 'delete+insert',
     unique_key = '_log_id',
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['curated','reorg']
+    tags = ['curated','reorg','heal']
 ) }}
 
 WITH vertex AS (
@@ -43,13 +43,13 @@ WITH vertex AS (
     FROM
         {{ ref('silver__vertex_perps') }}
 
-{% if is_incremental() and 'vertex' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'vertex' not in var('HEAL_MODELS') %}
 WHERE
-    A._inserted_timestamp >= (
+    _inserted_timestamp >= (
         SELECT
             MAX(
                 _inserted_timestamp
-            ) - INTERVAL '36 hours'
+            ) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )
@@ -113,13 +113,13 @@ gmx_v2 AS (
     WHERE
         order_execution = 'executed'
 
-{% if is_incremental() and 'gmx_v2' not in var('HEAL_CURATED_MODEL') %}
-WHERE
-    A._inserted_timestamp >= (
+{% if is_incremental() and 'gmx_v2' not in var('HEAL_MODELS') %}
+AND
+    _inserted_timestamp >= (
         SELECT
             MAX(
                 _inserted_timestamp
-            ) - INTERVAL '36 hours'
+            ) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )
@@ -138,8 +138,8 @@ symmio AS (
         origin_to_address,
         party_a as trader,
         CASE 
-            WHEN position_type = 1 THEN 'buy/long'
-            WHEN position_type = 2 THEN 'sell/short'
+            WHEN position_type = 0 THEN 'buy/long'
+            WHEN position_type = 1 THEN 'sell/short'
             ELSE NULL 
         END as trade_type,
         'symmio' as platform,
@@ -166,14 +166,30 @@ symmio AS (
     WHERE 
         status = 'filled'
 
-    {% if is_incremental() and 'symmio' not in var('HEAL_CURATED_MODEL') %}
-    AND _inserted_timestamp >= (
+{% if is_incremental() and 'symmio' not in var('HEAL_MODELS') %}
+AND
+    _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '36 hours'
+            MAX(
+                _inserted_timestamp
+            ) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )
-    {% endif %}
+{% endif %}
+),
+perp_union as (
+    SELECT *
+    FROM
+        vertex
+    UNION ALL
+    SELECT *
+    FROM
+        gmx_v2
+    UNION ALL 
+    SELECT *
+    FROM
+        symmio
 )
 SELECT
     block_number,
@@ -199,62 +215,12 @@ SELECT
     fee_amount_unadj,
     fee_amount,
     _log_id,
-    _inserted_timestamp
+    _inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['tx_hash', 'event_index']
+    ) }} as perp_trades_id,
+    SYSDATE() as modified_timestamp,
+    SYSDATE() as inserted_timestamp,
+    '{{invocation_id}}' as _invocation_id
 FROM
-    vertex
-UNION ALL
-SELECT
-    block_number,
-    block_timestamp,
-    tx_hash,
-    contract_address,
-    event_name,
-    event_index,
-    origin_function_signature,
-    origin_from_address,
-    origin_to_address,
-    trader,
-    trade_type,
-    platform,
-    symbol,
-    market_type,
-    is_taker,
-    price_amount_unadj,
-    price_amount,
-    amount_unadj,
-    amount,
-    amount_usd,
-    fee_amount_unadj,
-    fee_amount,
-    _log_id,
-    _inserted_timestamp
-FROM
-    gmx_v2
-UNION ALL 
-SELECT
-    block_number,
-    block_timestamp,
-    tx_hash,
-    contract_address,
-    event_name,
-    event_index,
-    origin_function_signature,
-    origin_from_address,
-    origin_to_address,
-    trader,
-    trade_type,
-    platform,
-    symbol,
-    market_type,
-    is_taker,
-    price_amount_unadj,
-    price_amount,
-    amount_unadj,
-    amount,
-    amount_usd,
-    fee_amount_unadj,
-    fee_amount,
-    _log_id,
-    _inserted_timestamp
-FROM
-    symmio
+    perp_union

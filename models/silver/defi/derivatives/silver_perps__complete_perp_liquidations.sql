@@ -38,13 +38,13 @@ WITH vertex AS (
     FROM
         {{ ref('silver__vertex_liquidations') }}
 
-{% if is_incremental() and 'vertex' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'vertex' not in var('HEAL_MODELS') %}
 WHERE
-    A._inserted_timestamp >= (
+    _inserted_timestamp >= (
         SELECT
             MAX(
                 _inserted_timestamp
-            ) - INTERVAL '36 hours'
+            ) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )
@@ -82,13 +82,13 @@ gmx_v2 AS (
     FROM
         {{ ref('silver_perps__gmxv2_liquidations') }}
 
-{% if is_incremental() and 'gmx_v2' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'gmx_v2' not in var('HEAL_MODELS') %}
 WHERE
-    A._inserted_timestamp >= (
+    _inserted_timestamp >= (
         SELECT
             MAX(
                 _inserted_timestamp
-            ) - INTERVAL '36 hours'
+            ) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )
@@ -127,13 +127,16 @@ symmio AS (
     FROM
         {{ ref('silver_perps__symmio_liquidations') }}
 
-{% if is_incremental() and 'symmio' not in var('HEAL_CURATED_MODEL') %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp) - INTERVAL '36 hours'
-    FROM
-        {{ this }}
-)
+{% if is_incremental() and 'symmio' not in var('HEAL_MODELS') %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(
+                _inserted_timestamp
+            ) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+        FROM
+            {{ this }}
+    )
 {% endif %}
 )
 SELECT

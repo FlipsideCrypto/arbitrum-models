@@ -19,22 +19,20 @@ WITH gmx_symmio AS (
         origin_from_address,
         origin_to_address,
         trader,
+        liquidator,
         trade_type,
         platform,
-        symbol,
-        market_type,
         is_taker,
+        symbol,
         price_amount_unadj,
         price_amount,
-        amount_unadj,
-        amount,
-        amount_usd,
-        fee_amount_unadj,
-        fee_amount,
+        liquidated_amount_unadj,
+        liquidated_amount,
+        liquidated_amount_usd,
         _log_id,
         _inserted_timestamp
     FROM
-        {{ ref('silver_perps__complete_perp_trades') }} A
+        {{ ref('silver_perps__complete_perp_liquidations') }} A
     WHERE
         origin_to_address IN (
             '0xddba98640ba9c19fb3838d7982de798c1ed301df',-- gmx v2
@@ -62,31 +60,24 @@ vertex AS (
         origin_from_address,
         origin_to_address,
         trader,
-        trade_type,
-        'vertex' AS platform,
-        REPLACE(
-            symbol,
-            '-PERP',
-            ''
-        ) AS symbol,
+        digest AS liquidator,
         CASE
-            WHEN market_reduce_flag = TRUE THEN 'market_decrease'
-            ELSE 'market_increase'
-        END AS market_type,
-        is_taker,
-        price_amount_unadj,
-        price_amount,
-        amount_unadj,
-        amount,
-        amount_usd,
-        fee_amount_unadj,
-        fee_amount,
+            WHEN amount < 0 THEN 'sell/short'
+            WHEN amount > 0 THEN 'buy/long'
+        END AS trade_type,
+        'vertex' AS platform,
+        FALSE AS is_taker,
+        health_group_symbol AS symbol,
+        amount_quote_unadj / amount_unadj AS price_amount_unadj,
+        amount_quote / amount AS price_amount,
+        amount_unadj AS liquidated_amount_unadj,
+        amount AS liquidated_amount,
+        amount_quote AS liquidated_amount_usd,
         _log_id,
         _inserted_timestamp
     FROM
-        {{ ref('silver__vertex_perps') }} A
-    WHERE
-        utils.udf_hex_to_string(SUBSTR(subaccount, 43, 8)) = 'pear'
+        {{ ref('silver__vertex_liquidations') }}
+
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
@@ -96,62 +87,15 @@ AND _inserted_timestamp >= (
 )
 AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
-
 ),
 FINAL AS (
     SELECT
-        block_number,
-        block_timestamp,
-        tx_hash,
-        contract_address,
-        event_name,
-        event_index,
-        origin_function_signature,
-        origin_from_address,
-        origin_to_address,
-        trader,
-        trade_type,
-        platform,
-        symbol,
-        market_type,
-        is_taker,
-        price_amount_unadj,
-        price_amount,
-        amount_unadj,
-        amount,
-        amount_usd,
-        fee_amount_unadj,
-        fee_amount,
-        _log_id,
-        _inserted_timestamp
+        *
     FROM
         gmx_symmio
     UNION ALL
     SELECT
-        block_number,
-        block_timestamp,
-        tx_hash,
-        contract_address,
-        event_name,
-        event_index,
-        origin_function_signature,
-        origin_from_address,
-        origin_to_address,
-        trader,
-        trade_type,
-        platform,
-        symbol,
-        market_type,
-        is_taker,
-        price_amount_unadj,
-        price_amount,
-        amount_unadj,
-        amount,
-        amount_usd,
-        fee_amount_unadj,
-        fee_amount,
-        _log_id,
-        _inserted_timestamp
+        *
     FROM
         vertex
 )
@@ -166,23 +110,21 @@ SELECT
     origin_from_address,
     origin_to_address,
     trader,
+    liquidator,
     trade_type,
     platform,
-    symbol,
-    market_type,
     is_taker,
+    symbol,
     price_amount_unadj,
     price_amount,
-    amount_unadj,
-    amount,
-    amount_usd,
-    fee_amount_unadj,
-    fee_amount,
+    liquidated_amount_unadj as amount_unadj,
+    liquidated_amount as amount,
+    liquidated_amount_usd as amount_usd,
     _log_id,
     _inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(
         ['tx_hash', 'event_index']
-    ) }} AS pear_perps_id,
+    ) }} AS pear_liquidations_id,
     SYSDATE() AS modified_timestamp,
     SYSDATE() AS inserted_timestamp,
     '{{invocation_id}}' AS _invocation_id

@@ -9,7 +9,7 @@
 WITH api_pull AS (
     SELECT
         PARSE_JSON(
-            live.udf_api(
+            arbitrum.live.udf_api(
                 'https://arbitrum-api.gmxinfra.io/tokens'
             )
         ) :data :tokens AS response
