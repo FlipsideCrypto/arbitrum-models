@@ -189,13 +189,14 @@ SELECT
     positionType AS position_type,
     position_name,
     closeId AS close_id,
+    liquidator,
     liquidationid AS liquidation_id,
     liquidatedAmount_unadj AS liquidated_amount_unadj,
     liquidatedAmount AS liquidated_amount,
     price,
     product_name,
     symbolId AS symbol_id,
-    liquidatedAmount_usd,
+    liquidatedAmount_usd AS liquidated_amount_usd,
     _log_id,
     --C.modified_timestamp,
     {{ dbt_utils.generate_surrogate_key(
@@ -207,7 +208,6 @@ SELECT
 FROM
     combine C
     LEFT JOIN {{ ref('silver_perps__symmio_dim_products') }}
-    ON product_id = symbol_id
-qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    ON product_id = symbol_id qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     modified_timestamp DESC)) = 1

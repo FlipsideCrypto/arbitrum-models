@@ -20,19 +20,19 @@ WITH vertex AS (
         origin_to_address,
         -- market_type  (always decrease only?)
         trader,
-        digest as liquidator,
+        digest AS liquidator,
         CASE
             WHEN amount < 0 THEN 'sell/short'
             WHEN amount > 0 THEN 'buy/long'
         END AS trade_type,
         'vertex' AS platform,
-        FALSE as is_taker, 
-        health_group_symbol as symbol,
-        amount_quote_unadj/amount_unadj as price_amount_unadj,
-        amount_quote/amount as price_amount,
-        amount_unadj as liquidated_amount_unadj,
-        amount as liquidated_amount,
-        amount_quote as liquidated_amount_usd,
+        FALSE AS is_taker,
+        health_group_symbol AS symbol,
+        amount_quote_unadj / amount_unadj AS price_amount_unadj,
+        amount_quote / amount AS price_amount,
+        amount_unadj AS liquidated_amount_unadj,
+        amount AS liquidated_amount,
+        amount_quote AS liquidated_amount_usd,
         _log_id,
         _inserted_timestamp
     FROM
@@ -63,19 +63,20 @@ gmx_v2 AS (
         origin_to_address,
         -- market_type  (always decrease only?)
         account AS trader,
-        origin_from_address as liquidator, -- GMX LiquidationHandler
+        origin_from_address AS liquidator,
+        -- GMX LiquidationHandler
         CASE
             WHEN is_long = TRUE THEN 'buy/long'
             ELSE 'sell/short'
         END AS trade_type,
         'gmx-v2' AS platform,
-        FALSE as is_taker,
+        FALSE AS is_taker,
         symbol,
-        execution_price_unadj as price_amount_unadj,
-        execution_price as price_amount,
-        size_delta_usd_unadj as liquidated_amount_unadj,
-        size_delta_usd as liquidated_amount,
-        size_delta_usd_unadj as liquidated_amount_usd,
+        execution_price_unadj AS price_amount_unadj,
+        execution_price AS price_amount,
+        size_delta_amount_unadj AS liquidated_amount_unadj,
+        size_delta_amount AS liquidated_amount,
+        size_delta_usd AS liquidated_amount_usd,
         _log_id,
         _inserted_timestamp
     FROM
@@ -104,23 +105,25 @@ symmio AS (
         origin_function_signature,
         origin_from_address,
         origin_to_address,
-        partyA as trader,
+        partyA AS trader,
         liquidator,
-        CASE 
+        CASE
             WHEN position_type = 0 THEN 'buy/long'
             WHEN position_type = 1 THEN 'sell/short'
-            ELSE NULL 
-        END as trade_type,
-        'symmio' as platform,
-        FALSE as is_taker,
-        product_name as symbol,
-        price as price_amount_unadj,
-        price as price_amount,
-        liquidatedAmount_unadj AS liquidated_amount_unadj,
-        liquidatedAmount AS liquidated_amount, -- token quantity
-        liquidatedAmount_usd AS liquidated_amount_usd, -- in usd value
+            ELSE NULL
+        END AS trade_type,
+        'symmio' AS platform,
+        FALSE AS is_taker,
+        product_name AS symbol,
+        price AS price_amount_unadj,
+        price AS price_amount,
+        liquidated_amount_unadj,
+        liquidated_amount,
+        -- token quantity
+        liquidated_amount_usd,
+        -- in usd value
         _log_id,
-        _inserted_timestamp
+       modified_timestamp AS _inserted_timestamp
     FROM
         {{ ref('silver_perps__symmio_liquidations') }}
 
@@ -133,3 +136,80 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 )
+SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    contract_address,
+    event_name,
+    event_index,
+    origin_function_signature,
+    origin_from_address,
+    origin_to_address,
+    trader,
+    liquidator,
+    trade_type,
+    platform,
+    is_taker,
+    symbol,
+    price_amount_unadj,
+    price_amount,
+    liquidated_amount_unadj,
+    liquidated_amount,
+    liquidated_amount_usd,
+    _log_id,
+    _inserted_timestamp
+FROM
+    vertex
+UNION ALL
+SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    contract_address,
+    event_name,
+    event_index,
+    origin_function_signature,
+    origin_from_address,
+    origin_to_address,
+    trader,
+    liquidator,
+    trade_type,
+    platform,
+    is_taker,
+    symbol,
+    price_amount_unadj,
+    price_amount,
+    liquidated_amount_unadj,
+    liquidated_amount,
+    liquidated_amount_usd,
+    _log_id,
+    _inserted_timestamp
+FROM
+    gmx_v2
+UNION ALL
+SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    contract_address,
+    event_name,
+    event_index,
+    origin_function_signature,
+    origin_from_address,
+    origin_to_address,
+    trader,
+    liquidator,
+    trade_type,
+    platform,
+    is_taker,
+    symbol,
+    price_amount_unadj,
+    price_amount,
+    liquidated_amount_unadj,
+    liquidated_amount,
+    liquidated_amount_usd,
+    _log_id,
+    _inserted_timestamp
+FROM
+    symmio
