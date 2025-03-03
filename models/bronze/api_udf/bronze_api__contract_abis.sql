@@ -59,7 +59,7 @@ SELECT
             'fsc-quantum-state', 'livequery'
         ),
     NULL, 
-    'Vault/prod/block_explorers/arbiscan'
+    'Vault/prod/block_explorers/arbitrum_scan'
     )AS abi_data, 
     SYSDATE() AS _inserted_timestamp
 FROM
