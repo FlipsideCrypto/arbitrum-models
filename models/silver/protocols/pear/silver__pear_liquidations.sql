@@ -77,7 +77,8 @@ vertex AS (
         _inserted_timestamp
     FROM
         {{ ref('silver__vertex_liquidations') }}
-
+    WHERE
+        utils.udf_hex_to_string(SUBSTR(subaccount, 43, 8)) = 'pear'
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT

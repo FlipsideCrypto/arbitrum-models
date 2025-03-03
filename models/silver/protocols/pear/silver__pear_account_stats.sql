@@ -152,6 +152,12 @@ FINAL AS (
         SUM(amount_usd) AS total_usd_volume,
         SUM(
             CASE
+                WHEN t.block_timestamp >= DATEADD('hour', -24, CURRENT_TIMESTAMP()) THEN amount_usd 
+                ELSE 0
+            END
+        ) AS total_usd_volume_24h,
+        SUM(
+            CASE
                 WHEN t.block_timestamp >= DATE_TRUNC('MONTH', CURRENT_DATE()) THEN amount_usd
                 ELSE 0
             END

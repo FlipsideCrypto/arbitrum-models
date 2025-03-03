@@ -100,58 +100,12 @@ AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 ),
 FINAL AS (
     SELECT
-        block_number,
-        block_timestamp,
-        tx_hash,
-        contract_address,
-        event_name,
-        event_index,
-        origin_function_signature,
-        origin_from_address,
-        origin_to_address,
-        trader,
-        trade_type,
-        platform,
-        symbol,
-        market_type,
-        is_taker,
-        price_amount_unadj,
-        price_amount,
-        amount_unadj,
-        amount,
-        amount_usd,
-        fee_amount_unadj,
-        fee_amount,
-        _log_id,
-        _inserted_timestamp
+        *
     FROM
         gmx_symmio
     UNION ALL
     SELECT
-        block_number,
-        block_timestamp,
-        tx_hash,
-        contract_address,
-        event_name,
-        event_index,
-        origin_function_signature,
-        origin_from_address,
-        origin_to_address,
-        trader,
-        trade_type,
-        platform,
-        symbol,
-        market_type,
-        is_taker,
-        price_amount_unadj,
-        price_amount,
-        amount_unadj,
-        amount,
-        amount_usd,
-        fee_amount_unadj,
-        fee_amount,
-        _log_id,
-        _inserted_timestamp
+        *
     FROM
         vertex
 )
