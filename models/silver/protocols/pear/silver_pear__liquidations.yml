@@ -1,10 +1,11 @@
 version: 2
 models:
-  - name: silver__pear_perps
+  - name: silver_pear__liquidations
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - _LOG_ID
+            - tx_hash
+            - event_index
     columns:
       - name: BLOCK_NUMBER
         tests:
@@ -16,9 +17,6 @@ models:
       - name: BLOCK_TIMESTAMP
         tests:
           - not_null
-          - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 1
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - TIMESTAMP_LTZ
@@ -33,87 +31,54 @@ models:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: EVENT_INDEX
-        tests:
-          - not_null
-      - name: ORIGIN_FUNCTION_SIGNATURE
-        tests:
-          - not_null
-      - name: ORIGIN_FROM_ADDRESS
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
-      - name: ORIGIN_TO_ADDRESS
-        tests:
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
-      - name: EVENT_NAME
-        tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - STRING
-                - VARCHAR
-          - not_null
-      - name: SYMBOL
-        tests:
-          - not_null
       - name: TRADER
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: TRADE_TYPE
+      - name: LIQUIDATOR
         tests:
           - not_null
-      - name: PRICE_AMOUNT_UNADJ
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: PLATFORM
         tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER
-                - FLOAT
-      - name: PRICE_AMOUNT
-        tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER
-                - FLOAT
+          - not_null
       - name: AMOUNT_UNADJ
         tests:
+          - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - NUMBER
                 - FLOAT
       - name: AMOUNT
         tests:
+          - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - NUMBER
                 - FLOAT
       - name: AMOUNT_USD
         tests:
+          - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - NUMBER
                 - FLOAT
-      - name: FEE_AMOUNT_UNADJ
-        tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER
-                - FLOAT
-      - name: FEE_AMOUNT
-        tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER
-                - FLOAT
-      - name: PLATFORM
-        tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - STRING
-                - VARCHAR
-      - name: _LOG_ID
+      - name: PEAR_LIQUIDATIONS_ID
         tests:
           - not_null
+          - unique
+      - name: INSERTED_TIMESTAMP
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - TIMESTAMP_LTZ
+                - TIMESTAMP_NTZ
+      - name: MODIFIED_TIMESTAMP
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1 

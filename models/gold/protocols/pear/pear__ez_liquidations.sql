@@ -29,4 +29,4 @@ SELECT
     inserted_timestamp,
     modified_timestamp
 FROM 
-    {{ ref('silver__pear_liquidations') }} 
+    {{ ref('silver_pear__liquidations') }} 

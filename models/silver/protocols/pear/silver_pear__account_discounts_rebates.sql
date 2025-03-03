@@ -13,7 +13,7 @@ WITH staking_actions AS (
             WHEN action = 'staked' THEN amount
             WHEN action = 'unstaked' THEN -amount
         END as amount_change
-    FROM {{ ref('silver__pear_staking') }}
+    FROM {{ ref('silver_pear__staking') }}
     WHERE action IN ('staked', 'unstaked')
     {% if is_incremental() %}
     AND modified_timestamp >= (

@@ -27,4 +27,4 @@ SELECT
     inserted_timestamp,
     modified_timestamp
 FROM 
-    {{ ref('silver__pear_staking') }} 
+    {{ ref('silver_pear__staking') }} 

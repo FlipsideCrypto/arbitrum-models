@@ -13,7 +13,7 @@ new_trader_actions AS (
     SELECT
         DISTINCT(trader)
     FROM
-        {{ ref('silver__pear_perps') }}
+        {{ ref('silver_pear__perps') }}
     WHERE
         _inserted_timestamp >= (
             SELECT
@@ -27,7 +27,7 @@ new_trader_actions AS (
     SELECT
         DISTINCT(trader)
     FROM
-        {{ ref('silver__pear_liquidations') }}
+        {{ ref('silver_pear__liquidations') }}
     WHERE
         _inserted_timestamp >= (
             SELECT
@@ -59,7 +59,7 @@ trades_union AS (
         pear_perps_id,
         _inserted_timestamp
     FROM
-        {{ ref('silver__pear_perps') }}
+        {{ ref('silver_pear__perps') }}
 
 {% if is_incremental() %}
 WHERE
@@ -78,7 +78,7 @@ liquidations AS (
         SUM(amount) AS total_liquidation_amount,
         COUNT(*) AS liquidation_count
     FROM
-        {{ ref('silver__pear_liquidations') }}
+        {{ ref('silver_pear__liquidations') }}
 
 {% if is_incremental() %}
 WHERE
@@ -101,7 +101,7 @@ staking AS (
             WHEN action = 'unstaked' THEN -amount
         END) as net_staked_amount
     FROM 
-        {{ ref('silver__pear_staking') }}
+        {{ ref('silver_pear__staking') }}
     WHERE 
         action IN ('staked','unstaked')
     GROUP BY 

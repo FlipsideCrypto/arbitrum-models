@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver__pear_apr
+  - name: silver_pear__apr
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:

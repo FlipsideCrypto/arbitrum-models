@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver__pear_account_discounts_rebates
+  - name: silver_pear__account_discounts_rebates
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:

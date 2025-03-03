@@ -1,11 +1,10 @@
 version: 2
 models:
-  - name: silver__pear_liquidations
+  - name: silver_pear__perps
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - tx_hash
-            - event_index
+            - _LOG_ID
     columns:
       - name: BLOCK_NUMBER
         tests:
@@ -17,6 +16,9 @@ models:
       - name: BLOCK_TIMESTAMP
         tests:
           - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - TIMESTAMP_LTZ
@@ -31,54 +33,87 @@ models:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
+      - name: EVENT_INDEX
+        tests:
+          - not_null
+      - name: ORIGIN_FUNCTION_SIGNATURE
+        tests:
+          - not_null
+      - name: ORIGIN_FROM_ADDRESS
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: ORIGIN_TO_ADDRESS
+        tests:
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: EVENT_NAME
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - STRING
+                - VARCHAR
+          - not_null
+      - name: SYMBOL
+        tests:
+          - not_null
       - name: TRADER
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: LIQUIDATOR
+      - name: TRADE_TYPE
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
-      - name: PLATFORM
+      - name: PRICE_AMOUNT_UNADJ
         tests:
-          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: PRICE_AMOUNT
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
       - name: AMOUNT_UNADJ
         tests:
-          - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - NUMBER
                 - FLOAT
       - name: AMOUNT
         tests:
-          - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - NUMBER
                 - FLOAT
       - name: AMOUNT_USD
         tests:
-          - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - NUMBER
                 - FLOAT
-      - name: PEAR_LIQUIDATIONS_ID
+      - name: FEE_AMOUNT_UNADJ
         tests:
-          - not_null
-          - unique
-      - name: INSERTED_TIMESTAMP
-        tests:
-          - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
-                - TIMESTAMP_LTZ
-                - TIMESTAMP_NTZ
-      - name: MODIFIED_TIMESTAMP
+                - NUMBER
+                - FLOAT
+      - name: FEE_AMOUNT
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: PLATFORM
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - STRING
+                - VARCHAR
+      - name: _LOG_ID
         tests:
           - not_null
-          - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 1 
