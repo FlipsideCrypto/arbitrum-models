@@ -122,6 +122,7 @@ SELECT
         WHEN order_type = 4 THEN 'market_decrease'
         WHEN order_type = 5 THEN 'limit_decrease'
         WHEN order_type = 6 THEN 'stop_loss_decrease'
+        ELSE order_type_raw
     END AS order_type,
     CASE
         WHEN e.key IS NOT NULL THEN 'executed'

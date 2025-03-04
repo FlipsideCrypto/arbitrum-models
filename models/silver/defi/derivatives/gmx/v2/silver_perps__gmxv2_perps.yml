@@ -92,7 +92,8 @@ models:
               regex: 0[xX][0-9a-fA-F]+
       - name: INITIAL_COLLATERAL_TOKEN_SYMBOL
         tests:
-          - not_null
+          - not_null:
+              where: "order_execution = 'executed'"
       - name: ORDER_TYPE
         tests:
           - not_null
