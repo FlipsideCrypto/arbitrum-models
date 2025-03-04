@@ -196,9 +196,19 @@ FINAL AS (
         LEFT JOIN staking s ON t.trader = s.trader
     GROUP BY
         t.trader
+),
+
+referrals AS (
+    SELECT
+        referrer,
+        referral_code,
+        referee
+    FROM
+        {{ ref('silver_pear__referrals') }}
 )
 SELECT
     f.*,
+    r.referrer as referred_by,
     {{ dbt_utils.generate_surrogate_key(['f.trader']) }} AS pear_account_id,
     COALESCE(
     {% if is_incremental() %}
@@ -211,6 +221,7 @@ SELECT
     '{{ invocation_id }}' AS _invocation_id
 FROM
     FINAL f
+    LEFT JOIN referrals r ON f.trader = r.referee
 {% if is_incremental() %}
 LEFT JOIN {{this}} a ON a.trader = f.trader
 {% endif %}
