@@ -138,7 +138,22 @@ WHERE
             {{ this }}
     )
 {% endif %}
+),
+
+liq_union as (
+    SELECT *
+    FROM
+        vertex
+    UNION ALL
+    SELECT *
+    FROM
+        gmx_v2
+    UNION ALL 
+    SELECT *
+    FROM
+        symmio
 )
+
 SELECT
     block_number,
     block_timestamp,
@@ -161,58 +176,12 @@ SELECT
     liquidated_amount,
     liquidated_amount_usd,
     _log_id,
-    _inserted_timestamp
+    _inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['tx_hash', 'event_index']
+    ) }} as perp_liquidations_id,
+    SYSDATE() as modified_timestamp,
+    SYSDATE() as inserted_timestamp,
+    '{{invocation_id}}' as _invocation_id
 FROM
-    vertex
-UNION ALL
-SELECT
-    block_number,
-    block_timestamp,
-    tx_hash,
-    contract_address,
-    event_name,
-    event_index,
-    origin_function_signature,
-    origin_from_address,
-    origin_to_address,
-    trader,
-    liquidator,
-    trade_type,
-    platform,
-    is_taker,
-    symbol,
-    price_amount_unadj,
-    price_amount,
-    liquidated_amount_unadj,
-    liquidated_amount,
-    liquidated_amount_usd,
-    _log_id,
-    _inserted_timestamp
-FROM
-    gmx_v2
-UNION ALL
-SELECT
-    block_number,
-    block_timestamp,
-    tx_hash,
-    contract_address,
-    event_name,
-    event_index,
-    origin_function_signature,
-    origin_from_address,
-    origin_to_address,
-    trader,
-    liquidator,
-    trade_type,
-    platform,
-    is_taker,
-    symbol,
-    price_amount_unadj,
-    price_amount,
-    liquidated_amount_unadj,
-    liquidated_amount,
-    liquidated_amount_usd,
-    _log_id,
-    _inserted_timestamp
-FROM
-    symmio
+    liq_union
