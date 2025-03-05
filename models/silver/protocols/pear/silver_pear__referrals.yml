@@ -1,0 +1,87 @@
+version: 2
+models:
+  - name: silver_pear__referrals
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - referrer
+            - referee
+    columns:
+      - name: BLOCK_TIMESTAMP
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - TIMESTAMP_LTZ
+                - TIMESTAMP_NTZ
+
+      - name: TX_HASH
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+
+      - name: CONTRACT_ADDRESS
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+          - dbt_expectations.expect_column_values_to_be_in_set:
+              value_set: ['0x61126e4dcecbc7a43ac9fd783ccf66c62d9622fe']
+
+      - name: EVENT_INDEX
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - INTEGER
+
+      - name: ORIGIN_FUNCTION_SIGNATURE
+        tests:
+          - not_null
+
+      - name: ORIGIN_FROM_ADDRESS
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+
+      - name: ORIGIN_TO_ADDRESS
+        tests:
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+
+      - name: TOPICS
+        tests:
+          - not_null
+
+      - name: REFEREE
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+
+      - name: REFERRER
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+
+      - name: REFERRAL_CODE
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - STRING
+                - VARCHAR
+
+      - name: _LOG_ID
+        tests:
+          - not_null
+
+      - name: REFERRAL_ID
+        tests:
+          - not_null
+          - unique
+
