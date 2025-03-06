@@ -192,6 +192,7 @@ quote_status as (
         ON l.quote_id = o.quote_id
     WHERE
         l.status = 'unfilled'
+        and l.event_name ='SendQuote' 
     {% endif %}
 ),
 
@@ -255,17 +256,17 @@ fill_close_position as (
 
 close_status as (
     select 
-        r.tx_hash,
-        r.block_number,
-        r.block_timestamp,
-        r.origin_from_address,
-        r.origin_to_address,
-        r.contract_address,
-        r.event_name,
-        r.event_index,
-        r.origin_function_signature,
-        r.decoded_log,
-        r.topic_0,
+        coalesce(f.tx_hash, r.tx_hash) as tx_hash,
+        coalesce(f.block_number, r.block_number) as block_number,
+        coalesce(f.block_timestamp, r.block_timestamp) as block_timestamp,
+        coalesce(f.origin_from_address, r.origin_from_address) as origin_from_address,
+        coalesce(f.origin_to_address, r.origin_to_address) as origin_to_address,
+        coalesce(f.contract_address, r.contract_address) as contract_address,
+        coalesce(f.event_name, r.event_name) as event_name,
+        coalesce(f.event_index, r.event_index) as event_index,
+        coalesce(f.origin_function_signature, r.origin_function_signature) as origin_function_signature,
+        coalesce(f.decoded_log, r.decoded_log) as decoded_log,
+        coalesce(f.topic_0, r.topic_0) as topic_0,
         q.product_id as product_id,
         CASE 
             WHEN f.filled_amount is not null THEN 'filled' 
