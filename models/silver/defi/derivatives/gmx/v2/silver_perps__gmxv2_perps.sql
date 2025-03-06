@@ -7,7 +7,8 @@
 ) }}
 
 WITH gmx_events AS (
-    SELECT 
+
+    SELECT
         block_number,
         block_timestamp,
         tx_hash,
@@ -25,22 +26,31 @@ WITH gmx_events AS (
         event_data,
         _log_id,
         _inserted_timestamp
-    FROM {{ ref('silver_perps__gmxv2_events') }}
-    WHERE event_name IN ('OrderCreated','OrderExecuted')
-    {% if is_incremental() %}
-    AND _inserted_timestamp >= (
-        SELECT MAX(_inserted_timestamp) - INTERVAL '12 hours'
-        FROM {{ this }}
-    )
-    {% endif %}
-),
+    FROM
+        {{ ref('silver_perps__gmxv2_events') }}
+    WHERE
+        event_name IN (
+            'OrderCreated',
+            'OrderExecuted'
+        )
 
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
+    FROM
+        {{ this }}
+)
+{% endif %}
+),
 executed_orders AS (
-    SELECT key 
-    FROM gmx_events
-    WHERE event_name = 'OrderExecuted'
+    SELECT
+        key
+    FROM
+        gmx_events
+    WHERE
+        event_name = 'OrderExecuted'
 ),
-
 parse_data AS (
     SELECT
         A.block_number,
@@ -75,26 +85,39 @@ parse_data AS (
         event_data [3] [0] [1] [1] AS should_unwrap_native_token,
         event_data [3] [0] [2] [1] AS is_frozen,
         key
-    FROM gmx_events A
-    LEFT JOIN {{ ref('silver_perps__gmxv2_dim_products') }} p
+    FROM
+        gmx_events A
+        LEFT JOIN {{ ref('silver_perps__gmxv2_dim_products') }}
+        p
         ON p.market_address = event_data [0] [0] [4] [1] :: STRING
-    WHERE event_name = 'OrderCreated'
-    AND event_data [1] [0] [0] [1] :: INT NOT IN (7,0,1) --liquidation & Swap increase + decrease
+    WHERE
+        event_name = 'OrderCreated'
+        AND event_data [1] [0] [0] [1] :: INT NOT IN (
+            7,
+            0,
+            1
+        ) --liquidation & Swap increase + decrease
 ),
-
 contracts AS (
     SELECT
         contract_address,
         token_symbol,
         token_decimals
-    FROM {{ ref('silver__contracts') }}
-    WHERE contract_address IN (
-        SELECT DISTINCT(initial_collateral_token) FROM parse_data
-        UNION
-        SELECT DISTINCT(underlying_address) FROM parse_data
-    )
+    FROM
+        {{ ref('silver__contracts') }}
+    WHERE
+        contract_address IN (
+            SELECT
+                DISTINCT(initial_collateral_token)
+            FROM
+                parse_data
+            UNION
+            SELECT
+                DISTINCT(underlying_address)
+            FROM
+                parse_data
+        )
 )
-
 SELECT
     A.block_number,
     A.block_timestamp,
@@ -122,7 +145,7 @@ SELECT
         WHEN order_type = 4 THEN 'market_decrease'
         WHEN order_type = 5 THEN 'limit_decrease'
         WHEN order_type = 6 THEN 'stop_loss_decrease'
-        ELSE order_type_raw
+        ELSE order_type :: STRING
     END AS order_type,
     CASE
         WHEN e.key IS NOT NULL THEN 'executed'
@@ -130,15 +153,24 @@ SELECT
     END AS order_execution,
     decrease_position_swap_type :: INT AS market_reduce_flag,
     size_delta_usd AS size_delta_usd_unadj,
-    size_delta_usd :: FLOAT / pow(10,30) AS size_delta_usd,
+    size_delta_usd :: FLOAT / pow(
+        10,
+        30
+    ) AS size_delta_usd,
     initial_collateral_delta_amount AS initial_collateral_delta_amount_unadj,
-    initial_collateral_delta_amount :: FLOAT / pow(10,C.token_decimals) AS initial_collateral_delta_amount,
+    initial_collateral_delta_amount :: FLOAT / pow(
+        10,
+        C.token_decimals
+    ) AS initial_collateral_delta_amount,
     trigger_price AS trigger_price_unadj,
     trigger_price :: FLOAT / pow(10, (30 - decimals)) AS trigger_price,
     acceptable_price AS acceptable_price_unadj,
     acceptable_price :: FLOAT / pow(10, (30 - decimals)) AS acceptable_price,
     execution_fee AS execution_fee_unadj,
-    execution_fee :: FLOAT / pow(10,18) AS execution_fee,
+    execution_fee :: FLOAT / pow(
+        10,
+        18
+    ) AS execution_fee,
     updated_at_block,
     is_long :: BOOLEAN AS is_long,
     should_unwrap_native_token :: BOOLEAN AS should_unwrap_native_token,
@@ -147,16 +179,16 @@ SELECT
     A._log_id,
     A._inserted_timestamp,
     SYSDATE() AS modified_timestamp
-FROM parse_data A
-LEFT JOIN executed_orders e
+FROM
+    parse_data A
+    LEFT JOIN executed_orders e
     ON A.key = e.key
-LEFT JOIN contracts C
+    LEFT JOIN contracts C
     ON C.contract_address = A.initial_collateral_token
 
 {% if is_incremental() %}
 UNION ALL
-
-SELECT 
+SELECT
     block_number,
     block_timestamp,
     tx_hash,
@@ -178,7 +210,8 @@ SELECT
     initial_collateral_token_symbol,
     order_type_raw,
     order_type,
-    'executed' as order_execution,  -- We know these are now executed
+    'executed' AS order_execution,
+    -- We know these are now executed
     market_reduce_flag,
     size_delta_usd_unadj,
     size_delta_usd,
@@ -197,8 +230,15 @@ SELECT
     key,
     _log_id,
     _inserted_timestamp,
-    SYSDATE() as modified_timestamp
-FROM {{ this }}
-WHERE order_execution = 'not-executed'
-AND key IN (SELECT key FROM executed_orders)
+    SYSDATE() AS modified_timestamp
+FROM
+    {{ this }}
+WHERE
+    order_execution = 'not-executed'
+    AND key IN (
+        SELECT
+            key
+        FROM
+            executed_orders
+    )
 {% endif %}
