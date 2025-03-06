@@ -12,16 +12,34 @@ WITH sendquote AS (
     SELECT
         block_timestamp,
         tx_hash,
-        decoded_log :quoteId AS quoteId,
-        decoded_log :symbolId AS symbolId,
+        -- decoded_log,
+        DATA,
+        regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
+        TRY_TO_NUMBER(
+            arbitrum.utils.udf_hex_to_int(
+                segmented_data [1] :: STRING
+            )
+        ) AS quoteId,
+        TRY_TO_NUMBER(
+            arbitrum.utils.udf_hex_to_int(
+                segmented_data [3] :: STRING
+            )
+        ) AS symbolId,
+        arbitrum.utils.udf_hex_to_int(
+            segmented_data [4] :: STRING
+        ) AS positionType,
+        TRY_TO_NUMBER(
+            arbitrum.utils.udf_hex_to_int(
+                segmented_data [5] :: STRING
+            )
+        ) AS orderNum,
         CASE
-            WHEN decoded_log :orderType :: STRING = '1' THEN 'market'
-            WHEN decoded_log :orderType :: STRING = '0' THEN 'limit'
+            WHEN orderNum = 1 THEN 'market'
+            WHEN orderNum = 0 THEN 'limit'
         END AS orderType,
-        decoded_log :positionType :: STRING AS positionType,
         CASE
-            WHEN positionType = '1' THEN 'short'
-            WHEN positionType = '0' THEN 'long'
+            WHEN positionType = 1 THEN 'short'
+            WHEN positionType = 0 THEN 'long'
             ELSE 'unlabelled'
         END AS position_name
     FROM
@@ -150,7 +168,7 @@ combine AS (
         contract_address,
         event_name,
         event_index,
-        partyA,
+        l.partyA,
         quoteId,
         closeId,
         orderType,
@@ -177,17 +195,17 @@ SELECT
     C.tx_hash,
     price_timestamp,
     price_tx_hash,
-    contract_address,
-    origin_from_address,
-    origin_to_address,
+    C.contract_address,
+    C.origin_from_address,
+    C.origin_to_address,
     C.event_name,
-    event_index,
-    origin_function_signature,
-    partyA,
-    quoteId AS quote_id,
-    orderType AS order_type,
-    positionType AS position_type,
-    position_name,
+    C.event_index,
+    C.origin_function_signature,
+    C.partyA,
+    C.quoteId AS quote_id,
+    C.orderType AS order_type,
+    C.positionType AS position_type,
+    C.position_name,
     closeId AS close_id,
     liquidator,
     liquidationid AS liquidation_id,
@@ -197,10 +215,10 @@ SELECT
     product_name,
     symbolId AS symbol_id,
     liquidatedAmount_usd AS liquidated_amount_usd,
-    _log_id,
+    C._log_id,
     --C.modified_timestamp,
     {{ dbt_utils.generate_surrogate_key(
-        ['C.tx_hash','event_index']
+        ['C.tx_hash','C.event_index']
     ) }} AS symmio_liquidation_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
@@ -208,6 +226,6 @@ SELECT
 FROM
     combine C
     LEFT JOIN {{ ref('silver_perps__symmio_dim_products') }}
-    ON product_id = symbol_id qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    ON product_id = symbol_id qualify(ROW_NUMBER() over(PARTITION BY C._log_id
 ORDER BY
     modified_timestamp DESC)) = 1
