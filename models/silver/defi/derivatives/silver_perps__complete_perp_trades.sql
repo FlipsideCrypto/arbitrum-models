@@ -95,16 +95,13 @@ gmx_v2 AS (
         size_delta_usd_unadj :: FLOAT / NULLIF(
             price_amount_unadj,
             0
-        ) AS amount_unadj,
+        ), AS amount_unadj,
         CASE
             WHEN trade_type = 'sell/short' THEN (size_delta_usd / NULLIF(price_amount, 0) * -1)
-            ELSE size_delta_usd / NULLIF(
-                price_amount,
-                0
-            )
+            ELSE size_delta_usd / NULLIF(price_amount, 0)
         END AS amount,
         size_delta_usd AS amount_usd,
-        NULL AS fee_amount_unadj,
+        null AS fee_amount_unadj,
         size_delta_usd * .0005 AS fee_amount,
         _log_id,
         _inserted_timestamp
@@ -159,7 +156,7 @@ symmio AS (
         quantity * price as amount_usd,
         trading_fee as fee_amount_unadj,
         trading_fee as fee_amount, -- Adjust if decimals need scaling
-        ez_decoded_event_logs_id as _log_id,
+        _log_id,
         _inserted_timestamp
     FROM 
         {{ ref('silver_perps__symmio_perps') }}
