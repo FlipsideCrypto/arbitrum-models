@@ -30,9 +30,9 @@ WITH vertex AS (
         health_group_symbol AS symbol,
         amount_quote_unadj / amount_unadj AS price_amount_unadj,
         amount_quote / amount AS price_amount,
-        amount_unadj AS liquidated_amount_unadj,
-        amount AS liquidated_amount,
-        amount_quote AS liquidated_amount_usd,
+        abs(amount_unadj) AS liquidated_amount_unadj,
+        abs(amount) AS liquidated_amount,
+        abs(amount_quote) AS liquidated_amount_usd,
         _log_id,
         _inserted_timestamp
     FROM
