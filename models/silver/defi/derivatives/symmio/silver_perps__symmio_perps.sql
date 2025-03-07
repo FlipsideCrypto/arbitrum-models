@@ -377,7 +377,7 @@ SELECT
     trading_fee,
     product_name,
     _inserted_timestamp,
-    ez_decoded_event_logs_id,
+    CONCAT( tx_hash, '-', event_index ) AS _log_id,
     {{ dbt_utils.generate_surrogate_key(
         ['tx_hash', 'quote_id']
     ) }} AS pear_open_position_id,
@@ -421,7 +421,7 @@ SELECT
     trading_fee,
     product_name,
     _inserted_timestamp,
-    ez_decoded_event_logs_id,
+    CONCAT( tx_hash, '-', event_index ) AS _log_id,
     {{ dbt_utils.generate_surrogate_key(
         ['tx_hash', 'quote_id']
     ) }} AS pear_open_position_id,
