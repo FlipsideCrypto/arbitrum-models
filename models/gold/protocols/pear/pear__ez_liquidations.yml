@@ -1,0 +1,35 @@
+version: 2
+models:
+  - name: pear__ez_liquidations
+    description: '{{ doc("pear_ez_liquidations") }}'
+    columns:
+      - name: BLOCK_NUMBER
+        description: '{{ doc("arb_block_number") }}'
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("arb_block_timestamp") }}'
+      - name: TX_HASH
+        description: '{{ doc("arb_logs_tx_hash") }}'
+      - name: CONTRACT_ADDRESS
+        description: '{{ doc("arb_logs_contract_address") }}'
+      - name: EVENT_NAME
+        description: '{{ doc("arb_event_name") }}'
+      - name: EVENT_INDEX
+        description: '{{ doc("arb_event_index") }}'
+      - name: ORIGIN_FUNCTION_SIGNATURE
+        description: '{{ doc("nft_origin_sig") }}'
+      - name: ORIGIN_FROM_ADDRESS
+        description: '{{ doc("arb_origin_from") }}'
+      - name: ORIGIN_TO_ADDRESS
+        description: '{{ doc("arb_origin_to") }}'
+      - name: TRADER
+        description: '{{ doc("pear_trader") }}'
+      - name: AMOUNT
+        description: '{{ doc("pear_amount") }}'
+      - name: AMOUNT_USD
+        description: '{{ doc("pear_amount_usd") }}'
+      - name: EZ_LIQUIDATIONS_ID
+        description: '{{ doc("pk") }}'
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
