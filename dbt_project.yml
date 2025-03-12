@@ -30,7 +30,19 @@ models:
     relation: true
     columns: true
   +on_schema_change: "append_new_columns"
-
+  fsc_evm:
+    +enabled: true
+    +copy_grants: true
+    +persist_docs:
+      relation: true
+      columns: true
+    +on_schema_change: "append_new_columns"
+    main_package:
+      +enabled: true
+    curated_package:
+      +enabled: true
+    decoder_package:
+      +enabled: true
 tests:
   +store_failures: true # all tests
 
@@ -39,7 +51,7 @@ on-run-start:
   - "{{ create_udfs() }}"
 
 on-run-end:
-  - '{{ apply_meta_as_tags(results) }}'
+  - "{{ apply_meta_as_tags(results) }}"
 
 dispatch:
   - macro_namespace: dbt
@@ -49,7 +61,7 @@ dispatch:
       - dbt
 
 query-comment:
-  comment: '{{ dbt_snowflake_query_tags.get_query_comment(node) }}'
+  comment: "{{ dbt_snowflake_query_tags.get_query_comment(node) }}"
   append: true # Snowflake removes prefixed comments.
 
 # Configuring models
@@ -71,14 +83,14 @@ vars:
   HEAL_MODELS: []
   START_GHA_TASKS: False
 
-#### STREAMLINE 2.0 BEGIN ####
+  #### STREAMLINE 2.0 BEGIN ####
 
   API_INTEGRATION: '{{ var("config")[target.name]["API_INTEGRATION"] if var("config")[target.name] else var("config")["dev"]["API_INTEGRATION"] }}'
   EXTERNAL_FUNCTION_URI: '{{ var("config")[target.name]["EXTERNAL_FUNCTION_URI"] if var("config")[target.name] else var("config")["dev"]["EXTERNAL_FUNCTION_URI"] }}'
   ROLES: |
     ["INTERNAL_DEV"]
   config:
-  # The keys correspond to dbt profiles and are case sensitive
+    # The keys correspond to dbt profiles and are case sensitive
     dev:
       API_INTEGRATION: AWS_ARBITRUM_API_STG_V2
       EXTERNAL_FUNCTION_URI: sko0tcm8t1.execute-api.us-east-1.amazonaws.com/stg/
@@ -94,17 +106,17 @@ vars:
         - INTERNAL_DEV
         - DBT_CLOUD_ARBITRUM
 
-#### STREAMLINE 2.0 END ####
+  #### STREAMLINE 2.0 END ####
 
-#### FSC_EVM BEGIN ####
-# Visit https://github.com/FlipsideCrypto/fsc-evm/wiki for more information on required and optional variables
+  #### FSC_EVM BEGIN ####
+  # Visit https://github.com/FlipsideCrypto/fsc-evm/wiki for more information on required and optional variables
 
   ### GLOBAL VARIABLES BEGIN ###
   ## REQUIRED
-  GLOBAL_PROD_DB_NAME: 'arbitrum' 
-  GLOBAL_NODE_SECRET_PATH: 'Vault/prod/arbitrum/quicknode/mainnet'
-  GLOBAL_NODE_URL: '{service}/{Authentication}'
-  GLOBAL_BLOCKS_PER_HOUR: 14200 
+  GLOBAL_PROD_DB_NAME: "arbitrum"
+  GLOBAL_NODE_SECRET_PATH: "Vault/prod/arbitrum/quicknode/mainnet"
+  GLOBAL_NODE_URL: "{service}/{Authentication}"
+  GLOBAL_BLOCKS_PER_HOUR: 14200
   GLOBAL_USES_STREAMLINE_V1: True
   GLOBAL_USES_SINGLE_FLIGHT_METHOD: True
 
@@ -150,5 +162,4 @@ vars:
   # DECODED_LOGS_HISTORY_SQL_LIMIT: 1 #limit per monthly range
 
   ### DECODER_PACKAGE VARIABLES END ###
-
 #### FSC_EVM END ####
