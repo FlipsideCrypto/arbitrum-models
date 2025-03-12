@@ -48,6 +48,7 @@ WHERE
         FROM
             {{ this }}
     )
+    AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 gmx_v2 AS (
@@ -92,6 +93,7 @@ WHERE
         FROM
             {{ this }}
     )
+    AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 symmio AS (
@@ -137,6 +139,7 @@ WHERE
         FROM
             {{ this }}
     )
+    AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 
@@ -179,7 +182,7 @@ SELECT
     _inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(
         ['tx_hash', 'event_index']
-    ) }} as perp_liquidations_id,
+    ) }} as complete_perp_liquidations_id,
     SYSDATE() as modified_timestamp,
     SYSDATE() as inserted_timestamp,
     '{{invocation_id}}' as _invocation_id

@@ -76,7 +76,7 @@ WITH logs AS (
             '-',
             event_index
         ) AS _log_id,
-        modified_timestamp
+        modified_timestamp as _inserted_timestamp
     FROM
         {{ ref('core__fact_event_logs') }}
     WHERE
@@ -85,13 +85,13 @@ WITH logs AS (
         AND tx_succeeded
 
 {% if is_incremental() %}
-AND modified_timestamp >= (
+AND _inserted_timestamp >= (
     SELECT
-        MAX(modified_timestamp) - INTERVAL '12 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 )
 SELECT
@@ -114,7 +114,7 @@ SELECT
     min_acceptable_quote_value,
     NAME AS product_name,
     trading_fee,
-    modified_timestamp AS _inserted_timestamp,
+    _inserted_timestamp,
     _log_id,
     {{ dbt_utils.generate_surrogate_key(
         ['tx_hash','product_id']

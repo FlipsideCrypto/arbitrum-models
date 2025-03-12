@@ -67,7 +67,12 @@ SELECT
     event_data,
     _log_id,
     _inserted_timestamp,
-    SYSDATE() AS modified_timestamp
+    {{ dbt_utils.generate_surrogate_key(
+        ['_log_id']
+    ) }} AS gmxv2_events_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     decoded_logs
 WHERE

@@ -82,6 +82,14 @@ market_pull AS (
         topics [0] :: STRING = '0x137a44067c8961cd7e1d876f4754a5a3a75989b4552f1843fc69c3b372def160'
         AND origin_function_signature = '0xa50ff3a6' --CreateMarket
         AND tx_succeeded
+        {% if is_incremental() %}
+        AND _inserted_timestamp >= (
+            SELECT
+                MAX(_inserted_timestamp) - INTERVAL '12 hours'
+            FROM
+                {{ this }}
+        )
+        {% endif %}
 )
 SELECT
     block_number,
@@ -111,7 +119,12 @@ SELECT
     market_address,
     _log_id,
     _inserted_timestamp,
-    SYSDATE() AS modified_timestamp
+    {{ dbt_utils.generate_surrogate_key(
+        ['_log_id']
+    ) }} AS gmxv2_dim_products_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     market_pull m
     LEFT JOIN product_metadata p

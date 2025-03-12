@@ -41,6 +41,7 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 executed_orders AS (
@@ -178,7 +179,12 @@ SELECT
     A.key,
     A._log_id,
     A._inserted_timestamp,
-    SYSDATE() AS modified_timestamp
+    {{ dbt_utils.generate_surrogate_key(
+        ['_log_id']
+    ) }} AS gmxv2_perps_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     parse_data A
     LEFT JOIN executed_orders e
@@ -230,7 +236,12 @@ SELECT
     key,
     _log_id,
     _inserted_timestamp,
-    SYSDATE() AS modified_timestamp
+    {{ dbt_utils.generate_surrogate_key(
+        ['_log_id']
+    ) }} AS gmxv2_perps_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     {{ this }}
 WHERE

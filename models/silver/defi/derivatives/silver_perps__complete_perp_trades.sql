@@ -53,6 +53,7 @@ WHERE
         FROM
             {{ this }}
     )
+    AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 gmx_v2 AS (
@@ -95,7 +96,7 @@ gmx_v2 AS (
         size_delta_usd_unadj :: FLOAT / NULLIF(
             price_amount_unadj,
             0
-        ), AS amount_unadj,
+        ) AS amount_unadj,
         CASE
             WHEN trade_type = 'sell/short' THEN (size_delta_usd / NULLIF(price_amount, 0) * -1)
             ELSE size_delta_usd / NULLIF(price_amount, 0)
@@ -120,6 +121,7 @@ AND
         FROM
             {{ this }}
     )
+    AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 symmio AS (
@@ -173,6 +175,7 @@ AND
         FROM
             {{ this }}
     )
+    AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 perp_union as (
@@ -215,7 +218,7 @@ SELECT
     _inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(
         ['tx_hash', 'event_index']
-    ) }} as perp_trades_id,
+    ) }} as complete_perp_trades_id,
     SYSDATE() as modified_timestamp,
     SYSDATE() as inserted_timestamp,
     '{{invocation_id}}' as _invocation_id

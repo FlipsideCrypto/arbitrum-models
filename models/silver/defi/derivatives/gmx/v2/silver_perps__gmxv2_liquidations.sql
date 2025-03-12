@@ -214,7 +214,12 @@ SELECT
     position_key,
     A._log_id,
     A._inserted_timestamp,
-    SYSDATE() AS modified_timestamp
+    {{ dbt_utils.generate_surrogate_key(
+        ['A._log_id']
+    ) }} AS gmxv2_liquidations_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     parse_event_data A
     LEFT JOIN contracts C

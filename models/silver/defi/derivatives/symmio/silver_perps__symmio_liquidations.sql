@@ -41,7 +41,13 @@ WITH sendquote AS (
             WHEN positionType = 1 THEN 'short'
             WHEN positionType = 0 THEN 'long'
             ELSE 'unlabelled'
-        END AS position_name
+        END AS position_name,
+        CONCAT(
+            tx_hash,
+            '-',
+            event_index
+        ) AS _log_id,
+        modified_timestamp as _inserted_timestamp
     FROM
         {{ ref('core__ez_decoded_event_logs') }}
     WHERE
@@ -50,13 +56,13 @@ WITH sendquote AS (
         AND tx_succeeded
 
 {% if is_incremental() %}
-AND modified_timestamp >= (
+AND _inserted_timestamp >= (
     SELECT
-        MAX(modified_timestamp) - INTERVAL '12 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 sort_liquidate AS (

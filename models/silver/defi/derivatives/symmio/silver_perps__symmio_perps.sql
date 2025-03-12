@@ -6,7 +6,7 @@
     tags = ['curated','reorg']
 ) }}
 
-with pear_events as (
+with symmio_events as (
     SELECT
         tx_hash,
         block_number,
@@ -19,13 +19,17 @@ with pear_events as (
         origin_function_signature,
         decoded_log,
         topic_0,
-        modified_timestamp,
+        CONCAT(
+            tx_hash,
+            '-',
+            event_index
+        ) AS _log_id,
+        modified_timestamp as _inserted_timestamp,
         ez_decoded_event_logs_id
     FROM
         {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         contract_address = LOWER('0x8f06459f184553e5d04f07f868720bdacab39395')
-        {# AND origin_to_address = LOWER('0x6273242a7e88b3de90822b31648c212215caafe4') pear address #}
         AND topic_0 IN (
             '0x8a17f103c77224ce4d9bab74dad3bd002cd24cf88d2e191e86d18272c8f135dd', -- SendQuote
             '0xa50f98254710514f60327a4e909cd0be099a62f316299907ef997f3dc4d1cda5', -- OpenPosition
@@ -33,13 +37,13 @@ with pear_events as (
             '0xfa7483d69b899cf16df47cc736ab853f88135f704980d7d358a9746aead7a321'  -- FillCloseRequest
         )
     {% if is_incremental() %}
-    AND modified_timestamp >= (
+    AND _inserted_timestamp >= (
         SELECT
-            MAX(modified_timestamp) - INTERVAL '12 hours'
+            MAX(_inserted_timestamp) - INTERVAL '12 hours'
         FROM
             {{ this }}
     )
-    AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
+    AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
     {% endif %}
 ),
 
@@ -71,10 +75,11 @@ send_quotes as (
         decoded_log:quoteId::string as quote_id,
         decoded_log:symbolId::integer as symbol_id,
         decoded_log:tradingFee::decimal(38,0)/1e18 as trading_fee,
-        modified_timestamp,
+        _log_id,
+        _inserted_timestamp,
         ez_decoded_event_logs_id
     FROM
-        pear_events
+        symmio_events
     WHERE
         topic_0 = '0x8a17f103c77224ce4d9bab74dad3bd002cd24cf88d2e191e86d18272c8f135dd'
 ),
@@ -97,10 +102,11 @@ open_positions as (
         decoded_log:partyA::string as party_a,
         decoded_log:partyB::string as party_b,
         decoded_log:quoteId::string as quote_id,
-        modified_timestamp,
+        _log_id,
+        _inserted_timestamp,
         ez_decoded_event_logs_id
     FROM
-        pear_events
+        symmio_events
     WHERE
         topic_0 = '0xa50f98254710514f60327a4e909cd0be099a62f316299907ef997f3dc4d1cda5'
 ),
@@ -140,7 +146,8 @@ quote_status as (
         l.quote_id,
         l.trading_fee,
         p.product_name,
-        l.modified_timestamp as _inserted_timestamp,
+        l._log_id,
+        l._inserted_timestamp,
         l.ez_decoded_event_logs_id
     FROM
         send_quotes l
@@ -218,10 +225,11 @@ request_close_position as (
         decoded_log:quantityToClose::decimal(38,0)/1e18 as quantity_to_close,
         decoded_log:quoteId::integer as quote_id,
         decoded_log:quoteStatus::integer as quote_status,
-        modified_timestamp,
+        _log_id,
+        _inserted_timestamp,
         ez_decoded_event_logs_id
     FROM
-        pear_events
+        symmio_events
     WHERE
         topic_0 = '0x7f9710cf0d5a0ad968b7fc45b62e78bf71c0ca8ebb71a16128fc27b07fa5608d' -- RequestToClosePosition
 ),
@@ -246,10 +254,11 @@ fill_close_position as (
         decoded_log:partyB::string as party_b,
         decoded_log:quoteId::integer as quote_id,
         decoded_log:quoteStatus::integer as quote_status,
-        modified_timestamp,
+        _log_id,
+        _inserted_timestamp,
         ez_decoded_event_logs_id
     FROM
-        pear_events
+        symmio_events
     WHERE
         topic_0 = '0xfa7483d69b899cf16df47cc736ab853f88135f704980d7d358a9746aead7a321' -- FillCloseRequest
 ),
@@ -289,7 +298,8 @@ close_status as (
         r.quote_id,
         q.trading_fee,
         q.product_name as product_name,
-        r.modified_timestamp as _inserted_timestamp,
+        r._log_id,
+        r._inserted_timestamp,
         r.ez_decoded_event_logs_id
     FROM
         request_close_position r
@@ -334,6 +344,7 @@ close_status as (
         l.quote_id,
         l.trading_fee,
         l.product_name,
+        l._log_id,
         l._inserted_timestamp,
         l.ez_decoded_event_logs_id
     FROM
@@ -376,11 +387,12 @@ SELECT
     quote_id,
     trading_fee,
     product_name,
+    _log_id,
     _inserted_timestamp,
-    CONCAT( tx_hash, '-', event_index ) AS _log_id,
+    ez_decoded_event_logs_id,
     {{ dbt_utils.generate_surrogate_key(
         ['tx_hash', 'quote_id']
-    ) }} AS pear_open_position_id,
+    ) }} AS symmio_perps_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
@@ -420,11 +432,12 @@ SELECT
     quote_id,
     trading_fee,
     product_name,
+    _log_id,
     _inserted_timestamp,
-    CONCAT( tx_hash, '-', event_index ) AS _log_id,
+    ez_decoded_event_logs_id,
     {{ dbt_utils.generate_surrogate_key(
         ['tx_hash', 'quote_id']
-    ) }} AS pear_open_position_id,
+    ) }} AS symmio_perps_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
