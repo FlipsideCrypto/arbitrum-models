@@ -869,7 +869,8 @@ complete_lps AS (
         'kyberswap-v2',
         'ramses-v2',
         'pancakeswap-v3',
-        'sushiswap-v3'
+        'sushiswap-v3',
+        'maverick-v2'
       ) THEN CONCAT(
         COALESCE(
           c0.token_symbol,
@@ -894,8 +895,9 @@ complete_lps AS (
           WHEN platform = 'uniswap-v3' THEN ' UNI-V3 LP'
           WHEN platform = 'kyberswap-v2' THEN ''
           WHEN platform = 'ramses-v2' THEN ''
-          WHEN platform = 'pancakeswap-v3' THEN ''
-          WHEN platform = 'sushiswap-v3' THEN ''
+          WHEN platform = 'pancakeswap-v3' THEN 'PCS-V3 LP'
+          WHEN platform = 'sushiswap-v3' THEN 'SUSHI-V3 LP'
+          WHEN platform = 'maverick-v2' THEN 'MPv2 LP'
         END
       )
       WHEN pool_name IS NULL
@@ -1049,7 +1051,10 @@ heal_model AS (
       AND platform IN (
         'uniswap-v3',
         'kyberswap-v2',
-        'ramses-v2'
+        'ramses-v2',
+        'pancakeswap-v3',
+        'sushiswap-v3',
+        'maverick-v2'
       ) THEN CONCAT(
         COALESCE(
           c0.token_symbol,
@@ -1074,6 +1079,9 @@ heal_model AS (
           WHEN platform = 'uniswap-v3' THEN ' UNI-V3 LP'
           WHEN platform = 'kyberswap-v2' THEN ''
           WHEN platform = 'ramses-v2' THEN ''
+          WHEN platform = 'pancakeswap-v3' THEN 'PCS-V3 LP'
+          WHEN platform = 'sushiswap-v3' THEN 'SUSHI-V3 LP'
+          WHEN platform = 'maverick-v2' THEN 'MPv2 LP'
         END
       )
       WHEN pool_name IS NULL
