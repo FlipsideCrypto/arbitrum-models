@@ -18,7 +18,6 @@ WITH vertex AS (
         origin_function_signature,
         origin_from_address,
         origin_to_address,
-        -- market_type  (always decrease only?)
         trader,
         digest AS liquidator,
         CASE
@@ -62,7 +61,6 @@ gmx_v2 AS (
         origin_function_signature,
         origin_from_address,
         origin_to_address,
-        -- market_type  (always decrease only?)
         account AS trader,
         origin_from_address AS liquidator,
         -- GMX LiquidationHandler
@@ -121,9 +119,7 @@ symmio AS (
         price AS price_amount,
         liquidated_amount_unadj,
         liquidated_amount,
-        -- token quantity
         liquidated_amount_usd,
-        -- in usd value
         _log_id,
        modified_timestamp AS _inserted_timestamp
     FROM

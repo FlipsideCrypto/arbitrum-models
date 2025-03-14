@@ -85,5 +85,5 @@ LEFT JOIN fee_tiers f
     ON c.staked_amount >= f.stake_requirement
 LEFT JOIN vol_tier v 
     ON monthly_volume >= v.monthly_vol_requirement
-GROUP BY 1,2,3
+GROUP BY month, c.user_address, c.staked_amount
 ORDER BY c.staked_amount DESC

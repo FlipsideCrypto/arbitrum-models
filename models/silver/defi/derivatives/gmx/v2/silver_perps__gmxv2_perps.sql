@@ -76,11 +76,21 @@ parse_data AS (
         event_data [0] [0] [5] [1] :: STRING AS initial_collateral_token,
         event_data [1] [0] [0] [1] :: INT AS order_type,
         event_data [1] [0] [1] [1] AS decrease_position_swap_type,
-        event_data [1] [0] [2] [1] AS size_delta_usd,
-        event_data [1] [0] [3] [1] AS initial_collateral_delta_amount,
-        event_data [1] [0] [4] [1] AS trigger_price,
-        event_data [1] [0] [5] [1] AS acceptable_price,
-        event_data [1] [0] [6] [1] AS execution_fee,
+        TRY_TO_NUMBER(
+            event_data [1] [0] [2] [1] :: STRING
+        ) AS size_delta_usd,
+        TRY_TO_NUMBER(
+            event_data [1] [0] [3] [1] :: STRING
+        ) AS initial_collateral_delta_amount,
+        TRY_TO_NUMBER(
+            event_data [1] [0] [4] [1] :: STRING
+        ) AS trigger_price,
+        TRY_TO_NUMBER(
+            event_data [1] [0] [5] [1] :: STRING
+        ) AS acceptable_price,
+        TRY_TO_NUMBER(
+            event_data [1] [0] [6] [1] :: STRING
+        ) AS execution_fee,
         event_data [1] [0] [9] [1] :: INT AS updated_at_block,
         event_data [3] [0] [0] [1] AS is_long,
         event_data [3] [0] [1] [1] AS should_unwrap_native_token,
@@ -154,21 +164,21 @@ SELECT
     END AS order_execution,
     decrease_position_swap_type :: INT AS market_reduce_flag,
     size_delta_usd AS size_delta_usd_unadj,
-    size_delta_usd :: FLOAT / pow(
+    size_delta_usd / pow(
         10,
         30
     ) AS size_delta_usd,
     initial_collateral_delta_amount AS initial_collateral_delta_amount_unadj,
-    initial_collateral_delta_amount :: FLOAT / pow(
+    initial_collateral_delta_amount / pow(
         10,
         C.token_decimals
     ) AS initial_collateral_delta_amount,
     trigger_price AS trigger_price_unadj,
-    trigger_price :: FLOAT / pow(10, (30 - decimals)) AS trigger_price,
+    trigger_price / pow(10, (30 - decimals)) AS trigger_price,
     acceptable_price AS acceptable_price_unadj,
-    acceptable_price :: FLOAT / pow(10, (30 - decimals)) AS acceptable_price,
+    acceptable_price / pow(10, (30 - decimals)) AS acceptable_price,
     execution_fee AS execution_fee_unadj,
-    execution_fee :: FLOAT / pow(
+    execution_fee / pow(
         10,
         18
     ) AS execution_fee,
@@ -217,7 +227,6 @@ SELECT
     order_type_raw,
     order_type,
     'executed' AS order_execution,
-    -- We know these are now executed
     market_reduce_flag,
     size_delta_usd_unadj,
     size_delta_usd,

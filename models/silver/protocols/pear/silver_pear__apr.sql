@@ -22,7 +22,7 @@ WITH depositstakerfee AS (
             '-',
             event_index
         ) AS _log_id,
-        modified_timestamp
+        modified_timestamp AS _inserted_timestamp
     FROM
         {{ ref('core__ez_decoded_event_logs') }}
     WHERE
@@ -31,13 +31,13 @@ WITH depositstakerfee AS (
         AND tx_succeeded
 
 {% if is_incremental() %}
-AND modified_timestamp >= (
+AND _inserted_timestamp >= (
     SELECT
-        MAX(DAY) - INTERVAL '12 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 daily_staker_fee AS (
@@ -59,8 +59,7 @@ daily_price AS (
         {{ ref('price__ez_prices_hourly') }}
     WHERE
         token_address IN (
-            '0x82af49447d8a07e3bd95bd0d56f35241523fbab1',
-            -- weth
+            '0x82af49447d8a07e3bd95bd0d56f35241523fbab1',-- weth
             '0x3212dc0f8c834e4de893532d27cc9b6001684db0' -- pear
         )
     GROUP BY
@@ -90,6 +89,7 @@ SELECT
     {{ dbt_utils.generate_surrogate_key(
     ['day']
     ) }} AS pear_daily_apr_id,
+    _inserted_timestamp,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id

@@ -19,7 +19,7 @@ WITH logs_pull AS (
         topic_0,
         topic_1,
         DATA,
-        modified_timestamp,
+        modified_timestamp AS _inserted_timestamp,
         CONCAT(
             tx_hash,
             '-',
@@ -43,13 +43,13 @@ WITH logs_pull AS (
         AND tx_succeeded
 
 {% if is_incremental() %}
-AND modified_timestamp >= (
+AND _inserted_timestamp >= (
     SELECT
-        MAX(modified_timestamp) - INTERVAL '12 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 unstaked AS (
@@ -75,7 +75,7 @@ unstaked AS (
             -18
         ) AS exitFee,
         'PEAR' AS reward_token,
-        modified_timestamp,
+        _inserted_timestamp,
         _log_id
     FROM
         logs_pull
@@ -102,7 +102,7 @@ staked AS (
         ) AS amount,
         0 AS exitFee,
         'PEAR' AS reward_token,
-        modified_timestamp,
+        _inserted_timestamp,
         _log_id
     FROM
         logs_pull
@@ -136,7 +136,7 @@ claims AS (
             WHEN topic_0 = '0xd0738c40db6944b0431635619e5439399d30b1c3201de82a76281ad5e589a331' THEN 'ETH'
             WHEN topic_0 = '0xaaec67f0cf2b4350aec177973525b594b0ef343afc049ce70b0808e96a1b5e64' THEN 'PEAR'
         END AS reward_token,
-        modified_timestamp,
+        _inserted_timestamp,
         _log_id
     FROM
         logs_pull
@@ -172,7 +172,7 @@ compound AS (
             10,
             -18
         ) AS exitFeeReward,
-        modified_timestamp,
+        _inserted_timestamp,
         _log_id
     FROM
         logs_pull
@@ -194,7 +194,7 @@ compound_split AS (
         user_address,
         rewardsInEth AS amount,
         'ETH' AS reward_token,
-        modified_timestamp,
+        _inserted_timestamp,
         _log_id
     FROM
         compound
@@ -213,7 +213,7 @@ compound_split AS (
         user_address,
         exitFeeReward AS amount,
         'PEAR' AS reward_token,
-        modified_timestamp,
+        _inserted_timestamp,
         _log_id
     FROM
         compound
@@ -230,7 +230,7 @@ FINAL AS (
         user_address,
         amount,
         reward_token,
-        modified_timestamp,
+        _inserted_timestamp,
         _log_id
     FROM
         unstaked
@@ -246,7 +246,7 @@ FINAL AS (
         user_address,
         amount,
         reward_token,
-        modified_timestamp,
+        _inserted_timestamp,
         _log_id
     FROM
         staked
@@ -262,7 +262,7 @@ FINAL AS (
         user_address,
         amount,
         reward_token,
-        modified_timestamp,
+        _inserted_timestamp,
         _log_id
     FROM
         claims
@@ -278,7 +278,7 @@ FINAL AS (
         user_address,
         amount,
         reward_token,
-        modified_timestamp,
+        _inserted_timestamp,
         _log_id
     FROM
         compound_split
@@ -294,7 +294,7 @@ SELECT
     user_address,
     amount,
     reward_token,
-    modified_timestamp as _inserted_timestamp,
+    _inserted_timestamp,
     _log_id,
     {{ dbt_utils.generate_surrogate_key(
         ['_log_id']

@@ -4,7 +4,7 @@ models:
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - _log_id
+            - product_id
     columns:
       - name: BLOCK_NUMBER
         tests:
@@ -132,7 +132,6 @@ models:
               min_value: 0
               max_value: 1
 
-      - name: PEAR_PRODUCTS_ID
+      - name: SYMMIO_PRODUCTS_ID
         tests:
           - not_null
-          - unique

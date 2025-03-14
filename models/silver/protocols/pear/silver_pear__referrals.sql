@@ -27,12 +27,22 @@ WITH referral_code_added AS (
             '-',
             event_index
         ) AS _log_id,
-        modified_timestamp
+        modified_timestamp AS _inserted_timestamp
     FROM
         {{ ref('core__fact_event_logs') }}
     WHERE
         contract_address = '0x61126e4dcecbc7a43ac9fd783ccf66c62d9622fe'
         AND topic_0 = '0xd857c02cc639c01db6b14a3ff9f6c625012fdaa73829efa32719b3ebb4144968'
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
+    FROM
+        {{ this }}
+)
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+{% endif %}
 ),
 referee_added AS (
     SELECT
@@ -54,7 +64,7 @@ referee_added AS (
             '-',
             event_index
         ) AS _log_id,
-        modified_timestamp
+        modified_timestamp AS _inserted_timestamp
     FROM
         {{ ref('core__fact_event_logs') }}
     WHERE
@@ -62,13 +72,13 @@ referee_added AS (
         AND topic_0 = '0x8729039de96215ec6db4a7775708511e52c141a25c89b9e69e97fca70c196d65'
 
 {% if is_incremental() %}
-AND modified_timestamp >= (
+AND _inserted_timestamp >= (
     SELECT
-        MAX(modified_timestamp) - INTERVAL '12 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 FINAL AS (
@@ -84,7 +94,8 @@ FINAL AS (
         referee,
         referrer,
         arbitrum.utils.udf_hex_to_string(SUBSTRING(code, 3)) AS referral_code,
-        r._log_id
+        r._log_id,
+        r._inserted_timestamp
     FROM
         referral_code_added C
         RIGHT JOIN referee_added r USING(code)
@@ -92,6 +103,7 @@ FINAL AS (
 SELECT
     *,
     {{ dbt_utils.generate_surrogate_key(['referrer', 'referee']) }} AS referral_id,
+    _inserted_timestamp,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{invocation_id}}' AS _invocation_id

@@ -78,9 +78,9 @@ sort_liquidate AS (
         event_index,
         decoded_log :partyA :: STRING AS partyA,
         decoded_log :liquidationId :: STRING AS liquidationid,
-        f1.value :: INT AS closeId,
-        f2.value :: INT AS quoteId,
-        f3.value :: INT AS liquidatedAmount_unadj,
+        TRY_TO_NUMBER(f1.value::STRING) AS closeId,
+        TRY_TO_NUMBER(f2.value::STRING) AS quoteId,
+        TRY_TO_NUMBER(f3.value::STRING) AS liquidatedAmount_unadj,
         -- in token quantity
         liquidatedAmount_unadj * pow(
             10,
@@ -114,7 +114,7 @@ sort_liquidate AS (
 {% if is_incremental() %}
 AND modified_timestamp >= (
     SELECT
-        MAX(modified_timestamp) - INTERVAL '12 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
@@ -129,8 +129,8 @@ setsymbolprice AS (
         decoded_log :liquidator :: STRING AS liquidator,
         decoded_log :partyA :: STRING AS partyA,
         decoded_log :liquidationId :: STRING AS liquidationid,
-        f1.value :: INT AS symbolId,
-        f2.value :: INT * pow(
+        TRY_TO_NUMBER(f1.value::STRING) AS symbolId,
+        TRY_TO_NUMBER(f2.value::STRING) * pow(
             10,
             -18
         ) AS price,
@@ -152,7 +152,7 @@ setsymbolprice AS (
 {% if is_incremental() %}
 AND modified_timestamp >= (
     SELECT
-        MAX(modified_timestamp) - INTERVAL '12 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
@@ -186,7 +186,7 @@ combine AS (
         q.symbolId,
         liquidatedAmount * price AS liquidatedAmount_usd,
         _log_id,
-        --modified_timestamp
+        _inserted_timestamp
     FROM
         sort_liquidate l
         LEFT JOIN sendquote q USING(quoteId)
@@ -222,7 +222,7 @@ SELECT
     symbolId AS symbol_id,
     liquidatedAmount_usd AS liquidated_amount_usd,
     C._log_id,
-    --C.modified_timestamp,
+    C._inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(
         ['C.tx_hash','C.event_index']
     ) }} AS symmio_liquidation_id,
@@ -234,4 +234,4 @@ FROM
     LEFT JOIN {{ ref('silver_perps__symmio_dim_products') }}
     ON product_id = symbol_id qualify(ROW_NUMBER() over(PARTITION BY C._log_id
 ORDER BY
-    modified_timestamp DESC)) = 1
+    C._inserted_timestamp DESC)) = 1

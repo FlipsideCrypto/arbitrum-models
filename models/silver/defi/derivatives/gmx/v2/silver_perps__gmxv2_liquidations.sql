@@ -66,12 +66,21 @@ parse_event_data AS (
         event_data [0] [0] [2] [1] :: STRING AS collateral_token,
         TRY_TO_NUMBER(
             event_data [1] [0] [0] [1] :: STRING
+        ) / pow(
+            10,
+            30
         ) AS size_in_usd,
         TRY_TO_NUMBER(
             event_data [1] [0] [1] [1] :: STRING
+        ) / pow(
+            10,
+            30
         ) AS size_in_tokens,
         TRY_TO_NUMBER(
             event_data [1] [0] [2] [1] :: STRING
+        ) / pow(
+            10,
+            30
         ) AS collateral_amount,
         TRY_TO_NUMBER(
             event_data [1] [0] [3] [1] :: STRING
@@ -119,10 +128,10 @@ parse_event_data AS (
             event_data [2] [0] [0] [1] :: STRING
         ) AS price_impact_usd,
         TRY_TO_NUMBER(
-            event_data [2] [0] [1] [1] :: STRING
+            event_data [1] [0] [12] [1] :: STRING
         ) AS base_pnl_usd,
         TRY_TO_NUMBER(
-            event_data [2] [0] [2] [1] :: STRING
+            event_data [1] [0] [13] [1] :: STRING
         ) AS uncapped_base_pnl_usd,
         event_data [3] [0] [0] [1] :: BOOLEAN AS is_long,
         event_data [4] [0] [0] [1] :: STRING AS order_key,
@@ -166,46 +175,46 @@ SELECT
     collateral_token,
     C.token_symbol AS collateral_token_symbol,
     borrowing_factor AS borrowing_factor_unadj,
-    borrowing_factor :: FLOAT / pow(
+    borrowing_factor / pow(
         10,
         30
     ) AS borrowing_factor,
     funding_fee_amount_per_size,
     execution_price AS execution_price_unadj,
-    execution_price :: FLOAT / pow(10, (30 - decimals)) AS execution_price,
+    execution_price / pow(10, (30 - decimals)) AS execution_price,
     size_delta_usd AS size_delta_usd_unadj,
-    size_delta_usd :: FLOAT / pow(
+    size_delta_usd / pow(
         10,
         30
     ) AS size_delta_usd,
     size_delta_amount AS size_delta_amount_unadj,
-    size_delta_amount :: FLOAT / pow(
+    size_delta_amount / pow(
         10,
         p.decimals
     ) AS size_delta_amount,
     collateral_delta_amount AS collateral_delta_amount_unadj,
-    collateral_delta_amount :: INT / pow(
+    collateral_delta_amount / pow(
         10,
         C.token_decimals
     ) AS collateral_delta_amount,
     price_impact_diff_usd AS price_impact_diff_usd_unadj,
-    price_impact_diff_usd :: FLOAT / pow(
+    price_impact_diff_usd / pow(
         10,
         30
     ) AS price_impact_diff_usd,
     order_type,
     price_impact_usd AS price_impact_usd_unadj,
-    price_impact_usd :: FLOAT / pow(
+    price_impact_usd / pow(
         10,
         30
     ) AS price_impact_usd,
     base_pnl_usd AS base_pnl_usd_unadj,
-    base_pnl_usd :: FLOAT / pow(
+    base_pnl_usd / pow(
         10,
         30
     ) AS base_pnl_usd,
     uncapped_base_pnl_usd AS uncapped_base_pnl_usd_unadj,
-    uncapped_base_pnl_usd :: FLOAT / pow(
+    uncapped_base_pnl_usd / pow(
         10,
         30
     ) AS uncapped_base_pnl_usd,
