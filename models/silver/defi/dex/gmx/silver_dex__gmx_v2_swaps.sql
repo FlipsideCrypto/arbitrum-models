@@ -6,7 +6,7 @@
     tags = ['curated','reorg']
 ) }}
 
-WITH gmx_events AS (
+WITH decoded_logs AS (
 
     SELECT
         block_number,
@@ -16,22 +16,31 @@ WITH gmx_events AS (
         origin_from_address,
         origin_to_address,
         contract_address,
+        topics,
+        DATA,
         event_index,
-        _log_id,
-        modified_timestamp,
-        event_name,
-        event_name_hash,
-        msg_sender,
-        topic_1,
-        topic_2,
-        event_data
+        decoded_log,
+        decoded_log :eventName :: STRING AS event_name,
+        decoded_log :eventNameHash :: STRING AS event_name_hash,
+        decoded_log :msgSender :: STRING AS msg_sender,
+        decoded_log :topic1 :: STRING AS topic_1,
+        decoded_log :topic2 :: STRING AS topic_2,
+        decoded_log :eventData AS event_data,
+        CONCAT(
+            tx_hash,
+            '-',
+            event_index
+        ) AS _log_id,
+        modified_timestamp
     FROM
-        {{ ref('silver_dex__gmx_v2_events') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
-        event_name IN (
+        contract_address = '0xc8ee91a54287db53897056e12d9819156d3822fb'
+        AND decoded_log :eventName :: STRING IN (
             'SwapInfo',
             'OrderExecuted'
         )
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND modified_timestamp >= (
@@ -89,29 +98,9 @@ parse_data AS (
         ) AS price_impact_amount,
         event_data [4] [0] [0] [1] :: STRING AS key
     FROM
-        gmx_events
+        decoded_logs
     WHERE
         event_name = 'SwapInfo'
-),
-contracts AS (
-    SELECT
-        contract_address,
-        token_symbol,
-        token_decimals
-    FROM
-        {{ ref('core__dim_contracts') }}
-    WHERE
-        contract_address IN (
-            SELECT
-                DISTINCT(token_in)
-            FROM
-                parse_data
-            UNION ALL
-            SELECT
-                DISTINCT(token_out)
-            FROM
-                parse_data
-        )
 ),
 column_format AS (
     SELECT
@@ -149,7 +138,7 @@ executed_orders AS (
     SELECT
         event_data [4] [0] [0] [1] :: STRING AS key
     FROM
-        gmx_events
+        decoded_logs
     WHERE
         event_name = 'OrderExecuted'
 )
