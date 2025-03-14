@@ -93,10 +93,6 @@ base_swaps AS (
         END AS token_out,
         fee,
         tick_spacing,
-        CASE
-            WHEN l.tx_status = 'SUCCESS' THEN TRUE
-            ELSE FALSE
-        END AS tx_succeeded,
         CONCAT(
             l.tx_hash,
             '-',
@@ -110,7 +106,7 @@ base_swaps AS (
         ON l.contract_address = pool_address
     WHERE
         block_timestamp :: DATE > '2023-06-01'
-        AND topics [0] :: STRING = '0x19b47279256b2a23a1665c810c8d55a1758940ee09377d4f8d26497a3577dc83' --swap
+        AND topic_0 = '0x19b47279256b2a23a1665c810c8d55a1758940ee09377d4f8d26497a3577dc83' --swap
         AND tx_succeeded
 
 {% if is_incremental() %}

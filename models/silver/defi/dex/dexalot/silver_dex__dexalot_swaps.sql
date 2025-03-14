@@ -18,7 +18,7 @@ WITH base_swaps AS (
         event_index,
         contract_address,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
-        topics [1] :: STRING AS nouceAndMeta,
+        topic_1 AS nouceAndMeta,
         CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40)) AS taker,
         CONCAT('0x', SUBSTR(segmented_data [1] :: STRING, 25, 40)) AS destTrader,
         TRY_TO_NUMBER(
@@ -41,10 +41,6 @@ WITH base_swaps AS (
                 segmented_data [6] :: STRING
             )
         ) AS destAmount,
-        CASE
-            WHEN tx_status = 'SUCCESS' THEN TRUE
-            ELSE FALSE
-        END AS tx_succeeded,
         CONCAT(
             tx_hash,
             '-',
@@ -54,10 +50,10 @@ WITH base_swaps AS (
     FROM
         {{ ref('core__fact_event_logs') }}
     WHERE
-        topics [0] :: STRING = '0x68eb6d948c037c94e470f9a5b288dd93debbcd9342635408e66cb0211686f7f7'
-        AND tx_succeeded
-        AND contract_address = '0x010224949cca211fb5ddfedd28dc8bf9d2990368'
+        contract_address = '0x010224949cca211fb5ddfedd28dc8bf9d2990368'
+        AND topic_0 = '0x68eb6d948c037c94e470f9a5b288dd93debbcd9342635408e66cb0211686f7f7'
         AND destChainId = 42161
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND modified_timestamp >= (

@@ -76,10 +76,6 @@ swaps_base AS (
         ) AS amountOut,
         tokenA,
         tokenB,
-        CASE
-            WHEN tx_status = 'SUCCESS' THEN TRUE
-            ELSE FALSE
-        END AS tx_succeeded,
         CONCAT(
             tx_hash,
             '-',
@@ -92,7 +88,7 @@ swaps_base AS (
         INNER JOIN pools
         ON l.contract_address = pool_address
     WHERE
-        l.topics [0] :: STRING = '0x103ed084e94a44c8f5f6ba8e3011507c41063177e29949083c439777d8d63f60' --Swap
+        l.topics_0 :: STRING = '0x103ed084e94a44c8f5f6ba8e3011507c41063177e29949083c439777d8d63f60' --Swap
         AND tx_succeeded
 
 {% if is_incremental() %}

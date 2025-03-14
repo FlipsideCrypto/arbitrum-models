@@ -18,8 +18,8 @@ WITH swaps_base AS (
         l.origin_to_address,
         l.contract_address,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
-        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS sender,
-        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS recipient,
+        CONCAT('0x', SUBSTR(topic_1, 27, 40)) AS sender,
+        CONCAT('0x', SUBSTR(topic_2, 27, 40)) AS recipient,
         utils.udf_hex_to_int(
             's2c',
             segmented_data [0] :: STRING
@@ -45,10 +45,6 @@ WITH swaps_base AS (
         pool_address,
         tick_spacing,
         fee,
-        CASE
-            WHEN tx_status = 'SUCCESS' THEN TRUE
-            ELSE FALSE
-        END AS tx_succeeded,
         CONCAT(
             l.tx_hash,
             '-',
@@ -63,7 +59,7 @@ WITH swaps_base AS (
         ON p.pool_address = l.contract_address
     WHERE
         l.block_timestamp :: DATE >= '2023-04-01'
-        AND topics [0] :: STRING = '0xc42079f94a6350d7e6235f29174924f928cc2ac818eb64fed8004e115fbcca67'
+        AND topic_0 = '0xc42079f94a6350d7e6235f29174924f928cc2ac818eb64fed8004e115fbcca67'
         AND tx_succeeded
 
 {% if is_incremental() %}

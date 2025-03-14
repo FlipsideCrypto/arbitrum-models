@@ -28,10 +28,6 @@ WITH created_pools AS (
             )
         ) AS tickSpacing,
         CONCAT('0x', SUBSTR(segmented_data [1] :: STRING, 25, 40)) AS pool_address,
-        CASE
-            WHEN tx_status = 'SUCCESS' THEN TRUE
-            ELSE FALSE
-        END AS tx_succeeded,
         CONCAT(
             tx_hash,
             '-',
@@ -42,7 +38,7 @@ WITH created_pools AS (
         {{ ref('core__fact_event_logs') }}
     WHERE
         contract_address = '0x0bfbcf9fa4f9c56b0f40a671ad40e0805a091865' --factory
-        AND topics [0] :: STRING = '0x783cca1c0412dd0d695e784568c96da2e9c22ff989357a2e8b1d9b2b4e6b7118' --paircreated
+        AND topic_0 = '0x783cca1c0412dd0d695e784568c96da2e9c22ff989357a2e8b1d9b2b4e6b7118' --paircreated
         AND tx_succeeded
 
 {% if is_incremental() %}
