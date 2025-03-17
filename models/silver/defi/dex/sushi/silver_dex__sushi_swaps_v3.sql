@@ -63,13 +63,13 @@ WITH swaps_base AS (
         AND tx_succeeded
 
 {% if is_incremental() %}
-AND modified_timestamp >= (
+AND l.modified_timestamp >= (
     SELECT
         MAX(modified_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND l.modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 )
 SELECT
