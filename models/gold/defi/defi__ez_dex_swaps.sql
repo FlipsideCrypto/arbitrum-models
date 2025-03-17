@@ -5,7 +5,7 @@
     meta={
         'database_tags':{
             'table': {
-                'PROTOCOL': 'TRADER JOE, WOOFI, GMX, KYBERSWAP, ZYBERSWAP, DODO, FRAX, CAMELOT, UNISWAP, SUSHI, CURVE, BALANCER, HASHFLOW',
+                'PROTOCOL': 'TRADER JOE, WOOFI, GMX, KYBERSWAP, ZYBERSWAP, DODO, FRAX, CAMELOT, UNISWAP, SUSHI, CURVE, BALANCER, HASHFLOW, PANCAKESWAP, RAMSES, MAVERICK, DEXALOT',
                 'PURPOSE': 'DEX, SWAPS'
             }
         }

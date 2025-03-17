@@ -402,6 +402,41 @@ WHERE
   )
 {% endif %}
 ),
+sushi_v3 AS (
+  SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    contract_address,
+    pool_address,
+    NULL AS pool_name,
+    fee,
+    tick_spacing,
+    token0_address AS token0,
+    token1_address AS token1,
+    NULL AS token2,
+    NULL AS token3,
+    NULL AS token4,
+    NULL AS token5,
+    NULL AS token6,
+    NULL AS token7,
+    'sushiswap-v3' AS platform,
+    'v3' AS version,
+    _log_id AS _id,
+    modified_timestamp AS _inserted_timestamp
+  FROM
+    {{ ref('silver_dex__sushi_pools_v3') }}
+
+{% if is_incremental() and 'sushi_v3' not in var('HEAL_MODELS') %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+    FROM
+      {{ this }}
+  )
+{% endif %}
+),
 trader_joe_v1 AS (
   SELECT
     block_number,
@@ -647,6 +682,77 @@ WHERE
   )
 {% endif %}
 ),
+maverick_v2 AS (
+  SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    contract_address,
+    pool_address,
+    NULL AS pool_name,
+    NULL AS fee,
+    -- passing null as maverick uses feeA and feeB
+    tick_spacing,
+    tokenA AS token0,
+    tokenB AS token1,
+    NULL AS token2,
+    NULL AS token3,
+    NULL AS token4,
+    NULL AS token5,
+    NULL AS token6,
+    NULL AS token7,
+    'maverick-v2' AS platform,
+    'v2' AS version,
+    _log_id AS _id,
+    modified_timestamp AS _inserted_timestamp
+  FROM
+    {{ ref('silver_dex__maverick_v2_pools') }}
+
+{% if is_incremental() and 'maverick_v2' not in var('HEAL_MODELS') %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+    FROM
+      {{ this }}
+  )
+{% endif %}
+),
+pancakeswap_v3 AS (
+  SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    contract_address,
+    pool_address,
+    NULL AS pool_name,
+    fee,
+    tick_spacing,
+    token0_address AS token0,
+    token1_address AS token1,
+    NULL AS token2,
+    NULL AS token3,
+    NULL AS token4,
+    NULL AS token5,
+    NULL AS token6,
+    NULL AS token7,
+    'pancakeswap-v3' AS platform,
+    'v3' AS version,
+    _log_id AS _id,
+    modified_timestamp AS _inserted_timestamp
+  FROM
+    {{ ref('silver_dex__pancakeswap_v3_pools') }}
+
+{% if is_incremental() and 'pancakeswap_v3' not in var('HEAL_MODELS') %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+    FROM
+      {{ this }}
+  )
+{% endif %}
+),
 all_pools AS (
   SELECT
     *
@@ -682,6 +788,11 @@ all_pools AS (
     *
   FROM
     sushi
+  UNION ALL
+  SELECT
+    *
+  FROM
+    sushi_v3
   UNION ALL
   SELECT
     *
@@ -732,6 +843,16 @@ all_pools AS (
     *
   FROM
     curve
+  UNION ALL
+  SELECT
+    *
+  FROM
+    maverick_v2
+  UNION ALL
+  SELECT
+    *
+  FROM
+    pancakeswap_v3
 ),
 complete_lps AS (
   SELECT
@@ -746,7 +867,10 @@ complete_lps AS (
       AND platform IN (
         'uniswap-v3',
         'kyberswap-v2',
-        'ramses-v2'
+        'ramses-v2',
+        'pancakeswap-v3',
+        'sushiswap-v3',
+        'maverick-v2'
       ) THEN CONCAT(
         COALESCE(
           c0.token_symbol,
@@ -771,6 +895,9 @@ complete_lps AS (
           WHEN platform = 'uniswap-v3' THEN ' UNI-V3 LP'
           WHEN platform = 'kyberswap-v2' THEN ''
           WHEN platform = 'ramses-v2' THEN ''
+          WHEN platform = 'pancakeswap-v3' THEN 'PCS-V3 LP'
+          WHEN platform = 'sushiswap-v3' THEN 'SUSHI-V3 LP'
+          WHEN platform = 'maverick-v2' THEN 'MPv2 LP'
         END
       )
       WHEN pool_name IS NULL
@@ -924,7 +1051,10 @@ heal_model AS (
       AND platform IN (
         'uniswap-v3',
         'kyberswap-v2',
-        'ramses-v2'
+        'ramses-v2',
+        'pancakeswap-v3',
+        'sushiswap-v3',
+        'maverick-v2'
       ) THEN CONCAT(
         COALESCE(
           c0.token_symbol,
@@ -949,6 +1079,9 @@ heal_model AS (
           WHEN platform = 'uniswap-v3' THEN ' UNI-V3 LP'
           WHEN platform = 'kyberswap-v2' THEN ''
           WHEN platform = 'ramses-v2' THEN ''
+          WHEN platform = 'pancakeswap-v3' THEN 'PCS-V3 LP'
+          WHEN platform = 'sushiswap-v3' THEN 'SUSHI-V3 LP'
+          WHEN platform = 'maverick-v2' THEN 'MPv2 LP'
         END
       )
       WHEN pool_name IS NULL
