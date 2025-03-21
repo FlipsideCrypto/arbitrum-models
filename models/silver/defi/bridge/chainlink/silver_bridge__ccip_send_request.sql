@@ -70,6 +70,7 @@ ccip_sent AS (
             decoded_log :message :sourceChainSelector :: STRING
         ) AS source_chain_selector,
         destChainSelector AS dest_chain_selector,
+        chain_name,
         decoded_log :message :tokenAmounts AS token_amounts,
         ARRAY_SIZE(
             decoded_log :message :tokenAmounts
@@ -105,7 +106,8 @@ SELECT
     C.sender,
     C.sequence_number,
     C.source_chain_selector,
-    C.dest_chain_selector,
+    C.dest_chain_selector as destination_chain_id,
+    C.chain_name as destination_chain,
     C.gas_limit,
     C.fee_token,
     -- Divide the fee by the number of tokens in the array
