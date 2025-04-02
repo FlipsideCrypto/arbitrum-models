@@ -47,7 +47,7 @@ SELECT
     event_index,
     'Deposit' AS event_name,
     to_address AS bridge_address,
-    'hyperliquid' AS destination_chain,
+    'hyperevm' AS destination_chain,
     999 AS destination_chain_id,
     contract_address AS token_address,
     symbol AS token_symbol,
