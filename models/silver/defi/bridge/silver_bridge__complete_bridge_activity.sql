@@ -691,7 +691,8 @@ complete_bridge_activity AS (
                 'stargate-v1',
                 'wormhole-v1',
                 'meson-v1',
-                'allbridge-v2'
+                'allbridge-v2',
+                'chainlink-ccip-v1'
             ) THEN destination_chain_id :: STRING
             WHEN d.chain_id IS NULL THEN destination_chain_id :: STRING
             ELSE d.chain_id :: STRING
@@ -705,7 +706,8 @@ complete_bridge_activity AS (
                 'stargate-v1',
                 'wormhole-v1',
                 'meson-v1',
-                'allbridge-v2'
+                'allbridge-v2',
+                'chainlink-ccip-v1'
             ) THEN LOWER(destination_chain)
             WHEN d.chain IS NULL THEN LOWER(destination_chain)
             ELSE LOWER(
