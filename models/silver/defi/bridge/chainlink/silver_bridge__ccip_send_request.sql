@@ -12,7 +12,6 @@ WITH on_ramp_set AS (
         block_timestamp,
         tx_hash,
         event_name,
-        -- decoded_log,
         TRY_TO_NUMBER(
             decoded_log :destChainSelector :: STRING
         ) AS destChainSelector,
@@ -21,7 +20,7 @@ WITH on_ramp_set AS (
         modified_timestamp
     FROM
         {{ ref('core__ez_decoded_event_logs') }}
-        INNER JOIN arbitrum_dev.silver_bridge.ccip_chain_seed
+        INNER JOIN {{ ref('silver_bridge__ccip_chain_seed') }}
         ON destChainSelector = chain_selector
     WHERE
         contract_address = LOWER('0x141fa059441E0ca23ce184B6A78bafD2A517DdE8') -- ccip router
@@ -41,10 +40,15 @@ AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 ),
 ccip_sent AS (
     SELECT
+        l.block_number,
         l.block_timestamp,
         l.tx_hash,
+        l.origin_function_signature,
+        l.origin_from_address,
+        l.origin_to_address,
         contract_address,
         l.event_name,
+        l.event_index,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         CONCAT(
             '0x',
@@ -75,6 +79,11 @@ ccip_sent AS (
         ARRAY_SIZE(
             decoded_log :message :tokenAmounts
         ) AS token_amounts_count,
+        CONCAT(
+            l.tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
         l.modified_timestamp
     FROM
         {{ ref('core__ez_decoded_event_logs') }}
@@ -97,29 +106,41 @@ AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 )
 SELECT
+    C.block_number,
     C.block_timestamp,
+    C.origin_function_signature,
+    C.origin_from_address,
+    C.origin_to_address,
     C.tx_hash,
-    C.contract_address,
+    C.event_name,
+    C.event_index,
+    'chainlink-ccip' AS platform,
+    'v1' AS version,
+    C.contract_address AS bridge_address,
     C.message_id,
     C.nonce,
     C.receiver,
     C.sender,
+    C.receiver AS destination_chain_receiver,
     C.sequence_number,
     C.source_chain_selector,
-    C.dest_chain_selector as destination_chain_id,
-    C.chain_name as destination_chain,
+    C.dest_chain_selector AS destination_chain_id,
+    C.chain_name AS destination_chain,
     C.gas_limit,
     C.fee_token,
-    -- Divide the fee by the number of tokens in the array
+    -- Divide the fee evenly by the number of tokens in the array
     C.fee_token_amount / C.token_amounts_count AS fee_token_amount_per_token,
     C.token_amounts_count,
     TRY_TO_NUMBER(
         tokens.value :amount :: STRING
-    ) AS token_amount,
-    tokens.value :token :: STRING AS token,
+    ) AS token_amount_unadj,
+    tokens.value :token :: STRING AS token_address,
+    C._log_id,
     C.modified_timestamp
 FROM
     ccip_sent C,
     LATERAL FLATTEN(
         input => C.token_amounts
     ) AS tokens
+WHERE
+    token_amounts_count > 0
