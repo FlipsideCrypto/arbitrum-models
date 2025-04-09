@@ -133,7 +133,7 @@ SELECT
     C.token_amounts_count,
     TRY_TO_NUMBER(
         tokens.value :amount :: STRING
-    ) AS token_amount_unadj,
+    ) AS amount_unadj,
     tokens.value :token :: STRING AS token_address,
     C._log_id,
     C.modified_timestamp
