@@ -27,8 +27,8 @@ WITH base_swaps AS (
                 segmented_data [2] :: STRING
             )
         ) AS destChainId,
-        CONCAT('0x', SUBSTR(segmented_data [3] :: STRING, 25, 40)) AS destAsset,
-        CONCAT('0x', SUBSTR(segmented_data [4] :: STRING, 25, 40)) AS srcAsset,
+        CONCAT('0x', SUBSTR(segmented_data [3] :: STRING, 25, 40)) AS srcAsset,
+        CONCAT('0x', SUBSTR(segmented_data [4] :: STRING, 25, 40)) AS destAsset,
         TRY_TO_NUMBER(
             utils.udf_hex_to_int(
                 's2c',
