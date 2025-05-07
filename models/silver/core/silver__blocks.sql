@@ -70,6 +70,7 @@ WHERE
         FROM
             {{ this }}
     )
+    and partition_key > 330000000
 {% else %}
     {{ ref('bronze__blocks_fr') }}
 {% endif %}

@@ -26,6 +26,7 @@ WHERE
             {{ this }}
     )
     AND IS_OBJECT(DATA)
+    and partition_key > 330000000
 {% else %}
     {{ ref('bronze__transactions_fr') }}
 WHERE
