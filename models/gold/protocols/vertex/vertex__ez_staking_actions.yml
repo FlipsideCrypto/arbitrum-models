@@ -1,36 +1,36 @@
 version: 2
 models:
   - name: vertex__ez_staking_actions
-    description: '{{ doc("vertex_ez_staking") }}'
+    description: "All staking actions taken with the VRTX staking contract."
 
     columns:
       - name: BLOCK_NUMBER
-        description: '{{ doc("arb_block_number") }}'
+        description: '{{ doc("evm_block_number") }}'
       - name: BLOCK_TIMESTAMP
-        description: '{{ doc("arb_block_timestamp") }}'
+        description: '{{ doc("evm_block_timestamp") }}'
       - name: TX_HASH
-        description: '{{ doc("arb_logs_tx_hash") }}'
+        description: '{{ doc("evm_logs_tx_hash") }}'
       - name: CONTRACT_ADDRESS
-        description: '{{ doc("arb_logs_contract_address") }}'
+        description: '{{ doc("evm_logs_contract_address") }}'
       - name: ORIGIN_FUNCTION_SIGNATURE
-        description: '{{ doc("nft_origin_sig") }}'
+        description: '{{ doc("evm_origin_sig") }}'
       - name: ORIGIN_FROM_ADDRESS
-        description: '{{ doc("arb_origin_from") }}'
+        description: '{{ doc("evm_origin_from") }}'
       - name: ORIGIN_TO_ADDRESS
-        description: '{{ doc("arb_origin_to") }}'
+        description: '{{ doc("evm_origin_to") }}'
       - name: STAKE_ACTION
-        description: '{{ doc("vertex_stake_action") }}'
+        description: "The staking action with the VRTX staking address"
       - name: SYMBOL
-        description: '{{ doc("vertex_symbol") }}'
+        description: "The specific Vertex product symbol, if it is a futures product it will have a -PERP suffix."
       - name: AMOUNT_UNADJ
-        description: '{{ doc("vertex_amount_unadj") }}'
+        description: "The total size of the trade in units of the asset being traded."
       - name: AMOUNT
-        description: '{{ doc("vertex_amount") }}'
+        description: "The total size of the trade in units of the asset being traded across one digest, decimal adjusted. All amounts and prices are adjusted 18 decimals points regardless of underlying asset contract."
       - name: AMOUNT_USD
-        description: '{{ doc("vertex_amount_usd") }}'
+        description: "The size of the trade in USD. Base Delta multiplied by the price amount."
       - name: EZ_STAKING_ID
-        description: '{{ doc("pk") }}'
+        description: '{{ doc("evm_pk") }}'
       - name: INSERTED_TIMESTAMP
-        description: '{{ doc("inserted_timestamp") }}'   
+        description: '{{ doc("evm_inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("modified_timestamp") }}' 
+        description: '{{ doc("evm_modified_timestamp") }}'
