@@ -103,7 +103,7 @@ models:
       protocols:
         +enabled: false
         vertex:
-          +enabled: true
+          +enabled: false
       stats:
         +enabled: true
     scores_package:
