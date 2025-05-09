@@ -75,6 +75,7 @@ FINAL AS (
         p.quote_delta_amount_unadj AS user_quote_delta_amount_unadj,
         e.quote_delta_amount AS edge_quote_delta_amount,
         p.quote_delta_amount AS user_quote_delta_amount,
+        e.fact_event_logs_id,
         e._log_id,
         e._inserted_timestamp
     FROM
@@ -132,6 +133,7 @@ FINAL AS (
         p.quote_delta_amount_unadj AS user_quote_delta_amount_unadj,
         e.quote_delta_amount AS edge_quote_delta_amount,
         p.quote_delta_amount AS user_quote_delta_amount,
+        e.fact_event_logs_id,
         e._log_id,
         e._inserted_timestamp
     FROM

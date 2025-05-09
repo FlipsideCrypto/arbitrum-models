@@ -31,6 +31,7 @@ WITH logs_pull AS (
         utils.udf_hex_to_int(
             segmented_data [1] :: STRING
         ) :: INT AS product_id,
+        fact_event_logs_id,
         concat(tx_hash, '-', event_index) AS _log_id,
         modified_timestamp AS _inserted_timestamp
     FROM
@@ -82,6 +83,7 @@ product_id_join AS (
             WHEN p.symbol = 'HARRISWIN' THEN '0xFBAC82A384178cA5dd6DF72965d0e65b1b8A028f'
         END AS token_address,
         amount,
+        l.fact_event_logs_id,
         l._log_id,
         l._inserted_timestamp
     FROM
@@ -118,6 +120,7 @@ FINAL AS (
                 18
             ) * p.price
         ) :: FLOAT AS amount_usd,
+        A.fact_event_logs_id,
         A._log_id,
         A._inserted_timestamp
     FROM

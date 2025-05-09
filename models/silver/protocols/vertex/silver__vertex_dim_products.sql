@@ -15,6 +15,7 @@ WITH logs_pull AS (
         tx_hash,
         block_number,
         block_timestamp,
+        fact_event_logs_id,
         concat(tx_hash, '-', event_index) AS _log_id,
         modified_timestamp AS _inserted_timestamp
     FROM
@@ -46,7 +47,8 @@ new_prod AS (
         block_number,
         block_timestamp,
         _inserted_timestamp,
-        _log_id
+        _log_id,
+        fact_event_logs_id
     FROM
         logs_pull
     WHERE
@@ -134,6 +136,7 @@ FINAL AS (
             WHEN C.version IS NOT NULL THEN 1
             ELSE 2
         END AS version,
+        l.fact_event_logs_id,
         _inserted_timestamp,
         _log_id
     FROM

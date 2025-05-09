@@ -36,6 +36,7 @@ logs AS (
         event_index,
         topics,
         DATA,
+        fact_event_logs_id,
         concat(tx_hash, '-', event_index) AS _log_id,
         modified_timestamp AS _inserted_timestamp
     FROM
@@ -113,6 +114,7 @@ order_fill_decode AS (
             's2c',
             segmented_data [7] :: STRING
         ) :: INT AS quoteDelta,
+        l.fact_event_logs_id,
         l._log_id,
         l._inserted_timestamp
     FROM
@@ -174,6 +176,7 @@ order_fill_decode_v2 AS (
             's2c',
             segmented_data [7] :: STRING
         ) :: INT AS quoteDelta,
+        l.fact_event_logs_id,
         l._log_id,
         l._inserted_timestamp
     FROM
@@ -240,6 +243,7 @@ order_fill_format AS (
             10,
             18
         ) AS quote_delta,
+        fact_event_logs_id,
         _log_id,
         _inserted_timestamp
     FROM
@@ -298,6 +302,7 @@ order_fill_format AS (
             10,
             18
         ) AS quote_delta,
+        fact_event_logs_id,
         _log_id,
         _inserted_timestamp
     FROM
@@ -354,6 +359,7 @@ FINAL AS (
         base_delta AS base_delta_amount,
         quote_delta_unadj AS quote_delta_amount_unadj,
         quote_delta AS quote_delta_amount,
+        fact_event_logs_id,
         _log_id,
         _inserted_timestamp
     FROM

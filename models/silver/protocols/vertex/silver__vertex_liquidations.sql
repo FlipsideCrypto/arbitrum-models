@@ -29,6 +29,7 @@ logs AS (
         event_index,
         topics,
         DATA,
+        fact_event_logs_id,
         concat(tx_hash, '-', event_index) AS _log_id,
         modified_timestamp AS _inserted_timestamp
     FROM
@@ -87,6 +88,7 @@ logs_pull_v1 AS (
         ) :: INT AS insurance_cover,
         NULL AS is_encoded_spread,
         _log_id,
+        fact_event_logs_id,
         _inserted_timestamp
     FROM
         logs
@@ -128,6 +130,7 @@ logs_pull_v2 AS (
         udf_hex_to_int(
             segmented_data [1] :: STRING
         ) AS is_encoded_spread,
+        fact_event_logs_id,
         _log_id,
         _inserted_timestamp
     FROM
@@ -175,6 +178,7 @@ v2_vertex_decode AS (
                 WHEN is_encoded_spread = 1 THEN decoded_spread_product_ids [0] :: STRING
                 ELSE product_id
             END AS product_id,
+            fact_event_logs_id,
             _log_id,
             _inserted_timestamp
             FROM
@@ -219,6 +223,7 @@ v2_vertex_decode AS (
                     NULL,
                     NULL
                 ) AS spread_product_ids,
+                fact_event_logs_id,
                 _log_id,
                 _inserted_timestamp
             FROM
@@ -261,6 +266,7 @@ v2_vertex_decode AS (
                     ELSE FALSE
                 END AS is_encoded_spread,
                 decoded_spread_product_ids AS spread_product_ids,
+                fact_event_logs_id,
                 _log_id,
                 _inserted_timestamp
             FROM
