@@ -26,7 +26,7 @@ WITH contracts AS (
   FROM
     {{ ref('silver__contracts') }}
   WHERE
-    address = '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'
+    contract_address = '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'
 ),
 prices AS (
   SELECT
@@ -1347,7 +1347,7 @@ complete_dex_swaps AS (
     END AS pool_name,
     sender,
     tx_to,
-    event_index,
+    s.event_index,
     s.platform,
     s.version,
     s._log_id,
@@ -1387,11 +1387,11 @@ heal_model AS (
     t0.block_number,
     t0.block_timestamp,
     t0.tx_hash,
-    origin_function_signature,
-    origin_from_address,
-    origin_to_address,
+    t0.origin_function_signature,
+    t0.origin_from_address,
+    t0.origin_to_address,
     t0.contract_address,
-    event_name,
+    t0.event_name,
     token_in,
     c1.token_decimals AS decimals_in,
     c1.token_symbol AS symbol_in,
@@ -1443,9 +1443,9 @@ heal_model AS (
       )
       ELSE lp.pool_name
     END AS pool_name_heal,
-    sender,
+    t0.sender,
     tx_to,
-    event_index,
+    t0.event_index,
     t0.platform,
     t0.version,
     t0._log_id,

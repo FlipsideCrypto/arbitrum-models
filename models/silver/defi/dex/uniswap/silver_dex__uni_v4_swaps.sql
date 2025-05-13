@@ -88,8 +88,8 @@ events_swap AS (
         LEFT JOIN pool_data p
         ON topic_1 = p.pool_id
     WHERE
-        block_timestamp :: DATE >= '2025-01-22'
-        AND contract_address = '0x000000000004444c5dc75cb358380d2e3de08a90'
+        block_timestamp :: DATE >= '2025-01-20'
+        AND contract_address = '0x360e68faccca8ca495c1b759fd9eee466db9fb32'
         AND topic_0 = '0x40e9cecb9f5f1f1c5b9c97dec2917b7ee92e57ba5563708daca94dd84ad7112f' -- swap
         AND tx_succeeded
         AND event_removed = FALSE
@@ -167,8 +167,8 @@ traces_swap AS (
     FROM
         {{ ref('core__fact_traces') }}
     WHERE
-        block_timestamp :: DATE >= '2025-01-22'
-        AND to_address = LOWER('0x000000000004444c5dc75cB358380D2e3dE08A90')
+        block_timestamp :: DATE >= '2025-01-20'
+        AND to_address = LOWER('0x360e68faccca8ca495c1b759fd9eee466db9fb32')
         AND LEFT(
             input,
             10
