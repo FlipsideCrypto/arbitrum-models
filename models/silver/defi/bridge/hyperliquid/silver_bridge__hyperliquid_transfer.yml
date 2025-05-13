@@ -1,0 +1,72 @@
+version: 2
+models:
+  - name: silver_bridge__hyperliquid_transfer
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - _LOG_ID
+    columns:
+      - name: BLOCK_NUMBER
+        tests:
+          - not_null
+      - name: BLOCK_TIMESTAMP
+        tests:
+          - not_null
+      - name: ORIGIN_FUNCTION_SIGNATURE
+        tests:
+          - not_null
+      - name: ORIGIN_FROM_ADDRESS
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: ORIGIN_TO_ADDRESS
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: TX_HASH
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: EVENT_INDEX
+        tests:
+          - not_null
+      - name: EVENT_NAME
+        tests:
+          - not_null
+      - name: BRIDGE_ADDRESS
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: DESTINATION_CHAIN
+        tests:
+          - not_null
+      - name: DESTINATION_CHAIN_ID
+        tests:
+          - not_null
+      - name: TOKEN_ADDRESS
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+          - dbt_expectations.expect_column_values_to_be_in_set:
+              value_set: ['0xaf88d065e77c8cc2239327c5edb3a432268e5831', '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8']
+      - name: TOKEN_SYMBOL
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_set:
+              value_set: ['USDC']
+      - name: AMOUNT_UNADJ
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - DECIMAL
+                - FLOAT
+                - NUMBER
+      - name: MODIFIED_TIMESTAMP
+        tests:
+          - not_null
