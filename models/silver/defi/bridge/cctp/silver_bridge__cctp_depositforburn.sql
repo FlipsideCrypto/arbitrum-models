@@ -24,52 +24,37 @@ WITH base_evt AS (
         TRY_TO_NUMBER(utils.udf_hex_to_int(segmented_data [0] :: STRING)) AS burn_amount,
         TRY_TO_NUMBER(utils.udf_hex_to_int(segmented_data [2] :: STRING)) AS destination_domain,
         CASE
-            WHEN destination_domain IN (
-                0,
-                1,
-                2,
-                3,
-                6,
-                7,
-                10
-            ) THEN CONCAT('0x', SUBSTR(segmented_data [1] :: STRING, 25, 40)) -- evm
             WHEN destination_domain = 5 THEN utils.udf_hex_to_base58(CONCAT('0x', segmented_data [1] :: STRING)) -- solana
+            WHEN LEFT(
+                segmented_data [1] :: STRING,
+                24
+            ) = '000000000000000000000000' THEN CONCAT('0x', SUBSTR(segmented_data [1] :: STRING, 25, 40)) -- evm
             ELSE CONCAT(
                 '0x',
                 segmented_data [1] :: STRING
-            ) -- other non-evm chains
+            ) -- non-evm chains
         END AS mint_recipient,
         CASE
-            WHEN destination_domain IN (
-                0,
-                1,
-                2,
-                3,
-                6,
-                7,
-                10
-            ) THEN CONCAT('0x', SUBSTR(segmented_data [3] :: STRING, 25, 40)) -- evm
             WHEN destination_domain = 5 THEN utils.udf_hex_to_base58(CONCAT('0x', segmented_data [3] :: STRING)) -- solana
+            WHEN LEFT(
+                segmented_data [3] :: STRING,
+                24
+            ) = '000000000000000000000000' THEN CONCAT('0x', SUBSTR(segmented_data [3] :: STRING, 25, 40)) -- evm
             ELSE CONCAT(
                 '0x',
                 segmented_data [3] :: STRING
-            ) -- other non-evm chains
+            ) -- non-evm chains
         END AS destinationTokenMessenger,
         CASE
-            WHEN destination_domain IN (
-                0,
-                1,
-                2,
-                3,
-                6,
-                7,
-                10
-            ) THEN CONCAT('0x', SUBSTR(segmented_data [4] :: STRING, 25, 40)) -- evm
             WHEN destination_domain = 5 THEN utils.udf_hex_to_base58(CONCAT('0x', segmented_data [4] :: STRING)) -- solana
+            WHEN LEFT(
+                segmented_data [4] :: STRING,
+                24
+            ) = '000000000000000000000000' THEN CONCAT('0x', SUBSTR(segmented_data [4] :: STRING, 25, 40)) -- evm
             ELSE CONCAT(
                 '0x',
                 segmented_data [4] :: STRING
-            ) -- other non-evm chains
+            ) -- non-evm chains
         END AS destination_caller,
         CONCAT(
             tx_hash,
