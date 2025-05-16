@@ -29,11 +29,11 @@ WITH usdc_transfer AS (
         ) AS _log_id,
         modified_timestamp
     FROM
-        arbitrum.core.ez_token_transfers
+        {{ ref('core__ez_token_transfers') }}
     WHERE
         contract_address IN (
-            '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
-            '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8'
+            '0xaf88d065e77c8cc2239327c5edb3a432268e5831', -- usdc
+            '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8' -- usdc.e
         )
         AND to_address = '0x2df1c51e09aecf9cacb7bc98cb1742757f163df7'
 )
