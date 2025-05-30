@@ -85,7 +85,7 @@ SELECT
     ) AS amount_usd,
     A.underlying_asset_address AS debt_asset,
     A.underlying_asset_symbol AS debt_asset_symbol,
-    compound_version,
+    l.compound_version,
     blockchain,
     l._log_id,
     l._inserted_timestamp
