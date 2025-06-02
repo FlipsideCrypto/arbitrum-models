@@ -6,8 +6,21 @@
     tags = ['silver','defi','lending','curated']
 ) }}
 
-WITH liquidations AS (
+WITH comp_assets AS (
 
+    SELECT
+        compound_market_address,
+        compound_market_name,
+        compound_market_symbol,
+        compound_market_decimals,
+        underlying_asset_address,
+        underlying_asset_name,
+        underlying_asset_symbol,
+        underlying_asset_decimals
+    FROM
+        {{ ref('silver__comp_asset_details') }}
+),
+liquidations AS (
     SELECT
         tx_hash,
         block_number,
@@ -47,6 +60,12 @@ WITH liquidations AS (
         ON asset = C.contract_address
     WHERE
         topics [0] = '0x9850ab1af75177e4a9201c65a2cf7976d5d28e40ef63494b44366f86b2f9412e' --AbsorbCollateral
+        AND l.contract_address IN (
+            SELECT
+                DISTINCT(compound_market_address)
+            FROM
+                comp_assets
+        )
         AND tx_succeeded
 
 {% if is_incremental() %}
@@ -91,12 +110,7 @@ SELECT
     l._inserted_timestamp
 FROM
     liquidations l
-    LEFT JOIN {{ ref('silver__comp_asset_details') }} A
-    ON l.compound_market = A.compound_market_address
-WHERE
-    compound_market IN (
-        '0xa5edbdd9646f8dff606d7448e414884c7d905dca',
-        '0x9c4ec768c28520b50860ea7a15bd7213a9ff58bf'
-    ) qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    LEFT JOIN comp_assets A
+    ON l.compound_market = A.compound_market_address qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1
