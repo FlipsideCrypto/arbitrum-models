@@ -1,5 +1,6 @@
 {{ config(
     materialized = 'incremental',
+    unique_key = 'atoken_address',
     tags = ['silver','defi','lending','curated']
 ) }}
 
