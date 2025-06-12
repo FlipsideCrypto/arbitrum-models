@@ -1,5 +1,6 @@
 {{ config(
     materialized = 'incremental',
+    unique_key = 'atoken_address',
     tags = ['silver','defi','lending','curated']
 ) }}
 
@@ -11,6 +12,7 @@ WITH DECODE AS (
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS underlying_asset,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS aave_version_pool,
+        CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40)) AS treasury_address,
         utils.udf_hex_to_int(
             SUBSTR(
                 segmented_data [2] :: STRING,
@@ -32,7 +34,6 @@ WITH DECODE AS (
         ) AS _log_id
     FROM
         {{ ref('core__fact_event_logs') }}
-        l
     WHERE
         topics [0] = '0xb19e051f8af41150ccccb3fc2c2d8d15f4a4cf434f32a559ba75fe73d6eea20b'
 
@@ -61,6 +62,7 @@ a_token_step_1 AS (
         segmented_data,
         underlying_asset,
         aave_version_pool,
+        treasury_address,
         atoken_decimals,
         atoken_name,
         atoken_symbol,
@@ -69,7 +71,7 @@ a_token_step_1 AS (
     FROM
         DECODE
     WHERE
-        atoken_name LIKE '%Aave%'
+        treasury_address = '0x053d55f9b5af8694c503eb288a1b7e552f590710'
 ),
 debt_tokens AS (
     SELECT
@@ -103,6 +105,7 @@ a_token_step_2 AS (
         a_token_address,
         segmented_data,
         underlying_asset,
+        treasury_address,
         aave_version_pool,
         atoken_decimals,
         atoken_name,
@@ -112,11 +115,11 @@ a_token_step_2 AS (
         'Aave V3' AS protocol
     FROM
         a_token_step_1
-    WHERE
-        aave_version_pool = LOWER('0x794a61358D6845594F94dc1DB02A252b5b4814aD')
 )
 SELECT
     A.atoken_created_block,
+    A.aave_version_pool,
+    A.treasury_address,
     A.atoken_symbol AS atoken_symbol,
     A.a_token_address AS atoken_address,
     b.atoken_stable_debt_address,
