@@ -646,12 +646,12 @@ sushi AS (
     tx_to,
     event_index,
     platform,
-    'sushi' AS protocol,
+    'sushiswap' AS protocol,
     'v1' AS version,
     _log_id,
     _inserted_timestamp
   FROM
-    {{ ref('silver_dex__sushi_swaps') }}
+    {{ ref('silver_dex__sushiswap_swaps') }}
 
 {% if is_incremental() and 'sushi' not in var('HEAL_MODELS') %}
 WHERE
@@ -681,7 +681,7 @@ sushi_v3 AS (
     tx_to,
     event_index,
     'sushiswap-v3' as platform,
-    'sushi' AS protocol,
+    'sushiswap' AS protocol,
     'v3' AS version,
     _log_id,
     modified_timestamp as _inserted_timestamp
