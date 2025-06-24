@@ -611,7 +611,7 @@ pancakeswap_v3 AS (
     tx_to,
     event_index,
     platform,
-    'pancake_swap' AS protocol,
+    'pancakeswap' AS protocol,
     'v3' AS version,
     _log_id,
     modified_timestamp as _inserted_timestamp
