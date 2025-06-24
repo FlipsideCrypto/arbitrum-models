@@ -651,7 +651,7 @@ sushi AS (
     _log_id,
     _inserted_timestamp
   FROM
-    {{ ref('silver_dex__sushiswap_swaps') }}
+    {{ ref('silver_dex__sushi_swaps') }}
 
 {% if is_incremental() and 'sushi' not in var('HEAL_MODELS') %}
 WHERE
