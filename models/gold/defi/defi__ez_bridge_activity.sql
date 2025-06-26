@@ -60,4 +60,4 @@ FROM
     {{ ref('silver_bridge__complete_bridge_activity') }}
     b
     LEFT JOIN {{ ref('silver_bridge__standard_chain_seed') }} C
-    ON b.destination_chain = C.destination_chain
+    ON b.destination_chain = C.variation
