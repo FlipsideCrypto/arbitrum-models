@@ -1,0 +1,182 @@
+version: 2
+models:
+  - name: silver_perps__symmio_liquidations
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - _log_id
+    columns:
+      - name: BLOCK_NUMBER
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+
+      - name: BLOCK_TIMESTAMP
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - TIMESTAMP_LTZ
+                - TIMESTAMP_NTZ
+
+      - name: TX_HASH
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+
+      - name: PRICE_TIMESTAMP
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - TIMESTAMP_LTZ
+                - TIMESTAMP_NTZ
+
+      - name: PRICE_TX_HASH
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+
+      - name: CONTRACT_ADDRESS
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+
+      - name: ORIGIN_FROM_ADDRESS
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+
+      - name: ORIGIN_TO_ADDRESS
+        tests:
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+
+      - name: EVENT_NAME
+        tests:
+          - not_null
+
+      - name: EVENT_INDEX
+        tests:
+          - not_null
+
+      - name: ORIGIN_FUNCTION_SIGNATURE
+        tests:
+          - not_null
+
+      - name: PARTYA
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+
+      - name: QUOTE_ID
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - INTEGER
+
+      - name: ORDER_TYPE
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_set:
+              value_set: ['market', 'limit']
+
+      - name: POSITION_TYPE
+        tests:
+          - not_null
+
+      - name: POSITION_NAME
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_set:
+              value_set: ['long', 'short', 'unlabelled']
+
+      - name: CLOSE_ID
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - INTEGER
+
+      - name: LIQUIDATOR
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+
+      - name: LIQUIDATION_ID
+        tests:
+          - not_null
+
+      - name: LIQUIDATED_AMOUNT_UNADJ
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+      - name: LIQUIDATED_AMOUNT
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+      - name: PRICE
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+      - name: PRODUCT_NAME
+        tests:
+          - not_null
+
+      - name: SYMBOL_ID
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - INTEGER
+
+      - name: LIQUIDATED_AMOUNT_USD
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+      - name: _LOG_ID
+        tests:
+          - not_null
+
+      - name: SYMMIO_LIQUIDATION_ID
+        tests:
+          - not_null
+          - unique
+
