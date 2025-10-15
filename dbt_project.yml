@@ -115,12 +115,6 @@ models:
           +enabled: true
       stats:
         +enabled: true
-    balances_package:
-      +enabled: false
-      erc20:
-        +enabled: true
-      native:
-        +enabled: true
     scores_package:
       +enabled: true
 # In this example config, we tell dbt to build all models in the example/ directory
