@@ -93,6 +93,8 @@ models:
         +enabled: true
     curated_package:
       +enabled: false
+      contract_reads:
+        +enabled: true
       protocols:
         +enabled: false
         vertex:
@@ -106,6 +108,8 @@ models:
         lending:
           +enabled: true
         stablecoins:
+          +enabled: true
+        tvl:
           +enabled: true
       stats:
         +enabled: true
