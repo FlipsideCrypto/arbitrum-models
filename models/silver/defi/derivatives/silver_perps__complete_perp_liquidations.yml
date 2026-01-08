@@ -1,0 +1,150 @@
+version: 2
+models:
+  - name: silver_perps__complete_perp_liquidations
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - _LOG_ID
+    columns:
+      - name: BLOCK_NUMBER
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+
+      - name: BLOCK_TIMESTAMP
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - TIMESTAMP_LTZ
+                - TIMESTAMP_NTZ
+
+      - name: TX_HASH
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+
+      - name: CONTRACT_ADDRESS
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+
+      - name: EVENT_NAME
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - STRING
+                - VARCHAR
+
+      - name: EVENT_INDEX
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+
+      - name: ORIGIN_FUNCTION_SIGNATURE
+        tests:
+          - not_null
+
+      - name: ORIGIN_FROM_ADDRESS
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+
+      - name: ORIGIN_TO_ADDRESS
+        tests:
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+
+      - name: TRADER
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+
+      - name: LIQUIDATOR
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+
+      - name: TRADE_TYPE
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_set:
+              value_set: ['buy/long', 'sell/short']
+
+      - name: PLATFORM
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_set:
+              value_set: ['vertex', 'gmx-v2', 'symmio']
+
+      - name: IS_TAKER
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - BOOLEAN
+
+      - name: PRICE_AMOUNT_UNADJ
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+      - name: PRICE_AMOUNT
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+      - name: LIQUIDATED_AMOUNT_UNADJ
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+
+      - name: LIQUIDATED_AMOUNT
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+
+      - name: LIQUIDATED_AMOUNT_USD
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+      - name: _LOG_ID
+        tests:
+          - not_null

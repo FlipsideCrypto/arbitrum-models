@@ -1,0 +1,10 @@
+version: 2
+models:
+  - name: pear__ez_staking
+    description: '{{ doc("pear_ez_staking") }}'
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("arb_block_timestamp") }}'
+      - name: TX_HASH
+        description: '{{ doc("arb_logs_tx_hash") }}'
+      # ... continue for all columns 
